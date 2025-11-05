@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:events/theme/app_theme.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({Key? key}) : super(key: key);
@@ -15,7 +16,7 @@ class _AuthPageState extends State<AuthPage> {
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.backgroundColor,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -29,27 +30,21 @@ class _AuthPageState extends State<AuthPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Title
-                  const Text(
+                  Text(
                     'Etkinliğe Hoş Geldiniz',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                    style: AppTheme.headingLarge,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppTheme.spacingXL),
                   
                   // Subtitle
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacing2XL,
+                    ),
                     child: Text(
                       'Bize katılarak hesap oluşturun ve\nsorunsuz etkinlik planlaması deneyimi yaşayın.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                        height: 1.5,
-                      ),
+                      style: AppTheme.bodyLarge,
                     ),
                   ),
                 ],
@@ -58,7 +53,10 @@ class _AuthPageState extends State<AuthPage> {
             
             // Buttons
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacing2XL,
+                vertical: 40.0,
+              ),
               child: Column(
                 children: [
                   // Create Account Button
@@ -70,24 +68,13 @@ class _AuthPageState extends State<AuthPage> {
                         // Navigate to sign up page
                         Navigator.of(context).pushNamed('/signup');
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3B5998),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
-                        ),
-                        elevation: 0,
-                      ),
                       child: const Text(
                         'Hesap Oluştur',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                        style: AppTheme.buttonLarge,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppTheme.spacingL),
                   
                   // Login Button
                   SizedBox(
@@ -98,22 +85,9 @@ class _AuthPageState extends State<AuthPage> {
                         // Navigate to login page
                         Navigator.of(context).pushNamed('/login');
                       },
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(
-                          color: Color(0xFF3B5998),
-                          width: 2,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
-                        ),
-                      ),
                       child: const Text(
                         'Giriş Yap',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF3B5998),
-                        ),
+                        style: AppTheme.labelLarge,
                       ),
                     ),
                   ),
@@ -127,7 +101,7 @@ class _AuthPageState extends State<AuthPage> {
               height: 4,
               margin: const EdgeInsets.only(bottom: 24),
               decoration: BoxDecoration(
-                color: Colors.black87,
+                color: AppTheme.textPrimary,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
