@@ -1,11 +1,11 @@
 {
-    "name": "events",
-    "short_name": "events",
+    "name": "Pixlomi",
+    "short_name": "Pixlomi",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Pixlomi - A new Flutter project.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

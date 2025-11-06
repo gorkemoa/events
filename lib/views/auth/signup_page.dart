@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:events/theme/app_theme.dart';
+import 'package:pixlomi/theme/app_theme.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);

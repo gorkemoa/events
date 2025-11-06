@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:events/theme/app_theme.dart';
-import 'package:events/services/camera_service.dart';
-import 'package:events/services/face_detection_service.dart';
+import 'package:pixlomi/theme/app_theme.dart';
+import 'package:pixlomi/services/camera_service.dart';
+import 'package:pixlomi/services/face_detection_service.dart';
 
 class FaceVerificationPage extends StatefulWidget {
   const FaceVerificationPage({Key? key}) : super(key: key);

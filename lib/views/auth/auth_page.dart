@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:events/theme/app_theme.dart';
+import 'package:pixlomi/theme/app_theme.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({Key? key}) : super(key: key);

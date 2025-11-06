@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:events/views/home_page.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({Key? key}) : super(key: key);

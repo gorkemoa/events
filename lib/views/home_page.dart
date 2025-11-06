@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:convex_bottom_bar/convex_bottom_bar.dart';
-import 'package:events/theme/app_theme.dart';
+import 'package:pixlomi/theme/app_theme.dart';
+import 'package:pixlomi/widgets/home_header.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -10,7 +13,80 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
+  String _locationText = 'Konum yükleniyor...';
+  late PageController _pageController;
+  Timer? _autoScrollTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentLocation();
+    // Ortadan başlayarak sonsuz döngü efekti
+    _pageController = PageController(
+      viewportFraction: 0.85,
+      initialPage: 1000, // Büyük bir sayıdan başla
+    );
+    _startAutoScroll();
+  }
+
+  void _startAutoScroll() {
+    _autoScrollTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (_pageController.hasClients) {
+        final nextPage = _pageController.page! + 1;
+        _pageController.animateToPage(
+          nextPage.toInt(),
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoScrollTimer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      // Konum izni kontrol et
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          setState(() {
+            _locationText = 'İzin verilmedi';
+          });
+          return;
+        }
+      }
+
+      // Mevcut konumu al
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      // Koordinatlardan adres al
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks.first;
+        String locationName = '${place.locality}';
+        setState(() {
+          _locationText = locationName;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _locationText = 'Türkiye';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,56 +98,10 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header with Location and Notification
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Menu Icon
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.menu, size: 24),
-                    ),
-                    // Location
-                    Column(
-                      children: [
-                        Text(
-                          'Mevcut Konum',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            const Text(
-                              'İstanbul, Türkiye',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black,
-                              ),
-                            ),
-                            Icon(Icons.keyboard_arrow_down, size: 18, color: Colors.grey[800]),
-                          ],
-                        ),
-                      ],
-                    ),
-                    // Notification Icon
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.notifications_outlined, size: 24),
-                    ),
-                  ],
-                ),
+              HomeHeader(
+                locationText: _locationText,
+                onMenuPressed: () {},
+                onNotificationPressed: () {},
               ),
 
               // Search Bar
@@ -79,14 +109,13 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE8F4F8),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: TextField(
                     decoration: InputDecoration(
                       hintText: 'Ne arıyorsunuz?',
                       hintStyle: TextStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         color: Colors.grey[500],
                       ),
                       prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
@@ -107,21 +136,13 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     const Text(
                       'Hizmetlerimizi Keşfedin',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black,
-                      ),
+                      style: AppTheme.labelLarge,
                     ),
                     GestureDetector(
                       onTap: () {},
                       child: const Text(
                         'Tümünü Gör >',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.primary,
-                        ),
+                        style: AppTheme.bodySmall,
                       ),
                     ),
                   ],
@@ -132,35 +153,36 @@ class _HomePageState extends State<HomePage> {
 
               // Services Carousel
               SizedBox(
-                height: 180,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  children: [
-                    _ServiceCard(
-                      title: 'Yıldönümü\nFotoğrafçılığı',
-                      icon: Icons.cake,
-                      backgroundColor: const Color(0xFFFFE5EC),
-                    ),
-                    const SizedBox(width: 12),
-                    _ServiceCard(
-                      title: 'Doğum Günü\nFotoğrafçılığı',
-                      icon: Icons.celebration,
-                      backgroundColor: const Color(0xFFE3F2FD),
-                    ),
-                    const SizedBox(width: 12),
-                    _ServiceCard(
-                      title: 'Düğün\nFotoğrafçılığı',
-                      icon: Icons.favorite,
-                      backgroundColor: const Color(0xFFFCE4EC),
-                    ),
-                    const SizedBox(width: 12),
-                    _ServiceCard(
-                      title: 'Nişan\nFotoğrafçılığı',
-                      icon: Icons.diamond,
-                      backgroundColor: const Color(0xFFF3E5F5),
-                    ),
-                  ],
+                height: 150,
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemBuilder: (context, index) {
+                    // Sonsuz döngü için modulo kullan
+                    final serviceIndex = index % 4;
+                    final services = [
+                      _ServiceCard(
+                        title: 'Yıldönümü\nFotoğrafçılığı',
+                        icon: Icons.cake,
+                        backgroundColor: const Color.fromARGB(255, 241, 245, 201),
+                      ),
+                      _ServiceCard(
+                        title: 'Doğum Günü\nFotoğrafçılığı',
+                        icon: Icons.celebration,
+                        backgroundColor: const Color(0xFFE3F2FD),
+                      ),
+                      _ServiceCard(
+                        title: 'Düğün\nFotoğrafçılığı',
+                        icon: Icons.favorite,
+                        backgroundColor: const Color(0xFFFCE4EC),
+                      ),
+                      _ServiceCard(
+                        title: 'Nişan\nFotoğrafçılığı',
+                        icon: Icons.diamond,
+                        backgroundColor: const Color(0xFFF3E5F5),
+                      ),
+                    ];
+                    return services[serviceIndex];
+                  },
                 ),
               ),
 
@@ -168,9 +190,9 @@ class _HomePageState extends State<HomePage> {
 
               // View pictures with QR Code section
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE8F5F9),
                     borderRadius: BorderRadius.circular(16),
@@ -179,8 +201,8 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       // Left side image
                       Container(
-                        width: 80,
-                        height: 80,
+                        width: 55,
+                        height: 60,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           image: const DecorationImage(
@@ -196,13 +218,8 @@ class _HomePageState extends State<HomePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Fotoğraflarınızı paylaşılan\nolay kodu/QR ile görüntüleyin',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black,
-                                height: 1.4,
-                              ),
+                              'Fotoğraflarınızı paylaşılan\nonay kodu/QR ile görüntüleyin',
+                              style: AppTheme.labelSmall,
                             ),
                             const SizedBox(height: 12),
                             Container(
@@ -217,7 +234,7 @@ class _HomePageState extends State<HomePage> {
                                       decoration: InputDecoration(
                                         hintText: 'Olay kodunu girin veya tarayın',
                                         hintStyle: TextStyle(
-                                          fontSize: 12,
+                                          fontSize: 11,
                                           color: Colors.grey[400],
                                         ),
                                         border: InputBorder.none,
@@ -230,7 +247,7 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   Container(
                                     margin: const EdgeInsets.all(4),
-                                    padding: const EdgeInsets.all(8),
+                                    padding: const EdgeInsets.all(10),
                                     decoration: const BoxDecoration(
                                       color: AppTheme.primary,
                                       shape: BoxShape.circle,
@@ -262,21 +279,13 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     const Text(
                       'Yaklaşan Etkinlikler',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black,
-                      ),
+                      style: AppTheme.labelLarge,
                     ),
                     GestureDetector(
                       onTap: () {},
                       child: const Text(
                         'Tümünü Gör >',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.primary,
-                        ),
+                        style: AppTheme.bodySmall,
                       ),
                     ),
                   ],
@@ -312,40 +321,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      // Bottom Navigation
-      bottomNavigationBar: ConvexAppBar(
-        // Use a style that supports even number of items. `fixed` and `fixedCircle`
-        // require an odd number of items; switching to `react` allows 4 items.
-        style: TabStyle.custom,
-        items: const [
-          TabItem(
-            icon: Icons.home,
-            title: 'Anasayfa',
-          ),
-          TabItem(
-            icon: Icons.calendar_today,
-            title: 'Etkinlikler',
-          ),
-          TabItem(
-            icon: Icons.image,
-            title: 'Fotoğraflar',
-          ),
-          TabItem(
-            icon: Icons.person,
-            title: 'Profil',
-          ),
-        ],
-        initialActiveIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        backgroundColor: AppTheme.primary,
-        activeColor: Colors.white,
-        color: Colors.white70,
-        height: 60,
-      ),
     );
   }
 }
@@ -365,7 +340,7 @@ class _ServiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 140,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(16),
@@ -391,12 +366,7 @@ class _ServiceCard extends StatelessWidget {
             child: Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-                height: 1.3,
-              ),
+              style: AppTheme.labelSmall,
             ),
           ),
         ],
@@ -447,7 +417,7 @@ class _EventCard extends StatelessWidget {
                     Text(
                       day,
                       style: const TextStyle(
-                        fontSize: 32,
+                        fontSize: 28,
                         fontWeight: FontWeight.w700,
                         color: Colors.black,
                         height: 1,
@@ -456,11 +426,7 @@ class _EventCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       month,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[700],
-                      ),
+                      style: AppTheme.captionSmall,
                     ),
                   ],
                 ),
@@ -481,12 +447,7 @@ class _EventCard extends StatelessWidget {
             const SizedBox(height: 20),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-                height: 1.3,
-              ),
+              style: AppTheme.labelSmall,
               maxLines: 2,
             ),
           ],

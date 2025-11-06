@@ -1,5 +1,5 @@
-name: events
-description: "A new Flutter project."
+name: pixlomi
+description: "Pixlomi - A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -39,6 +39,8 @@ dependencies:
   google_mlkit_face_detection: ^0.11.0
   lottie: ^3.1.2
   permission_handler: ^11.3.1
+  geolocator: ^9.0.2
+  geocoding: ^2.1.0
 
 dev_dependencies:
   flutter_test:

@@ -1,4 +1,4 @@
-package com.example.events
+package com.office701.pixlomi
 
 import io.flutter.embedding.android.FlutterActivity
 

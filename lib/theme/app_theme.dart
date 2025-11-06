@@ -1,26 +1,32 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Primary Colors
-  static const Color primary = Color(0xFF3B5998);
-  static const Color primaryLight = Color(0xFF5A7EB8);
-  static const Color primaryDark = Color(0xFF2D4373);
+  // Primary Colors - Kurumsal Lacivert Paleti
+  static const Color primary = Color(0xFF1C3C74); // Ana lacivert
+  static const Color primaryLight = Color(0xFF2D5091);
+  static const Color primaryDark = Color(0xFF0F2547);
   
-  // Secondary Colors
-  static const Color secondary = Color(0xFF1877F2);
-  static const Color secondaryLight = Color(0xFF4B9AFF);
-  static const Color secondaryDark = Color(0xFF0A5FD7);
+  // Secondary Colors - Mavi Vurgu
+  static const Color secondary = Color(0xFF0094C6); // Vurgu mavisi
+  static const Color secondaryLight = Color(0xFF33A9D6);
+  static const Color secondaryDark = Color(0xFF00739C);
   
-  // Neutral Colors
-  static const Color textPrimary = Color(0xFF1A1A1A);
-  static const Color textSecondary = Color(0xFF666666);
-  static const Color textTertiary = Color(0xFF999999);
-  static const Color textHint = Color(0xFFCCCCCC);
+  // Accent Colors - Altın (Premium vurgu için)
+  static const Color accent = Color(0xFFC9A227);
+  static const Color accentLight = Color(0xFFD4B547);
+  static const Color accentDark = Color(0xFFA88818);
+  
+  // Neutral Colors - Koyu gri tonları
+  static const Color textPrimary = Color(0xFF2C2C2C); // Koyu gri
+  static const Color textSecondary = Color(0xFF5A5A5A);
+  static const Color textTertiary = Color(0xFF8C8C8C);
+  static const Color textHint = Color(0xFFB8B8B8);
   
   // Background Colors
   static const Color backgroundColor = Color(0xFFFFFFFF);
-  static const Color surfaceColor = Color(0xFFF5F5F5);
-  static const Color dividerColor = Color(0xFFE0E0E0);
+  static const Color surfaceColor = Color(0xFFF5F5F5); // Açık gri
+  static const Color surfaceSecondary = Color(0xFFF9F9F9);
+  static const Color dividerColor = Color(0xFFE5E5E5);
   
   // Accent Colors
   static const Color success = Color(0xFF10B981);
@@ -28,41 +34,47 @@ class AppTheme {
   static const Color error = Color(0xFFEF4444);
   static const Color info = Color(0xFF3B82F6);
   
-  // Text Styles
+  // Text Styles - Profesyonel sans-serif hierarchy
   static const TextStyle headingLarge = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w700,
     color: textPrimary,
+    letterSpacing: -0.5,
   );
   
   static const TextStyle headingMedium = TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.w700,
     color: textPrimary,
+    letterSpacing: -0.3,
   );
   
   static const TextStyle headingSmall = TextStyle(
     fontSize: 20,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     color: textPrimary,
+    letterSpacing: -0.2,
   );
   
   static const TextStyle labelLarge = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,
     color: textPrimary,
+    letterSpacing: 0,
   );
   
   static const TextStyle labelMedium = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w600,
     color: textPrimary,
+    letterSpacing: 0,
   );
   
   static const TextStyle labelSmall = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w600,
     color: textPrimary,
+    letterSpacing: 0.1,
   );
   
   static const TextStyle bodyLarge = TextStyle(
@@ -116,9 +128,10 @@ class AppTheme {
     color: Colors.white,
   );
   
-  // Input Border Radius
+  // Input Border Radius - Grid tabanlı, net ayrımlar
   static const double inputBorderRadius = 8;
-  static const double buttonBorderRadius = 28;
+  static const double cardBorderRadius = 12;
+  static const double buttonBorderRadius = 8;
   
   // Spacing
   static const double spacingXS = 4;
@@ -128,6 +141,23 @@ class AppTheme {
   static const double spacingXL = 20;
   static const double spacing2XL = 24;
   static const double spacing3XL = 32;
+  
+  // Shadows - Minimal, profesyonel
+  static List<BoxShadow> get cardShadow => [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.04),
+      blurRadius: 8,
+      offset: const Offset(0, 2),
+    ),
+  ];
+  
+  static List<BoxShadow> get cardShadowHover => [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.08),
+      blurRadius: 16,
+      offset: const Offset(0, 4),
+    ),
+  ];
   
   // ThemeData for Material App
   static ThemeData get lightTheme {
@@ -207,7 +237,7 @@ class AppTheme {
           ),
           elevation: 0,
           padding: const EdgeInsets.symmetric(
-            horizontal: spacingL,
+            horizontal: spacingXL,
             vertical: 16,
           ),
           textStyle: buttonLarge,
@@ -216,12 +246,12 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: primary,
-          side: const BorderSide(color: dividerColor),
+          side: const BorderSide(color: dividerColor, width: 1.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(buttonBorderRadius),
           ),
           padding: const EdgeInsets.symmetric(
-            horizontal: spacingL,
+            horizontal: spacingXL,
             vertical: 16,
           ),
           textStyle: const TextStyle(
