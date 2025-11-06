@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Primary Colors - Kurumsal Lacivert Paleti
-  static const Color primary = Color(0xFF1C3C74); // Ana lacivert
-  static const Color primaryLight = Color(0xFF2D5091);
-  static const Color primaryDark = Color(0xFF0F2547);
+  // Primary Colors - Deniz Mavisi Paleti
+  static const Color primary = Color(0xFF025560); // Koyu deniz mavisi
+  static const Color primaryLight = Color(0xFF127D82); // Orta ton deniz yeşili
+  static const Color primaryDark = Color(0xFF013D45);
   
-  // Secondary Colors - Mavi Vurgu
-  static const Color secondary = Color(0xFF0094C6); // Vurgu mavisi
-  static const Color secondaryLight = Color(0xFF33A9D6);
-  static const Color secondaryDark = Color(0xFF00739C);
+  // Secondary Colors - Turkuaz Vurgu
+  static const Color secondary = Color(0xFF00ABBD); // Canlı turkuaz
+  static const Color secondaryLight = Color(0xFF33BCC9);
+  static const Color secondaryDark = Color(0xFF008899);
   
-  // Accent Colors - Altın (Premium vurgu için)
-  static const Color accent = Color(0xFFC9A227);
-  static const Color accentLight = Color(0xFFD4B547);
-  static const Color accentDark = Color(0xFFA88818);
+  // Accent Colors - Deniz Yeşili
+  static const Color accent = Color(0xFF127D82); // Orta ton deniz yeşili
+  static const Color accentLight = Color(0xFF3D9599);
+  static const Color accentDark = Color(0xFF0D6166);
   
-  // Neutral Colors - Koyu gri tonları
+  // Neutral Colors - Gri tonları
   static const Color textPrimary = Color(0xFF2C2C2C); // Koyu gri
   static const Color textSecondary = Color(0xFF5A5A5A);
   static const Color textTertiary = Color(0xFF8C8C8C);
-  static const Color textHint = Color(0xFFB8B8B8);
+  static const Color textHint = Color(0xFFC6C6C6); // Açık gri
   
   // Background Colors
   static const Color backgroundColor = Color(0xFFFFFFFF);
-  static const Color surfaceColor = Color(0xFFF5F5F5); // Açık gri
+  static const Color surfaceColor = Color(0xFFF5F5F5);
   static const Color surfaceSecondary = Color(0xFFF9F9F9);
-  static const Color dividerColor = Color(0xFFE5E5E5);
+  static const Color dividerColor = Color(0xFFC6C6C6); // Açık gri
   
   // Accent Colors
   static const Color success = Color(0xFF10B981);
@@ -163,6 +163,7 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
+      fontFamily: 'Ancorli',
       colorScheme: ColorScheme.fromSeed(
         seedColor: primary,
         brightness: Brightness.light,

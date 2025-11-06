@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/widgets/home_header.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:pixlomi/views/events/event_detail_page.dart';
 
 class EventsPage extends StatefulWidget {
-  const EventsPage({Key? key}) : super(key: key);
+  final String locationText;
+  
+  const EventsPage({Key? key, required this.locationText}) : super(key: key);
 
   @override
   State<EventsPage> createState() => _EventsPageState();
@@ -13,53 +14,11 @@ class EventsPage extends StatefulWidget {
 
 class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  String _locationText = 'Konum yükleniyor...';
-
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _getCurrentLocation();
-  }
-
-  Future<void> _getCurrentLocation() async {
-    try {
-      // Konum izni kontrol et
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          setState(() {
-            _locationText = 'İzin verilmedi';
-          });
-          return;
-        }
-      }
-
-      // Mevcut konumu al
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      // Koordinatlardan adres al
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-      );
-
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks.first;
-        String locationName = '${place.locality}';
-        setState(() {
-          _locationText = locationName;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _locationText = 'Türkiye';
-      });
-    }
   }
 
   @override
@@ -77,7 +36,7 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
           children: [
             // Header
             HomeHeader(
-              locationText: _locationText,
+              locationText: widget.locationText,
               onMenuPressed: () {},
               onNotificationPressed: () {},
             ),
@@ -119,26 +78,54 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                 children: [
                   // Upcoming Events Tab
                   ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingL),
                     children: [
                       _EventCard(
                         image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop',
-                        date: '9 Haziran',
+                        date: '9 Kasım',
                         time: '12:00 ÖÖ',
-                        title: 'Doğum Günü Kutlaması',
-                        location: 'Farmhouse, NY',
-                        organizer: 'Bay Adam',
+                        title: 'FO Kahve Festivali',
+                        location: 'İzmir - Konak',
+                        organizer: 'Fo - Özmer',
                         isFavorite: true,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const EventDetailPage(
+                                eventTitle: 'FO Kahve Festivali',
+                                clientName: 'Görkem Öztürk',
+                                eventDate: '9 Kasım 2025',
+                                eventTime: '12:00',
+                                location: 'İzmir - Konak',
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppTheme.spacingM),
                       _EventCard(
                         image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=400&fit=crop',
-                        date: '11 Haziran',
+                        date: '11 Kasım',
                         time: '09:00 ÖÖ',
-                        title: 'Düğün Öncesi Kutlama',
-                        location: 'Farmhouse, NY',
-                        organizer: 'Bay Adam',
+                        title: '8. Teknoloji Zirvesi',
+                        location: 'İstanbul - Taksim',
+                        organizer: 'Office701 Holding',
                         isFavorite: false,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const EventDetailPage(
+                                eventTitle: '8. Teknoloji Zirvesi',
+                                clientName: 'Görkem Öztürk',
+                                eventDate: '11 Kasım 2025',
+                                eventTime: '09:00',
+                                location: 'İstanbul - Taksim',
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -164,6 +151,7 @@ class _EventCard extends StatelessWidget {
   final String location;
   final String organizer;
   final bool isFavorite;
+  final VoidCallback? onTap;
 
   const _EventCard({
     required this.image,
@@ -173,41 +161,38 @@ class _EventCard extends StatelessWidget {
     required this.location,
     required this.organizer,
     required this.isFavorite,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
+          boxShadow: AppTheme.cardShadow,
+        ),
+        child: Row(
         children: [
           // Event Image
           ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              bottomLeft: Radius.circular(16),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(AppTheme.cardBorderRadius),
+              bottomLeft: Radius.circular(AppTheme.cardBorderRadius),
             ),
             child: Image.network(
               image,
-              width: 100,
-              height: 120,
+              width: 80,
+              height: 90,
               fit: BoxFit.cover,
             ),
           ),
           // Event Details
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AppTheme.spacingM),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -215,55 +200,53 @@ class _EventCard extends StatelessWidget {
                     children: [
                       Text(
                         '$date - ',
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontSize: 12,
+                        style: AppTheme.captionSmall.copyWith(
+                          color: AppTheme.error,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       Text(
                         time,
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontSize: 12,
+                        style: AppTheme.captionSmall.copyWith(
+                          color: AppTheme.error,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: AppTheme.spacingXS),
                   Text(
                     title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                    style: AppTheme.labelMedium,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppTheme.spacingXS),
                   Row(
                     children: [
-                      Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
+                      Icon(Icons.location_on, size: 12, color: AppTheme.textTertiary),
                       const SizedBox(width: 4),
-                      Text(
-                        location,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                      Expanded(
+                        child: Text(
+                          location,
+                          style: AppTheme.captionSmall,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Row(
                     children: [
-                      Icon(Icons.person_outline, size: 14, color: Colors.grey[600]),
+                      Icon(Icons.person_outline, size: 12, color: AppTheme.textTertiary),
                       const SizedBox(width: 4),
-                      Text(
-                        organizer,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                      Expanded(
+                        child: Text(
+                          organizer,
+                          style: AppTheme.captionSmall,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -274,14 +257,15 @@ class _EventCard extends StatelessWidget {
           ),
           // Favorite Icon
           Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.only(right: AppTheme.spacingM),
             child: Icon(
               isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: isFavorite ? Colors.red : Colors.grey,
-              size: 24,
+              color: isFavorite ? AppTheme.error : AppTheme.textTertiary,
+              size: 20,
             ),
           ),
         ],
+        ),
       ),
     );
   }

@@ -39,7 +39,8 @@ class CustomBottomNav extends StatelessWidget {
       backgroundColor: AppTheme.primary,
       activeColor: Colors.white,
       color: Colors.white70,
-      height: 60,
+      height: 49,
+      curveSize: 100,
     );
   }
 }

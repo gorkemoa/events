@@ -2,25 +2,23 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/widgets/home_header.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  final String locationText;
+  
+  const HomePage({Key? key, required this.locationText}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  String _locationText = 'Konum yükleniyor...';
   late PageController _pageController;
   Timer? _autoScrollTimer;
 
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();
     // Ortadan başlayarak sonsuz döngü efekti
     _pageController = PageController(
       viewportFraction: 0.85,
@@ -49,45 +47,6 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  Future<void> _getCurrentLocation() async {
-    try {
-      // Konum izni kontrol et
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          setState(() {
-            _locationText = 'İzin verilmedi';
-          });
-          return;
-        }
-      }
-
-      // Mevcut konumu al
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      // Koordinatlardan adres al
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-      );
-
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks.first;
-        String locationName = '${place.locality}';
-        setState(() {
-          _locationText = locationName;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _locationText = 'Türkiye';
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,7 +58,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               // Header with Location and Notification
               HomeHeader(
-                locationText: _locationText,
+                locationText: widget.locationText,
                 onMenuPressed: () {},
                 onNotificationPressed: () {},
               ),
