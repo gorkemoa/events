@@ -58,4 +58,48 @@ class UserService {
       );
     }
   }
+
+  /// Update user information
+  /// 
+  /// Returns [UpdateUserResponse] with success status
+  /// If status code is 200, update is successful
+  /// If status code is 417, update failed with error message
+  Future<UpdateUserResponse> updateUser({
+    required int userId,
+    required UpdateUserRequest request,
+  }) async {
+    try {
+      developer.log('✏️ Update User Request', name: 'UserService');
+      developer.log('URL: ${ApiConstants.updateUser(userId)}', name: 'UserService');
+      developer.log('Body: ${jsonEncode(request.toJson())}', name: 'UserService');
+
+      final response = await ApiHelper.put(
+        ApiConstants.updateUser(userId),
+        request.toJson(),
+      );
+
+      developer.log('📥 Response Status: ${response.statusCode}', name: 'UserService');
+      developer.log('📥 Response Body: ${response.body}', name: 'UserService');
+
+      final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
+      final updateResponse = UpdateUserResponse.fromJson(jsonResponse);
+      
+      developer.log('✅ Parsed Response - Success: ${updateResponse.success}', name: 'UserService');
+      if (!updateResponse.success) {
+        developer.log('❌ Error Message: ${updateResponse.errorMessage}', name: 'UserService');
+      }
+      
+      return updateResponse;
+    } catch (e, stackTrace) {
+      // Return error response if network or parsing fails
+      developer.log('❌ Exception occurred', name: 'UserService', error: e, stackTrace: stackTrace);
+      return UpdateUserResponse(
+        error: true,
+        success: false,
+        message: '',
+        errorMessage: 'Bir hata oluştu: $e',
+        statusCode: 'ERROR',
+      );
+    }
+  }
 }

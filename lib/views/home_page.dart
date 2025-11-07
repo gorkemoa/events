@@ -80,11 +80,15 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      body: RefreshIndicator(
+        onRefresh: _loadUserData,
+        color: AppTheme.primary,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               // Header with Location and Notification
               HomeHeader(
                 locationText: widget.locationText,
@@ -310,7 +314,8 @@ class _HomePageState extends State<HomePage> {
               ),
 
               const SizedBox(height: 100),
-            ],
+              ],
+            ),
           ),
         ),
       ),

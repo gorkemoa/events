@@ -61,6 +61,74 @@ class UserData {
   }
 }
 
+/// Request model for updating user data
+class UpdateUserRequest {
+  final String userToken;
+  final String userFirstname;
+  final String userLastname;
+  final String userEmail;
+  final String userBirthday;
+  final String userPhone;
+  final String userAddress;
+  final int userGender; // 1 - Erkek, 2 - Kadın, 3 - Belirtilmemiş
+  final String profilePhoto; // Base64 formatında
+
+  UpdateUserRequest({
+    required this.userToken,
+    required this.userFirstname,
+    required this.userLastname,
+    required this.userEmail,
+    required this.userBirthday,
+    required this.userPhone,
+    required this.userAddress,
+    required this.userGender,
+    this.profilePhoto = '',
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userToken': userToken,
+      'userFirstname': userFirstname,
+      'userLastname': userLastname,
+      'userEmail': userEmail,
+      'userBirthday': userBirthday,
+      'userPhone': userPhone,
+      'userAddress': userAddress,
+      'userGender': userGender,
+      'profilePhoto': profilePhoto,
+    };
+  }
+}
+
+/// Response model for update user
+class UpdateUserResponse {
+  final bool error;
+  final bool success;
+  final String message;
+  final String? errorMessage;
+  final String statusCode;
+
+  UpdateUserResponse({
+    required this.error,
+    required this.success,
+    required this.message,
+    this.errorMessage,
+    required this.statusCode,
+  });
+
+  factory UpdateUserResponse.fromJson(Map<String, dynamic> json) {
+    return UpdateUserResponse(
+      error: json['error'] ?? false,
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      errorMessage: json['error_message'],
+      statusCode: json['200'] ?? json['417'] ?? '',
+    );
+  }
+
+  bool get isSuccess => success && statusCode == 'OK';
+}
+
 /// User model
 class User {
   final int userId;
@@ -71,6 +139,7 @@ class User {
   final String userEmail;
   final String userPhone;
   final String userIdentityNo;
+  final String userBirthday;
   final String userRank;
   final String userGender;
   final String userToken;
@@ -91,6 +160,7 @@ class User {
     required this.userEmail,
     required this.userPhone,
     required this.userIdentityNo,
+    required this.userBirthday,
     required this.userRank,
     required this.userGender,
     required this.userToken,
@@ -113,6 +183,7 @@ class User {
       userEmail: json['userEmail'] ?? '',
       userPhone: json['userPhone'] ?? '',
       userIdentityNo: json['userIdentityNo'] ?? '',
+      userBirthday: json['userBirthday'] ?? '',
       userRank: json['userRank'] ?? '0',
       userGender: json['userGender'] ?? '',
       userToken: json['userToken'] ?? '',

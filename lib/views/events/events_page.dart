@@ -31,114 +31,122 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            HomeHeader(
-              locationText: widget.locationText,
-              onMenuPressed: () {},
-              onNotificationPressed: () {
-                Navigator.pushNamed(context, '/notifications');
-              },
-            ),
-
-            // Tabs
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // Refresh events logic can be added here
+          await Future.delayed(const Duration(seconds: 1));
+        },
+        color: AppTheme.primary,
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              HomeHeader(
+                locationText: widget.locationText,
+                onMenuPressed: () {},
+                onNotificationPressed: () {
+                  Navigator.pushNamed(context, '/notifications');
+                },
               ),
-              child: TabBar(
-                indicatorSize: TabBarIndicatorSize.tab,
-                controller: _tabController,
-                indicator: BoxDecoration(
-                  color: AppTheme.primary,
-                  borderRadius: BorderRadius.circular(5),
-                  
+
+              // Tabs
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
                 ),
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.black54,
-                labelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                child: TabBar(
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  controller: _tabController,
+                  indicator: BoxDecoration(
+                    color: AppTheme.primary,
+                    borderRadius: BorderRadius.circular(5),
+                    
+                  ),
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.black54,
+                  labelStyle: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  tabs: const [
+                    Tab(text: 'Yaklaşan Etkinlikler'),
+                    Tab(text: 'Etkinlik Paylaş'),
+                  ],
                 ),
-                tabs: const [
-                  Tab(text: 'Yaklaşan Etkinlikler'),
-                  Tab(text: 'Etkinlik Paylaş'),
-                ],
               ),
-            ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
 
-            // Events List
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  // Upcoming Events Tab
-                  ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingL),
-                    children: [
-                      _EventCard(
-                        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop',
-                        date: '9 Kasım',
-                        time: '12:00 ÖÖ',
-                        title: 'FO Kahve Festivali',
-                        location: 'İzmir - Konak',
-                        organizer: 'Fo - Özmer',
-                        isFavorite: true,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const EventDetailPage(
-                                eventTitle: 'FO Kahve Festivali',
-                                clientName: 'Görkem Öztürk',
-                                eventDate: '9 Kasım 2025',
-                                eventTime: '12:00',
-                                location: 'İzmir - Konak',
+              // Events List
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    // Upcoming Events Tab
+                    ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingL),
+                      children: [
+                        _EventCard(
+                          image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop',
+                          date: '9 Kasım',
+                          time: '12:00 ÖÖ',
+                          title: 'FO Kahve Festivali',
+                          location: 'İzmir - Konak',
+                          organizer: 'Fo - Özmer',
+                          isFavorite: true,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const EventDetailPage(
+                                  eventTitle: 'FO Kahve Festivali',
+                                  clientName: 'Görkem Öztürk',
+                                  eventDate: '9 Kasım 2025',
+                                  eventTime: '12:00',
+                                  location: 'İzmir - Konak',
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: AppTheme.spacingM),
-                      _EventCard(
-                        image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=400&fit=crop',
-                        date: '11 Kasım',
-                        time: '09:00 ÖÖ',
-                        title: '8. Teknoloji Zirvesi',
-                        location: 'İstanbul - Taksim',
-                        organizer: 'Office701 Holding',
-                        isFavorite: false,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const EventDetailPage(
-                                eventTitle: '8. Teknoloji Zirvesi',
-                                clientName: 'Görkem Öztürk',
-                                eventDate: '11 Kasım 2025',
-                                eventTime: '09:00',
-                                location: 'İstanbul - Taksim',
+                            );
+                          },
+                        ),
+                        const SizedBox(height: AppTheme.spacingM),
+                        _EventCard(
+                          image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=400&fit=crop',
+                          date: '11 Kasım',
+                          time: '09:00 ÖÖ',
+                          title: '8. Teknoloji Zirvesi',
+                          location: 'İstanbul - Taksim',
+                          organizer: 'Office701 Holding',
+                          isFavorite: false,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const EventDetailPage(
+                                  eventTitle: '8. Teknoloji Zirvesi',
+                                  clientName: 'Görkem Öztürk',
+                                  eventDate: '11 Kasım 2025',
+                                  eventTime: '09:00',
+                                  location: 'İstanbul - Taksim',
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  // Post Events Tab
-                  const Center(
-                    child: Text('Etkinlik Paylaş'),
-                  ),
-                ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    // Post Events Tab
+                    const Center(
+                      child: Text('Etkinlik Paylaş'),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

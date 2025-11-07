@@ -118,7 +118,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 )
               : RefreshIndicator(
                   onRefresh: _loadNotifications,
+                  color: Colors.blue,
                   child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(12),
                     itemCount: _notifications.length,
                     itemBuilder: (context, index) {

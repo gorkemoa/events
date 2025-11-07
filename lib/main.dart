@@ -24,6 +24,15 @@ class MyApp extends StatelessWidget {
       title: 'Events App',
       theme: AppTheme.lightTheme,
       home: const SplashPage(),
+      builder: (context, child) {
+        return GestureDetector(
+          onTap: () {
+            // Herhangi bir yere tıklandığında klavyeyi kapat
+            FocusScope.of(context).unfocus();
+          },
+          child: child,
+        );
+      },
       routes: {
         '/onboarding': (context) => const OnboardingPage(),
         '/auth': (context) => const AuthPage(),

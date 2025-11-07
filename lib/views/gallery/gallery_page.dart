@@ -117,11 +117,18 @@ class _GalleryPageState extends State<GalleryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            HomeHeader(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // Refresh gallery logic can be added here
+          await Future.delayed(const Duration(seconds: 1));
+          setState(() {});
+        },
+        color: AppTheme.primary,
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              HomeHeader(
               locationText: 'Fotoğraflar',
               subtitle: '${photos.length} fotoğraf',
               onMenuPressed: () {
@@ -268,8 +275,9 @@ class _GalleryPageState extends State<GalleryPage> {
                         },
                       ),
                     ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
