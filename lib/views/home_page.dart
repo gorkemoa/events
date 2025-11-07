@@ -92,7 +92,9 @@ class _HomePageState extends State<HomePage> {
                     ? 'Hoş geldin, ${_currentUser!.userFirstname}' 
                     : null,
                 onMenuPressed: () {},
-                onNotificationPressed: () {},
+                onNotificationPressed: () {
+                  Navigator.pushNamed(context, '/notifications');
+                },
               ),
 
               // Search Bar

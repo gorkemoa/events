@@ -7,6 +7,7 @@ import 'package:pixlomi/views/auth/login_page.dart';
 import 'package:pixlomi/views/auth/face_verification_page.dart';
 import 'package:pixlomi/views/auth/onboarding_page.dart';
 import 'package:pixlomi/views/main_navigation.dart';
+import 'package:pixlomi/views/notifications/notifications_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/faceVerification': (context) => const FaceVerificationPage(),
         '/home': (context) => const MainNavigation(),
+        '/notifications': (context) => const NotificationsPage(),
       },
     );
   }

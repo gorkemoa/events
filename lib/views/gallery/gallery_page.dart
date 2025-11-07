@@ -128,13 +128,7 @@ class _GalleryPageState extends State<GalleryPage> {
                 // Menu action
               },
               onNotificationPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Bildirimler'),
-                    behavior: SnackBarBehavior.floating,
-                    duration: Duration(seconds: 1),
-                  ),
-                );
+                Navigator.pushNamed(context, '/notifications');
               },
             ),
 

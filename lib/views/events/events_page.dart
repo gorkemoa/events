@@ -38,7 +38,9 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
             HomeHeader(
               locationText: widget.locationText,
               onMenuPressed: () {},
-              onNotificationPressed: () {},
+              onNotificationPressed: () {
+                Navigator.pushNamed(context, '/notifications');
+              },
             ),
 
             // Tabs

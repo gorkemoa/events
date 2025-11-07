@@ -120,13 +120,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 // Menu action
               },
               onNotificationPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Bildirimler'),
-                    behavior: SnackBarBehavior.floating,
-                    duration: Duration(seconds: 1),
-                  ),
-                );
+                Navigator.pushNamed(context, '/notifications');
               },
             ),
             

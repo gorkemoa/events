@@ -12,4 +12,7 @@ class ApiConstants {
   
   /// User endpoints
   static String getUserById(int userId) => '${baseUrl}service/user/id/$userId';
+  
+  /// Notification endpoints
+  static String getNotifications(int userId) => '${baseUrl}service/user/account/$userId/notifications';
 }
