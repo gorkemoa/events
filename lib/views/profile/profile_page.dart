@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
+import 'package:pixlomi/widgets/home_header.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -27,123 +28,131 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Profil',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 20),
+        child: Column(
+          children: [
+            // Header
+            HomeHeader(
+              locationText: 'Profil',
+              subtitle: 'Hesap Bilgileri',
+              onMenuPressed: () {
+                // Menu action
+              },
+              onNotificationPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Bildirimler'),
+                    behavior: SnackBarBehavior.floating,
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+              },
+            ),
+            
+            // Content
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 20),
 
-                // Profile Picture
-                Stack(
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.grey[300]!,
-                          width: 2,
-                        ),
-                        image: const DecorationImage(
-                          image: NetworkImage(
-                            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
+                      // Profile Picture
+                      Stack(
+                        children: [
+                          Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.grey[300]!,
+                                width: 2,
+                              ),
+                              image: const DecorationImage(
+                                image: NetworkImage(
+                                  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
+                                ),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                           ),
-                          fit: BoxFit.cover,
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primary,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                size: 16,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // User Name Title
+                      const Text(
+                        'GÖRKEM ÖZTÜRK',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                          letterSpacing: 1,
                         ),
                       ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt,
-                          size: 16,
-                          color: Colors.white,
-                        ),
+
+                      const SizedBox(height: 30),
+
+                      // User Name Field
+                      _buildTextField(
+                        label: 'Kullanıcı Adı',
+                        controller: _userNameController,
                       ),
-                    ),
-                  ],
-                ),
 
-                const SizedBox(height: 16),
+                      const SizedBox(height: 20),
 
-                // User Name Title
-                const Text(
-                  'GÖRKEM ÖZTÜRK',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    letterSpacing: 1,
+                      // Email Field
+                      _buildTextField(
+                        label: 'E-posta',
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Roles Field
+                      _buildTextField(
+                        label: 'Roller',
+                        controller: _rolesController,
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Total Events Attended Field
+                      _buildTextField(
+                        label: 'Katılınan Etkinlik Sayısı',
+                        controller: _eventsController,
+                        keyboardType: TextInputType.number,
+                      ),
+
+                      const SizedBox(height: 40),
+                    ],
                   ),
                 ),
-
-                const SizedBox(height: 30),
-
-                // User Name Field
-                _buildTextField(
-                  label: 'Kullanıcı Adı',
-                  controller: _userNameController,
-                ),
-
-                const SizedBox(height: 20),
-
-                // Email Field
-                _buildTextField(
-                  label: 'E-posta',
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                ),
-
-                const SizedBox(height: 20),
-
-                // Roles Field
-                _buildTextField(
-                  label: 'Roller',
-                  controller: _rolesController,
-                ),
-
-                const SizedBox(height: 20),
-
-                // Total Events Attended Field
-                _buildTextField(
-                  label: 'Katılınan Etkinlik Sayısı',
-                  controller: _eventsController,
-                  keyboardType: TextInputType.number,
-                ),
-
-                const SizedBox(height: 40),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

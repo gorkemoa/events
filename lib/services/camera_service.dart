@@ -34,13 +34,21 @@ class CameraService {
 
     _controller = CameraController(
       frontCamera,
-      ResolutionPreset.medium, // High yerine medium - daha hızlı işlem
+      ResolutionPreset.high, // Yüksek çözünürlük - daha iyi yüz tespiti
       enableAudio: false,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
 
     try {
       await _controller!.initialize();
+      
+      // Otomatik odaklama ve pozlama modunu ayarla
+      if (_controller!.value.isInitialized) {
+        await _controller!.setFocusMode(FocusMode.auto);
+        await _controller!.setExposureMode(ExposureMode.auto);
+        debugPrint('✅ Auto focus and exposure enabled');
+      }
+      
       _isInitialized = true;
       debugPrint('✅ Camera controller initialized');
       return true;
@@ -51,6 +59,7 @@ class CameraService {
     }
   }
 
+  /// Fotoğraf çekmeden önce odaklanma ve pozlamayı tamamla
   Future<XFile?> takePicture() async {
     if (_controller == null || !_controller!.value.isInitialized) {
       debugPrint('❌ Camera is not initialized');
@@ -58,6 +67,11 @@ class CameraService {
     }
 
     try {
+      debugPrint('📸 Preparing to take picture...');
+      
+      // Odaklanma ve pozlama için kısa bir bekleme
+      await Future.delayed(const Duration(milliseconds: 500));
+      
       debugPrint('📸 Taking picture...');
       final image = await _controller!.takePicture();
       debugPrint('✅ Picture taken: ${image.path}');

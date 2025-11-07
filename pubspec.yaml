@@ -41,6 +41,7 @@ dependencies:
   permission_handler: ^11.3.1
   geolocator: ^9.0.2
   geocoding: ^2.1.0
+  video_player: ^2.9.2
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +72,7 @@ flutter:
     - assets/icon/
     - assets/lottie/
     - assets/logo/
+    - assets/onboarding/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -109,3 +111,4 @@ flutter_launcher_icons:
   image_path: "assets/logo/logo.png"
   adaptive_icon_background: "#ffffff"
   adaptive_icon_foreground: "assets/logo/logo.png"
+  remove_alpha_ios: true

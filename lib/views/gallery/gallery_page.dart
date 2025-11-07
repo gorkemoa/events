@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/views/gallery/photo_detail_page.dart';
+import 'package:pixlomi/widgets/home_header.dart';
 
 class GalleryPage extends StatefulWidget {
   const GalleryPage({Key? key}) : super(key: key);
@@ -11,102 +12,105 @@ class GalleryPage extends StatefulWidget {
 
 class _GalleryPageState extends State<GalleryPage> {
   String _selectedFilter = 'Tümü';
+  final Set<String> _favorites = {};
   
   // Sample photos data - çekilen fotoğraflar
   final List<Map<String, dynamic>> photos = [
     {
       'id': '1',
-      'url': 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=500&fit=crop',
-      'title': 'Gün Batımı',
+      'url': 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=500&fit=crop',
+      'title': 'Kahve Festivali Stand',
       'date': '5 Kasım 2025',
-      'time': '18:45',
-      'category': 'Doğa',
-      'event': 'Fotoğraf Turu',
+      'time': '10:30',
+      'category': 'Business',
+      'event': 'Kahve Festivali 2025',
     },
     {
       'id': '2',
-      'url': 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=400&h=300&fit=crop',
-      'title': 'Deniz Manzarası',
-      'date': '4 Kasım 2025',
-      'time': '17:20',
-      'category': 'Doğa',
-      'event': 'Sahil Gezisi',
+      'url': 'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=400&h=300&fit=crop',
+      'title': 'Barista Yarışması',
+      'date': '5 Kasım 2025',
+      'time': '14:00',
+      'category': 'Business',
+      'event': 'Kahve Festivali 2025',
     },
     {
       'id': '3',
-      'url': 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop',
-      'title': 'Müzik Festivali',
+      'url': 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=400&h=400&fit=crop',
+      'title': 'Ticari Fuarı',
       'date': '3 Kasım 2025',
-      'time': '22:15',
-      'category': 'Etkinlikler',
-      'event': 'Müzik Festivali',
+      'time': '09:15',
+      'category': 'Business',
+      'event': 'İnsan Kaynakları Konferansı',
     },
     {
       'id': '4',
-      'url': 'https://images.unsplash.com/photo-1511379938547-c1f69b13d835?w=400&h=500&fit=crop',
-      'title': 'Kent Hayatı',
+      'url': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=500&fit=crop',
+      'title': 'Kurumsal Etkinlik',
       'date': '2 Kasım 2025',
-      'time': '20:30',
-      'category': 'Şehir',
-      'event': 'Gece Fotoğrafçılığı',
+      'time': '18:00',
+      'category': 'Business',
+      'event': 'Yıllık Gala Akşamı',
     },
     {
       'id': '5',
-      'url': 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop',
-      'title': 'Resepsiyon',
+      'url': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=400&fit=crop',
+      'title': 'Ağ Oluşturma Etkinliği',
       'date': '1 Kasım 2025',
-      'time': '19:00',
-      'category': 'Etkinlikler',
-      'event': 'Resepsiyon',
+      'time': '17:30',
+      'category': 'Business',
+      'event': 'Girişimci Forumu',
     },
     {
       'id': '6',
-      'url': 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=350&fit=crop',
-      'title': 'Doğa Yürüyüşü',
+      'url': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=350&fit=crop',
+      'title': 'Seminer Sunumu',
       'date': '31 Ekim 2025',
-      'time': '09:45',
-      'category': 'Doğa',
-      'event': 'Doğa Yürüyüşü',
+      'time': '11:00',
+      'category': 'Business',
+      'event': 'Teknoloji Zirvesi',
     },
     {
       'id': '7',
-      'url': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=500&fit=crop',
-      'title': 'Gece Hayatı',
+      'url': 'https://images.unsplash.com/photo-1517457373614-b7152f800fd1?w=400&h=500&fit=crop',
+      'title': 'Başarı Ödülü Töreni',
       'date': '30 Ekim 2025',
-      'time': '23:30',
-      'category': 'Şehir',
-      'event': 'Gece Kulübü',
+      'time': '19:00',
+      'category': 'Business',
+      'event': 'Işletme Ödül Törenı',
     },
     {
       'id': '8',
-      'url': 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=400&h=400&fit=crop',
-      'title': 'Konser',
+      'url': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=400&fit=crop',
+      'title': 'Ticari Ortaklık İmza',
       'date': '29 Ekim 2025',
-      'time': '21:00',
-      'category': 'Etkinlikler',
-      'event': 'Live Konser',
+      'time': '15:45',
+      'category': 'Business',
+      'event': 'İş Geliştirme Toplantısı',
     },
     {
       'id': '9',
-      'url': 'https://images.unsplash.com/photo-1504681869696-d977e713fada?w=400&h=500&fit=crop',
-      'title': 'Gün Doğumu',
+      'url': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=500&fit=crop',
+      'title': 'Müşteri Sunumu',
       'date': '28 Ekim 2025',
-      'time': '06:30',
-      'category': 'Doğa',
-      'event': 'Sabah Fotoğrafçılığı',
+      'time': '13:30',
+      'category': 'Business',
+      'event': 'Proje Lansmanı',
     },
   ];
 
   List<Map<String, dynamic>> get filteredPhotos {
     if (_selectedFilter == 'Tümü') {
       return photos;
+    } else if (_selectedFilter == 'Favoriler') {
+      return photos.where((photo) => _favorites.contains(photo['id'])).toList();
     }
     return photos.where((photo) => photo['event'] == _selectedFilter).toList();
   }
 
-  List<String> get uniqueEvents {
+  List<String> get filterOptions {
     final events = photos.map((p) => p['event'] as String).toSet().toList();
-    return ['Tümü', ...events];
+    return ['Tümü', 'Favoriler', ...events];
   }
 
   @override
@@ -117,68 +121,21 @@ class _GalleryPageState extends State<GalleryPage> {
         child: Column(
           children: [
             // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.spacingL,
-                vertical: AppTheme.spacingM,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Fotoğraflar',
-                        style: AppTheme.headingLarge,
-                      ),
-                      Text(
-                        '${photos.length} fotoğraf',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppTheme.textTertiary,
-                        ),
-                      ),
-                    ],
+            HomeHeader(
+              locationText: 'Fotoğraflar',
+              subtitle: '${photos.length} fotoğraf',
+              onMenuPressed: () {
+                // Menu action
+              },
+              onNotificationPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Bildirimler'),
+                    behavior: SnackBarBehavior.floating,
+                    duration: Duration(seconds: 1),
                   ),
-                  PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_horiz),
-                    itemBuilder: (BuildContext context) => [
-                      const PopupMenuItem(
-                        value: 'download',
-                        child: Row(
-                          children: [
-                            Icon(Icons.download_rounded, size: 20),
-                            SizedBox(width: 12),
-                            Text('Tümünü İndir'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'export',
-                        child: Row(
-                          children: [
-                            Icon(Icons.share_rounded, size: 20),
-                            SizedBox(width: 12),
-                            Text('Paylaş'),
-                          ],
-                        ),
-                      ),
-                    ],
-                    onSelected: (value) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(value == 'download' 
-                            ? 'Fotoğraflar indiriliyor...' 
-                            : 'Paylaşım seçenekleri açılıyor...'),
-                          behavior: SnackBarBehavior.floating,
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
+                );
+              },
             ),
 
             // Etkinliklere göre Filter - Horizontal Scroll
@@ -186,18 +143,24 @@ class _GalleryPageState extends State<GalleryPage> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingL),
               child: Row(
-                children: uniqueEvents.map((event) {
-                  final isSelected = _selectedFilter == event;
-                  final count = event == 'Tümü' 
-                    ? photos.length 
-                    : photos.where((p) => p['event'] == event).length;
+                children: filterOptions.map((filter) {
+                  final isSelected = _selectedFilter == filter;
+                  int count = 0;
+                  
+                  if (filter == 'Tümü') {
+                    count = photos.length;
+                  } else if (filter == 'Favoriler') {
+                    count = _favorites.length;
+                  } else {
+                    count = photos.where((p) => p['event'] == filter).length;
+                  }
                   
                   return Padding(
                     padding: const EdgeInsets.only(right: AppTheme.spacingM),
                     child: GestureDetector(
                       onTap: () {
                         setState(() {
-                          _selectedFilter = event;
+                          _selectedFilter = filter;
                         });
                       },
                       child: Container(
@@ -214,15 +177,27 @@ class _GalleryPageState extends State<GalleryPage> {
                             ? null
                             : Border.all(color: Colors.grey[300]!),
                         ),
-                        child: Text(
-                          '$event ($count)',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: isSelected 
-                              ? Colors.white 
-                              : AppTheme.textPrimary,
-                          ),
+                        child: Row(
+                          children: [
+                            if (filter == 'Favoriler')
+                              const Icon(
+                                Icons.star,
+                                size: 16,
+                                color: Color(0xFFFFB800),
+                              ),
+                            if (filter == 'Favoriler')
+                              const SizedBox(width: 6),
+                            Text(
+                              '$filter ($count)',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected 
+                                  ? Colors.white 
+                                  : AppTheme.textPrimary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -270,8 +245,10 @@ class _GalleryPageState extends State<GalleryPage> {
                         itemCount: filteredPhotos.length,
                         itemBuilder: (context, index) {
                           final photo = filteredPhotos[index];
+                          final isFavorite = _favorites.contains(photo['id']);
                           return _PhotoTile(
                             imageUrl: photo['url'],
+                            isFavorite: isFavorite,
                             onTap: () {
                               Navigator.push(
                                 context,
@@ -283,6 +260,15 @@ class _GalleryPageState extends State<GalleryPage> {
                                   ),
                                 ),
                               );
+                            },
+                            onFavoriteTap: () {
+                              setState(() {
+                                if (isFavorite) {
+                                  _favorites.remove(photo['id']);
+                                } else {
+                                  _favorites.add(photo['id']);
+                                }
+                              });
                             },
                           );
                         },
@@ -299,10 +285,14 @@ class _GalleryPageState extends State<GalleryPage> {
 class _PhotoTile extends StatelessWidget {
   final String imageUrl;
   final VoidCallback onTap;
+  final bool isFavorite;
+  final VoidCallback onFavoriteTap;
 
   const _PhotoTile({
     required this.imageUrl,
     required this.onTap,
+    required this.isFavorite,
+    required this.onFavoriteTap,
   });
 
   @override
@@ -313,15 +303,40 @@ class _PhotoTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.grey[200],
         ),
-        child: Image.network(
-          imageUrl,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: Colors.grey[300],
-              child: const Icon(Icons.broken_image),
-            );
-          },
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.broken_image),
+                );
+              },
+            ),
+            // Favori butonu
+            Positioned(
+              top: 4,
+              right: 4,
+              child: GestureDetector(
+                onTap: onFavoriteTap,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isFavorite ? Icons.star : Icons.star_outline,
+                    color: isFavorite ? const Color(0xFFFFB800) : Colors.white,
+                    size: 16,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

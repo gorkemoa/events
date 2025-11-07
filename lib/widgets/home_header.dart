@@ -5,12 +5,14 @@ class HomeHeader extends StatelessWidget {
   final String locationText;
   final VoidCallback? onMenuPressed;
   final VoidCallback? onNotificationPressed;
+  final String? subtitle;
 
   const HomeHeader({
     Key? key,
     required this.locationText,
     this.onMenuPressed,
     this.onNotificationPressed,
+    this.subtitle,
   }) : super(key: key);
 
   @override
@@ -36,7 +38,7 @@ class HomeHeader extends StatelessWidget {
           Column(
             children: [
               Text(
-                'Mevcut Konum',
+                subtitle ?? 'Mevcut Konum',
                 style: TextStyle(
                   fontSize: 11,
                   color: Colors.grey[600],
@@ -48,7 +50,8 @@ class HomeHeader extends StatelessWidget {
                     locationText,
                     style: AppTheme.labelMedium,
                   ),
-                  Icon(Icons.keyboard_arrow_down, size: 18, color: Colors.grey[800]),
+                  if (subtitle == null)
+                    Icon(Icons.keyboard_arrow_down, size: 18, color: Colors.grey[800]),
                 ],
               ),
             ],

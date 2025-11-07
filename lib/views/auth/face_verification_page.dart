@@ -25,22 +25,22 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
   final List<Map<String, dynamic>> _steps = [
     {
       'title': 'Ön Yüz',
-      'description': 'Yüzünüzü kameraya dik olacak şekilde konumlandırın',
-      'instruction': 'Kamera çerçevesinin içinde kalın ve düz bakın',
+      'description': 'Yüzünüzü ekran ortasında hizalayın',
+      'instruction': 'Düz bakın ve sabit durun',
       'direction': FaceDirection.front,
       'icon': Icons.face,
     },
     {
       'title': 'Sol Taraf',
-      'description': 'Başınızı sola 30-40 derece çevirin',
-      'instruction': 'Sabit ve net olacak şekilde durun',
+      'description': 'Başınızı yavaşça sola çevirin',
+      'instruction': 'Yaklaşık 30° açıyla sabit durun',
       'direction': FaceDirection.left,
       'icon': Icons.arrow_back,
     },
     {
       'title': 'Sağ Taraf',
-      'description': 'Başınızı sağa 30-40 derece çevirin',
-      'instruction': 'Sabit ve net olacak şekilde durun',
+      'description': 'Başınızı yavaşça sağa çevirin',
+      'instruction': 'Yaklaşık 30° açıyla sabit durun',
       'direction': FaceDirection.right,
       'icon': Icons.arrow_forward,
     },
@@ -145,28 +145,26 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
 
     setState(() {
       _isProcessing = true;
-      _statusMessage = 'Hazırlanıyor... Lütfen "${_steps[_currentStep]['title']}" pozisyonuna geçin';
+      _statusMessage = '🎯 Hazırlanıyor...\n"${_steps[_currentStep]['title']}" pozisyonuna geçin';
     });
 
-    // 3 saniye bekle - kullanıcı pozisyon alsın
-    await Future.delayed(const Duration(seconds: 3));
+    // 2 saniye bekle - kullanıcı pozisyon alsın
+    await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
     
     setState(() {
-      _statusMessage = 'Fotoğraf çekiliyor...';
+      _statusMessage = '📸 Fotoğraf çekiliyor...';
     });
-
-    // Kısa bir delay daha - kameranın hazır olması için
-    await Future.delayed(const Duration(milliseconds: 500));
 
     if (!mounted) return;
 
     try {
+      // Fotoğraf çek (içinde 0.5 saniye bekleme var)
       final image = await _cameraService.takePicture();
 
       if (image == null) {
-        _showError('Fotoğraf çekilemedi. Tekrar deneniyor...');
+        _showError('❌ Fotoğraf çekilemedi. Tekrar deneniyor...');
         await Future.delayed(const Duration(seconds: 2));
         if (mounted) {
           setState(() {
@@ -177,14 +175,22 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
         return;
       }
 
+      setState(() {
+        _statusMessage = '🔍 Yüz analiz ediliyor...';
+      });
+
       final expectedDirection = _steps[_currentStep]['direction'] as FaceDirection;
       final analysis = await _faceDetectionService.analyzeFace(image, expectedDirection);
 
       if (!mounted) return;
 
-      if (analysis['isValid'] == true) {
-        _showSuccess();
-        await Future.delayed(const Duration(milliseconds: 800));
+      // Sonucu göster
+      final message = analysis['message'] as String;
+      final isValid = analysis['isValid'] as bool;
+
+      if (isValid) {
+        _showSuccess(message);
+        await Future.delayed(const Duration(milliseconds: 1000));
 
         if (_currentStep < _steps.length - 1) {
           if (mounted) {
@@ -201,21 +207,7 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
           }
         }
       } else {
-        String errorMessage = 'Tekrar deneniyor...';
-        
-        if (!analysis['isQualityGood']) {
-          errorMessage = 'Yüzünüz net görünmüyor.';
-        } else if (!analysis['isCorrectDirection']) {
-          final detected = analysis['detectedDirection'] as FaceDirection;
-          
-          if (detected == FaceDirection.unknown) {
-            errorMessage = 'Yüz tespit edilemedi.';
-          } else {
-            errorMessage = 'Yanlış yön!';
-          }
-        }
-
-        _showError(errorMessage);
+        _showError(message);
         await Future.delayed(const Duration(seconds: 2));
         
         if (mounted) {
@@ -226,7 +218,7 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
         }
       }
     } catch (e) {
-      _showError('Hata: $e');
+      _showError('❌ Hata: $e');
       await Future.delayed(const Duration(seconds: 2));
       
       if (mounted) {
@@ -238,10 +230,10 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
     }
   }
 
-  void _showSuccess() {
+  void _showSuccess(String message) {
     if (!mounted) return;
     setState(() {
-      _statusMessage = '✓ Başarılı!';
+      _statusMessage = message;
     });
     
     ScaffoldMessenger.of(context).showSnackBar(

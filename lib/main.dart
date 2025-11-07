@@ -5,6 +5,7 @@ import 'package:pixlomi/views/auth/auth_page.dart';
 import 'package:pixlomi/views/auth/signup_page.dart';
 import 'package:pixlomi/views/auth/login_page.dart';
 import 'package:pixlomi/views/auth/face_verification_page.dart';
+import 'package:pixlomi/views/auth/onboarding_page.dart';
 import 'package:pixlomi/views/main_navigation.dart';
 
 void main() {
@@ -18,10 +19,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Events App',
       theme: AppTheme.lightTheme,
       home: const SplashPage(),
       routes: {
+        '/onboarding': (context) => const OnboardingPage(),
         '/auth': (context) => const AuthPage(),
         '/signup': (context) => const SignUpPage(),
         '/login': (context) => const LoginPage(),
