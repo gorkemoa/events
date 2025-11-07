@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
+import 'package:pixlomi/services/storage_helper.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({Key? key}) : super(key: key);
@@ -37,16 +38,11 @@ class _SplashPageState extends State<SplashPage> {
           });
           _controller.play();
           
-          // Video bittiğinde onboarding'e yönlendir
+          // Video bittiğinde oturum kontrolü yap ve yönlendir
           _controller.addListener(() {
             if (_controller.value.position == _controller.value.duration) {
               if (mounted) {
-                // Sistem UI'yi tekrar göster
-                SystemChrome.setEnabledSystemUIMode(
-                  SystemUiMode.manual,
-                  overlays: SystemUiOverlay.values,
-                );
-                Navigator.of(context).pushReplacementNamed('/onboarding');
+                _checkSessionAndNavigate();
               }
             }
           });
@@ -54,6 +50,36 @@ class _SplashPageState extends State<SplashPage> {
       }).catchError((error) {
         print('Video initialization error: $error');
       });
+  }
+
+  Future<void> _checkSessionAndNavigate() async {
+    // Sistem UI'yi tekrar göster
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: SystemUiOverlay.values,
+    );
+
+    // Oturum kontrolü yap
+    final isLoggedIn = await StorageHelper.isLoggedIn();
+    final userId = await StorageHelper.getUserId();
+    final userToken = await StorageHelper.getUserToken();
+    
+    print('🔍 Session Check:');
+    print('  - isLoggedIn: $isLoggedIn');
+    print('  - userId: $userId');
+    print('  - userToken: ${userToken?.substring(0, 10)}...');
+    
+    if (!mounted) return;
+
+    if (isLoggedIn) {
+      // Kullanıcı giriş yapmış, ana sayfaya yönlendir
+      print('✅ User logged in, navigating to /home');
+      Navigator.of(context).pushReplacementNamed('/home');
+    } else {
+      // Kullanıcı giriş yapmamış, onboarding'e yönlendir
+      print('❌ User not logged in, navigating to /onboarding');
+      Navigator.of(context).pushReplacementNamed('/onboarding');
+    }
   }
 
   @override

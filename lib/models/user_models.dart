@@ -1,0 +1,128 @@
+/// Request model for getting user data
+class GetUserRequest {
+  final String userToken;
+  final String version;
+  final String platform;
+
+  GetUserRequest({
+    required this.userToken,
+    required this.version,
+    required this.platform,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userToken': userToken,
+      'version': version,
+      'platform': platform,
+    };
+  }
+}
+
+/// Response model for user data
+class UserResponse {
+  final bool error;
+  final bool success;
+  final UserData? data;
+  final String? errorMessage;
+  final String statusCode;
+
+  UserResponse({
+    required this.error,
+    required this.success,
+    this.data,
+    this.errorMessage,
+    required this.statusCode,
+  });
+
+  factory UserResponse.fromJson(Map<String, dynamic> json) {
+    return UserResponse(
+      error: json['error'] ?? false,
+      success: json['success'] ?? false,
+      data: json['data'] != null ? UserData.fromJson(json['data']) : null,
+      errorMessage: json['error_message'],
+      statusCode: json['200'] ?? json['417'] ?? '',
+    );
+  }
+
+  bool get isSuccess => success && statusCode == 'OK';
+}
+
+/// User data wrapper
+class UserData {
+  final User user;
+
+  UserData({required this.user});
+
+  factory UserData.fromJson(Map<String, dynamic> json) {
+    return UserData(
+      user: User.fromJson(json['user']),
+    );
+  }
+}
+
+/// User model
+class User {
+  final int userId;
+  final String userName;
+  final String userFirstname;
+  final String userLastname;
+  final String userFullname;
+  final String userEmail;
+  final String userPhone;
+  final String userIdentityNo;
+  final String userRank;
+  final String userGender;
+  final String userToken;
+  final String userAddress;
+  final String? userPermissions;
+  final String platform;
+  final String userVersion;
+  final String iOSVersion;
+  final String androidVersion;
+  final String profilePhoto;
+
+  User({
+    required this.userId,
+    required this.userName,
+    required this.userFirstname,
+    required this.userLastname,
+    required this.userFullname,
+    required this.userEmail,
+    required this.userPhone,
+    required this.userIdentityNo,
+    required this.userRank,
+    required this.userGender,
+    required this.userToken,
+    required this.userAddress,
+    this.userPermissions,
+    required this.platform,
+    required this.userVersion,
+    required this.iOSVersion,
+    required this.androidVersion,
+    required this.profilePhoto,
+  });
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      userId: json['userID'] ?? 0,
+      userName: json['userName'] ?? '',
+      userFirstname: json['userFirstname'] ?? '',
+      userLastname: json['userLastname'] ?? '',
+      userFullname: json['userFullname'] ?? '',
+      userEmail: json['userEmail'] ?? '',
+      userPhone: json['userPhone'] ?? '',
+      userIdentityNo: json['userIdentityNo'] ?? '',
+      userRank: json['userRank'] ?? '0',
+      userGender: json['userGender'] ?? '',
+      userToken: json['userToken'] ?? '',
+      userAddress: json['userAddress'] ?? '',
+      userPermissions: json['userPermissions'],
+      platform: json['platform'] ?? '',
+      userVersion: json['userVersion'] ?? '',
+      iOSVersion: json['iOSVersion'] ?? '',
+      androidVersion: json['androidVersion'] ?? '',
+      profilePhoto: json['profilePhoto'] ?? '',
+    );
+  }
+}

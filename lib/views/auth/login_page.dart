@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
+import 'package:pixlomi/services/auth_service.dart';
+import 'package:pixlomi/services/storage_helper.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -10,9 +12,11 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'test@example.com');
-  final _passwordController = TextEditingController(text: 'password123');
+  final _emailController = TextEditingController(text: 'ridvan');
+  final _passwordController = TextEditingController(text: '123');
+  final _authService = AuthService();
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   bool _isFormComplete() {
     return _emailController.text.isNotEmpty && _passwordController.text.isNotEmpty;
@@ -25,14 +29,69 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _login() {
+  Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
-      // Perform login logic here
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Giriş başarılı!')),
-      );
-      // Navigate to home page
-      Navigator.of(context).pushReplacementNamed('/home');
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        final response = await _authService.login(
+          userName: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+
+        if (!mounted) return;
+
+        if (response.isSuccess) {
+          // Login successful - save user session
+          final saved = await StorageHelper.saveUserSession(
+            userId: response.data!.userId,
+            userToken: response.data!.token,
+          );
+          
+          print('💾 Session saved: $saved');
+          print('  - userId: ${response.data!.userId}');
+          print('  - token: ${response.data!.token.substring(0, 10)}...');
+          
+          if (!mounted) return;
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response.data?.message ?? 'Giriş başarılı!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          
+          // Navigate to home page and remove all previous routes
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/home',
+            (route) => false,
+          );
+        } else {
+          // Login failed - show error message from server
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response.errorMessage ?? 'Giriş başarısız!'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Bir hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
@@ -64,29 +123,26 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: AppTheme.spacingS),
                 Text(
-                  'Kayıt olduğunuz e-postayı girin.',
+                  'Kullanıcı adı ve şifrenizi girin.',
                   style: AppTheme.bodyMedium,
                 ),
                 const SizedBox(height: AppTheme.spacing3XL),
 
-                // Email Field
+                // Username Field
                 Text(
-                  'E-posta',
+                  'Kullanıcı Adı',
                   style: AppTheme.labelMedium,
                 ),
                 const SizedBox(height: AppTheme.spacingS),
                 TextFormField(
                   controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
+                  enabled: !_isLoading,
                   onChanged: (value) {
                     setState(() {});
                   },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Lütfen e-postanızı girin';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Lütfen geçerli bir e-posta girin';
+                      return 'Lütfen kullanıcı adınızı girin';
                     }
                     return null;
                   },
@@ -102,6 +158,7 @@ class _LoginPageState extends State<LoginPage> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
+                  enabled: !_isLoading,
                   onChanged: (value) {
                     setState(() {});
                   },
@@ -149,11 +206,20 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: _isFormComplete() ? _login : null,
-                    child: Text(
-                      'Giriş Yap',
-                      style: AppTheme.buttonLarge,
-                    ),
+                    onPressed: (_isFormComplete() && !_isLoading) ? _login : null,
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : Text(
+                            'Giriş Yap',
+                            style: AppTheme.buttonLarge,
+                          ),
                   ),
                 ),
                 const SizedBox(height: AppTheme.spacing2XL),

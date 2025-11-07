@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/widgets/home_header.dart';
+import 'package:pixlomi/services/user_service.dart';
+import 'package:pixlomi/services/storage_helper.dart';
+import 'package:pixlomi/models/user_models.dart';
 
 class HomePage extends StatefulWidget {
   final String locationText;
@@ -13,8 +16,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final _userService = UserService();
   late PageController _pageController;
   Timer? _autoScrollTimer;
+  User? _currentUser;
 
   @override
   void initState() {
@@ -25,6 +30,30 @@ class _HomePageState extends State<HomePage> {
       initialPage: 1000, // Büyük bir sayıdan başla
     );
     _startAutoScroll();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final userId = await StorageHelper.getUserId();
+      final userToken = await StorageHelper.getUserToken();
+
+      if (userId != null && userToken != null) {
+        final response = await _userService.getUserById(
+          userId: userId,
+          userToken: userToken,
+        );
+
+        if (response.isSuccess && response.data != null) {
+          setState(() {
+            _currentUser = response.data!.user;
+          });
+        }
+      }
+    } catch (e) {
+      // Sessizce hata yakalama, kullanıcı deneyimini etkilememek için
+      debugPrint('Error loading user data: $e');
+    }
   }
 
   void _startAutoScroll() {
@@ -59,6 +88,9 @@ class _HomePageState extends State<HomePage> {
               // Header with Location and Notification
               HomeHeader(
                 locationText: widget.locationText,
+                subtitle: _currentUser != null 
+                    ? 'Hoş geldin, ${_currentUser!.userFirstname}' 
+                    : null,
                 onMenuPressed: () {},
                 onNotificationPressed: () {},
               ),
