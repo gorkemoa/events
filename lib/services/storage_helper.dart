@@ -6,6 +6,8 @@ class StorageHelper {
   static const String _userTokenKey = 'user_token';
   static const String _userNameKey = 'user_name';
   static const String _userFullnameKey = 'user_fullname';
+  static const String _onboardingShownKey = 'onboarding_shown';
+  static const String _codeTokenKey = 'code_token';
 
   /// Save user session data
   static Future<bool> saveUserSession({
@@ -91,6 +93,47 @@ class StorageHelper {
     final userId = await getUserId();
     final userToken = await getUserToken();
     return userId != null && userToken != null;
+  }
+
+  /// Check if user has seen onboarding
+  static Future<bool> hasSeenOnboarding() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool(_onboardingShownKey) ?? false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Mark onboarding as shown
+  static Future<bool> setOnboardingShown() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return await prefs.setBool(_onboardingShownKey, true);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Save code token from registration
+  static Future<bool> setCodeToken(String codeToken) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return await prefs.setString(_codeTokenKey, codeToken);
+    } catch (e) {
+      print('❌ Error saving code token: $e');
+      return false;
+    }
+  }
+
+  /// Get code token
+  static Future<String?> getCodeToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_codeTokenKey);
+    } catch (e) {
+      return null;
+    }
   }
 
   /// Clear user session (logout)

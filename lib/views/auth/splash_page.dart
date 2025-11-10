@@ -63,11 +63,13 @@ class _SplashPageState extends State<SplashPage> {
     final isLoggedIn = await StorageHelper.isLoggedIn();
     final userId = await StorageHelper.getUserId();
     final userToken = await StorageHelper.getUserToken();
+    final hasSeenOnboarding = await StorageHelper.hasSeenOnboarding();
     
     print('🔍 Session Check:');
     print('  - isLoggedIn: $isLoggedIn');
     print('  - userId: $userId');
     print('  - userToken: ${userToken?.substring(0, 10)}...');
+    print('  - hasSeenOnboarding: $hasSeenOnboarding');
     
     if (!mounted) return;
 
@@ -75,10 +77,14 @@ class _SplashPageState extends State<SplashPage> {
       // Kullanıcı giriş yapmış, ana sayfaya yönlendir
       print('✅ User logged in, navigating to /home');
       Navigator.of(context).pushReplacementNamed('/home');
-    } else {
-      // Kullanıcı giriş yapmamış, onboarding'e yönlendir
-      print('❌ User not logged in, navigating to /onboarding');
+    } else if (!hasSeenOnboarding) {
+      // Kullanıcı onboarding görmemişse, onboarding'e yönlendir
+      print('❌ User not logged in and hasn\'t seen onboarding, navigating to /onboarding');
       Navigator.of(context).pushReplacementNamed('/onboarding');
+    } else {
+      // Kullanıcı onboarding görmüş ama giriş yapmamış, auth sayfasına yönlendir
+      print('❌ User not logged in but has seen onboarding, navigating to /auth');
+      Navigator.of(context).pushReplacementNamed('/auth');
     }
   }
 

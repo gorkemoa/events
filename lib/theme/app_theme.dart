@@ -38,7 +38,7 @@ class AppTheme {
   // Text Styles - Profesyonel sans-serif hierarchy
   static const TextStyle headingLarge = TextStyle(
     fontSize: 28,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w900,
     color: textPrimary,
     letterSpacing: -0.5,
   );

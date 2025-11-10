@@ -8,6 +8,7 @@ import 'package:pixlomi/views/auth/face_verification_page.dart';
 import 'package:pixlomi/views/auth/onboarding_page.dart';
 import 'package:pixlomi/views/main_navigation.dart';
 import 'package:pixlomi/views/notifications/notifications_page.dart';
+import 'package:pixlomi/services/navigation_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,6 +21,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: NavigationService.navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'Events App',
       theme: AppTheme.lightTheme,

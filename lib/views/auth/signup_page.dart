@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
+import 'package:pixlomi/services/auth_service.dart';
+import 'dart:io' show Platform;
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
@@ -12,14 +14,18 @@ class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController(text: 'Ahmet');
   final _surnameController = TextEditingController(text: 'Yılmaz');
+  final _usernameController = TextEditingController(text: 'ahmetyilmaz');
   final _emailController = TextEditingController(text: 'test@example.com');
   final _passwordController = TextEditingController(text: 'password123');
+  final _authService = AuthService();
   bool _obscurePassword = true;
   bool _agreeToTerms = false;
+  bool _isLoading = false;
 
   bool _isFormComplete() {
     return _nameController.text.isNotEmpty &&
         _surnameController.text.isNotEmpty &&
+        _usernameController.text.isNotEmpty &&
         _emailController.text.isNotEmpty &&
         _passwordController.text.isNotEmpty &&
         _agreeToTerms;
@@ -29,12 +35,13 @@ class _SignUpPageState extends State<SignUpPage> {
   void dispose() {
     _nameController.dispose();
     _surnameController.dispose();
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _signUp() {
+  void _signUp() async {
     if (_formKey.currentState!.validate()) {
       if (!_agreeToTerms) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -42,12 +49,73 @@ class _SignUpPageState extends State<SignUpPage> {
         );
         return;
       }
-      // Perform sign up logic here
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Hesap başarıyla oluşturuldu!')),
-      );
-      // Navigate to face verification page
-      Navigator.of(context).pushReplacementNamed('/faceVerification');
+
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        // Get platform info
+        String platform = 'web';
+        if (Platform.isIOS) {
+          platform = 'ios';
+        } else if (Platform.isAndroid) {
+          platform = 'android';
+        }
+
+        // Call register API
+        final response = await _authService.register(
+          userFirstname: _nameController.text,
+          userLastname: _surnameController.text,
+          userName: _usernameController.text,
+          userEmail: _emailController.text,
+          userPassword: _passwordController.text,
+          version: '1.0.0',
+          platform: platform,
+        );
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (response.isSuccess) {
+          // Show success message
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(response.successMessage ?? 'Hesap başarıyla oluşturuldu!')),
+            );
+
+            // TODO: Save user data (userID, userToken, codeToken) to local storage
+            // You can use storage_helper.dart for this
+            
+            // Navigate to face verification page or email verification
+            Navigator.of(context).pushReplacementNamed('/faceVerification');
+          }
+        } else {
+          // Show error message
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(response.errorMessage ?? 'Kayıt işlemi başarısız oldu'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Bir hata oluştu: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -56,10 +124,24 @@ class _SignUpPageState extends State<SignUpPage> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(AppTheme.spacingM),
+            child: Center(
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/login');
+                },
+                child: Text(
+                  'Giriş Yap',
+                  style: AppTheme.labelMedium.copyWith(
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -117,6 +199,29 @@ class _SignUpPageState extends State<SignUpPage> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Lütfen soyadınızı girin';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: AppTheme.spacingXL),
+
+                // Username Field
+                Text(
+                  'Kullanıcı Adı',
+                  style: AppTheme.labelMedium,
+                ),
+                const SizedBox(height: AppTheme.spacingS),
+                TextFormField(
+                  controller: _usernameController,
+                  onChanged: (value) {
+                    setState(() {});
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Lütfen kullanıcı adınızı girin';
+                    }
+                    if (value.length < 3) {
+                      return 'Kullanıcı adı en az 3 karakter olmalıdır';
                     }
                     return null;
                   },
@@ -238,11 +343,20 @@ class _SignUpPageState extends State<SignUpPage> {
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: _isFormComplete() ? _signUp : null,
-                    child: Text(
-                      'Devam Et',
-                      style: AppTheme.buttonLarge,
-                    ),
+                    onPressed: (_isFormComplete() && !_isLoading) ? _signUp : null,
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : Text(
+                            'Devam Et',
+                            style: AppTheme.buttonLarge,
+                          ),
                   ),
                 ),
               ],

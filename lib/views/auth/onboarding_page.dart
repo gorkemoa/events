@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
+import 'package:pixlomi/services/storage_helper.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -61,8 +62,15 @@ class _OnboardingPageState extends State<OnboardingPage> {
         curve: Curves.easeInOut,
       );
     } else {
-      // Son sayfada "Get Started" butonuna basıldığında
-      // Ana sayfaya veya login sayfasına yönlendir
+      // Son sayfada "Başla" butonuna basıldığında
+      // Onboarding'i gösterilmiş olarak işaretle ve auth sayfasına yönlendir
+      _completeOnboarding();
+    }
+  }
+
+  Future<void> _completeOnboarding() async {
+    await StorageHelper.setOnboardingShown();
+    if (mounted) {
       Navigator.pushReplacementNamed(context, '/auth');
     }
   }

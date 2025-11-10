@@ -68,3 +68,89 @@ class LoginData {
     );
   }
 }
+
+/// Request model for register
+class RegisterRequest {
+  final String userFirstname;
+  final String userLastname;
+  final String userName;
+  final String userEmail;
+  final String userPassword;
+  final String version;
+  final String platform;
+
+  RegisterRequest({
+    required this.userFirstname,
+    required this.userLastname,
+    required this.userName,
+    required this.userEmail,
+    required this.userPassword,
+    required this.version,
+    required this.platform,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userFirstname': userFirstname,
+      'userLastname': userLastname,
+      'userName': userName,
+      'userEmail': userEmail,
+      'userPassword': userPassword,
+      'version': version,
+      'platform': platform,
+    };
+  }
+}
+
+/// Response model for register
+class RegisterResponse {
+  final bool error;
+  final bool success;
+  final String? successMessage;
+  final String? errorMessage;
+  final RegisterData? data;
+  final String statusCode;
+
+  RegisterResponse({
+    required this.error,
+    required this.success,
+    this.successMessage,
+    this.errorMessage,
+    this.data,
+    required this.statusCode,
+  });
+
+  factory RegisterResponse.fromJson(Map<String, dynamic> json) {
+    return RegisterResponse(
+      error: json['error'] ?? false,
+      success: json['success'] ?? false,
+      successMessage: json['success_message'],
+      errorMessage: json['error_message'],
+      data: json['data'] != null ? RegisterData.fromJson(json['data']) : null,
+      statusCode: json['200'] ?? json['417'] ?? '',
+    );
+  }
+
+  bool get isSuccess => success && statusCode == 'OK';
+}
+
+/// Register data model
+class RegisterData {
+  final int userID;
+  final String userToken;
+  final String codeToken;
+
+  RegisterData({
+    required this.userID,
+    required this.userToken,
+    required this.codeToken,
+  });
+
+  factory RegisterData.fromJson(Map<String, dynamic> json) {
+    return RegisterData(
+      userID: json['userID'] ?? 0,
+      userToken: json['userToken'] ?? '',
+      codeToken: json['codeToken'] ?? '',
+    );
+  }
+}

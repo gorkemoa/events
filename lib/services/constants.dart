@@ -1,7 +1,7 @@
 /// API constants for the application
 class ApiConstants {
   /// Base URL for all API endpoints
-  static const String baseUrl = 'https://api.office701.com/pixlomi/';
+  static const String baseUrl = 'https://api.pixlomi.com/';
 
   /// Basic Auth credentials for API security
   static const String basicAuthUsername = 'Xr1VAhH5ICWHJN2nlvp9K5ycPoyMJM';
@@ -9,6 +9,7 @@ class ApiConstants {
 
   /// Authentication endpoints
   static const String login = '${baseUrl}service/auth/login';
+  static const String register = '${baseUrl}service/auth/register';
   
   /// User endpoints
   static String getUserById(int userId) => '${baseUrl}service/user/id/$userId';

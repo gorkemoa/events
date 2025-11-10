@@ -100,10 +100,24 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(AppTheme.spacingM),
+            child: Center(
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/signup');
+                },
+                child: Text(
+                  'Kayıt Ol',
+                  style: AppTheme.labelMedium.copyWith(
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -237,7 +251,7 @@ class _LoginPageState extends State<LoginPage> {
                         horizontal: AppTheme.spacingM,
                       ),
                       child: Text(
-                        'veya Şununla Devam Et',
+                        'veya',
                         style: AppTheme.captionLarge,
                       ),
                     ),
