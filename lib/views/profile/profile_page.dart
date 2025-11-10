@@ -791,6 +791,117 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                             ),
 
+                            const SizedBox(height: 12),
+
+                            // Delete Account Button
+                            SizedBox(
+                              width: double.infinity,
+                              height: 48,
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  // Show confirmation dialog
+                                  final shouldDelete = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Hesap Sil'),
+                                      content: const Text(
+                                        'Bu işlem geri alınamaz. Hesabınız ve tüm verileriniz silinecektir. '
+                                        'Devam etmek istediğinizden emin misiniz?',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context, false),
+                                          child: const Text('İptal'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context, true),
+                                          child: const Text(
+                                            'Sil',
+                                            style: TextStyle(color: Colors.red),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (shouldDelete == true) {
+                                    try {
+                                      final userToken = await StorageHelper.getUserToken();
+                                      if (userToken == null) {
+                                        if (mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('Oturum bilgisi bulunamadı'),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        }
+                                        return;
+                                      }
+
+                                      final deleteRequest = DeleteAccountRequest(
+                                        userToken: userToken,
+                                      );
+
+                                      final response = await _userService.deleteAccount(
+                                        request: deleteRequest,
+                                      );
+
+                                      if (mounted) {
+                                        if (response.isSuccess) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text(response.message),
+                                              backgroundColor: Colors.green,
+                                              duration: const Duration(seconds: 2),
+                                            ),
+                                          );
+                                          await Future.delayed(const Duration(seconds: 2));
+                                          await StorageHelper.clearUserSession();
+                                          if (mounted) {
+                                            Navigator.of(context).pushNamedAndRemoveUntil(
+                                              '/login',
+                                              (route) => false,
+                                            );
+                                          }
+                                        } else {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text(response.errorMessage ?? 'Hesap silinemiyor'),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    } catch (e) {
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Bir hata oluştu: $e'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  }
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Colors.red),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Hesabı Sil',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ),
+                            ),
+
                             const SizedBox(height: 40),
                           ],
                         ),

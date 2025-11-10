@@ -253,3 +253,47 @@ class UpdatePasswordResponse {
 
   bool get isSuccess => success && statusCode == 'OK';
 }
+
+/// Request model for deleting user account
+class DeleteAccountRequest {
+  final String userToken;
+
+  DeleteAccountRequest({
+    required this.userToken,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userToken': userToken,
+    };
+  }
+}
+
+/// Response model for delete account
+class DeleteAccountResponse {
+  final bool error;
+  final bool success;
+  final String message;
+  final String? errorMessage;
+  final String statusCode;
+
+  DeleteAccountResponse({
+    required this.error,
+    required this.success,
+    required this.message,
+    this.errorMessage,
+    required this.statusCode,
+  });
+
+  factory DeleteAccountResponse.fromJson(Map<String, dynamic> json) {
+    return DeleteAccountResponse(
+      error: json['error'] ?? false,
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      errorMessage: json['error_message'],
+      statusCode: json['200'] ?? json['417'] ?? '',
+    );
+  }
+
+  bool get isSuccess => success && statusCode == 'OK';
+}

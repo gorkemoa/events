@@ -145,4 +145,47 @@ class UserService {
       );
     }
   }
+
+  /// Delete user account
+  /// 
+  /// Returns [DeleteAccountResponse] with success status
+  /// If status code is 200, account deletion is successful
+  /// If status code is 417, account deletion failed with error message
+  Future<DeleteAccountResponse> deleteAccount({
+    required DeleteAccountRequest request,
+  }) async {
+    try {
+      developer.log('🗑️ Delete Account Request', name: 'UserService');
+      developer.log('URL: ${ApiConstants.deleteAccount()}', name: 'UserService');
+      developer.log('Body: (sensitive data)', name: 'UserService');
+
+      final response = await ApiHelper.delete(
+        ApiConstants.deleteAccount(),
+        body: request.toJson(),
+      );
+
+      developer.log('📥 Response Status: ${response.statusCode}', name: 'UserService');
+      developer.log('📥 Response Body: ${response.body}', name: 'UserService');
+
+      final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
+      final deleteResponse = DeleteAccountResponse.fromJson(jsonResponse);
+      
+      developer.log('✅ Parsed Response - Success: ${deleteResponse.success}', name: 'UserService');
+      if (!deleteResponse.success) {
+        developer.log('❌ Error Message: ${deleteResponse.errorMessage}', name: 'UserService');
+      }
+      
+      return deleteResponse;
+    } catch (e, stackTrace) {
+      // Return error response if network or parsing fails
+      developer.log('❌ Exception occurred', name: 'UserService', error: e, stackTrace: stackTrace);
+      return DeleteAccountResponse(
+        error: true,
+        success: false,
+        message: '',
+        errorMessage: 'Bir hata oluştu: $e',
+        statusCode: 'ERROR',
+      );
+    }
+  }
 }

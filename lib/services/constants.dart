@@ -17,6 +17,7 @@ class ApiConstants {
   static String getUserById(int userId) => '${baseUrl}service/user/id/$userId';
   static String updateUser(int userId) => '${baseUrl}service/user/update/$userId/account';
   static String updatePassword() => '${baseUrl}service/user/update/password';
+  static String deleteAccount() => '${baseUrl}service/user/account/delete';
   
   /// Notification endpoints
   static String getNotifications(int userId) => '${baseUrl}service/user/account/$userId/notifications';

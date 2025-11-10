@@ -87,11 +87,13 @@ class ApiHelper {
   /// DELETE request with Basic Auth
   static Future<http.Response> delete(
     String url, {
+    Map<String, dynamic>? body,
     Map<String, String>? additionalHeaders,
   }) async {
     final response = await http.delete(
       Uri.parse(url),
       headers: getHeaders(additionalHeaders: additionalHeaders),
+      body: body != null ? jsonEncode(body) : null,
     );
     
     await _checkResponse(response);
