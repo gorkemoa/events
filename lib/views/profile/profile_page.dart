@@ -6,7 +6,12 @@ import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/models/user_models.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  final VoidCallback? onMenuPressed;
+  
+  const ProfilePage({
+    Key? key,
+    this.onMenuPressed,
+  }) : super(key: key);
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -228,9 +233,7 @@ class _ProfilePageState extends State<ProfilePage> {
               HomeHeader(
                 locationText: 'Profil',
                 subtitle: 'Hesap Bilgileri',
-                onMenuPressed: () {
-                  // Menu action
-                },
+                onMenuPressed: widget.onMenuPressed,
                 onNotificationPressed: () {
                   Navigator.pushNamed(context, '/notifications');
                 },

@@ -244,23 +244,43 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       : 'Etkinlik Fotoğrafları (${_photos.length})',
                   style: AppTheme.labelLarge,
                 ),
-                if (_isSelectionMode)
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _isSelectionMode = false;
-                        _selectedPhotos.clear();
-                      });
-                    },
-                    child: const Text(
-                      'İptal',
-                      style: TextStyle(
-                        color: AppTheme.primary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                Row(
+                  children: [
+                    if (!_isSelectionMode)
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isSelectionMode = true;
+                          });
+                        },
+                        child: const Text(
+                          'Seç',
+                          style: TextStyle(
+                            color: AppTheme.primary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
+                    if (_isSelectionMode)
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isSelectionMode = false;
+                            _selectedPhotos.clear();
+                          });
+                        },
+                        child: const Text(
+                          'İptal',
+                          style: TextStyle(
+                            color: AppTheme.primary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ],
             ),
           ),

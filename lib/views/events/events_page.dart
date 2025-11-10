@@ -5,8 +5,13 @@ import 'package:pixlomi/views/events/event_detail_page.dart';
 
 class EventsPage extends StatefulWidget {
   final String locationText;
+  final VoidCallback? onMenuPressed;
   
-  const EventsPage({Key? key, required this.locationText}) : super(key: key);
+  const EventsPage({
+    Key? key,
+    required this.locationText,
+    this.onMenuPressed,
+  }) : super(key: key);
 
   @override
   State<EventsPage> createState() => _EventsPageState();
@@ -43,7 +48,7 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
               // Header
               HomeHeader(
                 locationText: widget.locationText,
-                onMenuPressed: () {},
+                onMenuPressed: widget.onMenuPressed,
                 onNotificationPressed: () {
                   Navigator.pushNamed(context, '/notifications');
                 },

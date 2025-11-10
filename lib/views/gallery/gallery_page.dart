@@ -4,7 +4,12 @@ import 'package:pixlomi/views/gallery/photo_detail_page.dart';
 import 'package:pixlomi/widgets/home_header.dart';
 
 class GalleryPage extends StatefulWidget {
-  const GalleryPage({Key? key}) : super(key: key);
+  final VoidCallback? onMenuPressed;
+  
+  const GalleryPage({
+    Key? key,
+    this.onMenuPressed,
+  }) : super(key: key);
 
   @override
   State<GalleryPage> createState() => _GalleryPageState();
@@ -13,6 +18,8 @@ class GalleryPage extends StatefulWidget {
 class _GalleryPageState extends State<GalleryPage> {
   String _selectedFilter = 'Tümü';
   final Set<String> _favorites = {};
+  bool _isSelectionMode = false;
+  final Set<String> _selectedPhotos = {};
   
   // Sample photos data - çekilen fotoğraflar
   final List<Map<String, dynamic>> photos = [
@@ -113,6 +120,81 @@ class _GalleryPageState extends State<GalleryPage> {
     return ['Tümü', 'Favoriler', ...events];
   }
 
+  void _toggleSelectionMode() {
+    setState(() {
+      _isSelectionMode = !_isSelectionMode;
+      if (!_isSelectionMode) {
+        _selectedPhotos.clear();
+      }
+    });
+  }
+
+  void _togglePhotoSelection(String photoId) {
+    setState(() {
+      if (_selectedPhotos.contains(photoId)) {
+        _selectedPhotos.remove(photoId);
+        if (_selectedPhotos.isEmpty) {
+          _isSelectionMode = false;
+        }
+      } else {
+        _selectedPhotos.add(photoId);
+      }
+    });
+  }
+
+  void _downloadSelectedPhotos() {
+    // Download logic here
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${_selectedPhotos.length} fotoğraf indiriliyor...'),
+        backgroundColor: AppTheme.primary,
+      ),
+    );
+  }
+
+  void _deleteSelectedPhotos() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Fotoğrafları Sil'),
+        content: Text('${_selectedPhotos.length} fotoğrafı silmek istediğinize emin misiniz?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('İptal'),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                photos.removeWhere((photo) => _selectedPhotos.contains(photo['id']));
+                _selectedPhotos.clear();
+                _isSelectionMode = false;
+              });
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Fotoğraflar silindi'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            },
+            child: const Text('Sil', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _shareSelectedPhotos() {
+    // Share logic here
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${_selectedPhotos.length} fotoğraf paylaşılıyor...'),
+        backgroundColor: AppTheme.primary,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,17 +209,32 @@ class _GalleryPageState extends State<GalleryPage> {
         child: SafeArea(
           child: Column(
             children: [
-              // Header
-              HomeHeader(
-              locationText: 'Fotoğraflar',
-              subtitle: '${photos.length} fotoğraf',
-              onMenuPressed: () {
-                // Menu action
-              },
-              onNotificationPressed: () {
-                Navigator.pushNamed(context, '/notifications');
-              },
-            ),
+              // Header - Seçim moduna göre değişir
+              _isSelectionMode
+                  ? _SelectionHeader(
+                      selectedCount: _selectedPhotos.length,
+                      onCancel: _toggleSelectionMode,
+                      onSelectAll: () {
+                        setState(() {
+                          if (_selectedPhotos.length == filteredPhotos.length) {
+                            _selectedPhotos.clear();
+                          } else {
+                            _selectedPhotos.addAll(
+                              filteredPhotos.map((p) => p['id'] as String),
+                            );
+                          }
+                        });
+                      },
+                      isAllSelected: _selectedPhotos.length == filteredPhotos.length && filteredPhotos.isNotEmpty,
+                    )
+                  : HomeHeader(
+                      locationText: 'Fotoğraflar',
+                      subtitle: '${photos.length} fotoğraf',
+                      onMenuPressed: widget.onMenuPressed,
+                      onNotificationPressed: () {
+                        Navigator.pushNamed(context, '/notifications');
+                      },
+                    ),
 
             // Etkinliklere göre Filter - Horizontal Scroll
             SingleChildScrollView(
@@ -247,20 +344,35 @@ class _GalleryPageState extends State<GalleryPage> {
                         itemBuilder: (context, index) {
                           final photo = filteredPhotos[index];
                           final isFavorite = _favorites.contains(photo['id']);
+                          final isSelected = _selectedPhotos.contains(photo['id']);
                           return _PhotoTile(
                             imageUrl: photo['url'],
                             isFavorite: isFavorite,
+                            isSelected: isSelected,
+                            isSelectionMode: _isSelectionMode,
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => PhotoDetailPage(
-                                    photo: photo,
-                                    allPhotos: filteredPhotos,
-                                    initialIndex: index,
+                              if (_isSelectionMode) {
+                                _togglePhotoSelection(photo['id']);
+                              } else {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PhotoDetailPage(
+                                      photo: photo,
+                                      allPhotos: filteredPhotos,
+                                      initialIndex: index,
+                                    ),
                                   ),
-                                ),
-                              );
+                                );
+                              }
+                            },
+                            onLongPress: () {
+                              if (!_isSelectionMode) {
+                                setState(() {
+                                  _isSelectionMode = true;
+                                  _selectedPhotos.add(photo['id']);
+                                });
+                              }
                             },
                             onFavoriteTap: () {
                               setState(() {
@@ -280,6 +392,49 @@ class _GalleryPageState extends State<GalleryPage> {
           ),
         ),
       ),
+      // Alt menü - Seçim modunda gösterilir (iPhone style - compact)
+      bottomNavigationBar: _isSelectionMode && _selectedPhotos.isNotEmpty
+          ? Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.grey[200]!,
+                    width: 0.5,
+                  ),
+                ),
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacingL,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _ActionButton(
+                        icon: Icons.ios_share,
+                        label: 'Paylaş',
+                        onTap: _shareSelectedPhotos,
+                      ),
+                      _ActionButton(
+                        icon: Icons.cloud_download_outlined,
+                        label: 'İndir',
+                        onTap: _downloadSelectedPhotos,
+                      ),
+                      _ActionButton(
+                        icon: Icons.delete_outline,
+                        label: 'Sil',
+                        onTap: _deleteSelectedPhotos,
+                        color: Colors.red,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
 }
@@ -287,23 +442,33 @@ class _GalleryPageState extends State<GalleryPage> {
 class _PhotoTile extends StatelessWidget {
   final String imageUrl;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
   final bool isFavorite;
   final VoidCallback onFavoriteTap;
+  final bool isSelected;
+  final bool isSelectionMode;
 
   const _PhotoTile({
     required this.imageUrl,
     required this.onTap,
+    this.onLongPress,
     required this.isFavorite,
     required this.onFavoriteTap,
+    this.isSelected = false,
+    this.isSelectionMode = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.grey[200],
+          border: isSelected
+              ? Border.all(color: AppTheme.primary, width: 3)
+              : null,
         ),
         child: Stack(
           fit: StackFit.expand,
@@ -318,24 +483,173 @@ class _PhotoTile extends StatelessWidget {
                 );
               },
             ),
-            // Favori butonu
-            Positioned(
-              top: 4,
-              right: 4,
-              child: GestureDetector(
-                onTap: onFavoriteTap,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    isFavorite ? Icons.star : Icons.star_outline,
-                    color: isFavorite ? const Color(0xFFFFB800) : Colors.white,
-                    size: 16,
+            // Overlay when selected
+            if (isSelected)
+              Container(
+                color: AppTheme.primary.withOpacity(0.2),
+              ),
+            // Favori butonu - sadece seçim modu değilse göster
+            if (!isSelectionMode)
+              Positioned(
+                top: 4,
+                right: 4,
+                child: GestureDetector(
+                  onTap: onFavoriteTap,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isFavorite ? Icons.star : Icons.star_outline,
+                      color: isFavorite ? const Color(0xFFFFB800) : Colors.white,
+                      size: 16,
+                    ),
                   ),
                 ),
+              ),
+            // Seçim işareti
+            if (isSelectionMode)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppTheme.primary : Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isSelected ? AppTheme.primary : Colors.grey[400]!,
+                      width: 2,
+                    ),
+                  ),
+                  child: isSelected
+                      ? const Icon(
+                          Icons.check,
+                          size: 16,
+                          color: Colors.white,
+                        )
+                      : null,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Seçim header widget
+class _SelectionHeader extends StatelessWidget {
+  final int selectedCount;
+  final VoidCallback onCancel;
+  final VoidCallback onSelectAll;
+  final bool isAllSelected;
+
+  const _SelectionHeader({
+    required this.selectedCount,
+    required this.onCancel,
+    required this.onSelectAll,
+    required this.isAllSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spacingL,
+        vertical: AppTheme.spacingM,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: onCancel,
+            child: const Text(
+              'İptal',
+              style: TextStyle(
+                color: AppTheme.primary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const Spacer(),
+          Text(
+            '$selectedCount Seçildi',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          const Spacer(),
+          GestureDetector(
+            onTap: onSelectAll,
+            child: Text(
+              isAllSelected ? 'Temizle' : 'Tümü',
+              style: const TextStyle(
+                color: AppTheme.primary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Action button widget - iPhone style minimal
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color? color;
+
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final buttonColor = color ?? AppTheme.primary;
+    
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: buttonColor,
+              size: 28,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w400,
+                color: buttonColor,
+                letterSpacing: -0.2,
               ),
             ),
           ],

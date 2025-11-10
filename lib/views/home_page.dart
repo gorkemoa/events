@@ -8,8 +8,13 @@ import 'package:pixlomi/models/user_models.dart';
 
 class HomePage extends StatefulWidget {
   final String locationText;
+  final VoidCallback? onMenuPressed;
   
-  const HomePage({Key? key, required this.locationText}) : super(key: key);
+  const HomePage({
+    Key? key,
+    required this.locationText,
+    this.onMenuPressed,
+  }) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -95,7 +100,7 @@ class _HomePageState extends State<HomePage> {
                 subtitle: _currentUser != null 
                     ? 'Hoş geldin, ${_currentUser!.userFirstname}' 
                     : null,
-                onMenuPressed: () {},
+                onMenuPressed: widget.onMenuPressed,
                 onNotificationPressed: () {
                   Navigator.pushNamed(context, '/notifications');
                 },
