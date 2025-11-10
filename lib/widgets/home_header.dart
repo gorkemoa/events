@@ -6,6 +6,7 @@ class HomeHeader extends StatelessWidget {
   final VoidCallback? onMenuPressed;
   final VoidCallback? onNotificationPressed;
   final String? subtitle;
+  final IconData? notificationIcon;
 
   const HomeHeader({
     Key? key,
@@ -13,6 +14,7 @@ class HomeHeader extends StatelessWidget {
     this.onMenuPressed,
     this.onNotificationPressed,
     this.subtitle,
+    this.notificationIcon,
   }) : super(key: key);
 
   @override
@@ -65,7 +67,7 @@ class HomeHeader extends StatelessWidget {
                 color: Colors.grey[100],
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.notifications_outlined, size: 24),
+              child: Icon(notificationIcon ?? Icons.notifications_outlined, size: 24),
             ),
           ),
         ],

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
-import 'package:pixlomi/widgets/home_header.dart';
 import 'package:pixlomi/services/user_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/models/user_models.dart';
@@ -147,13 +146,43 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         child: Column(
           children: [
             // Header
-            HomeHeader(
-              locationText: 'Şifre Değiştir',
-              subtitle: 'Hesap Güvenliği',
-              onMenuPressed: widget.onMenuPressed,
-              onNotificationPressed: () {
-                Navigator.pushNamed(context, '/notifications');
-              },
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Back Button
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.arrow_back, size: 24),
+                    ),
+                  ),
+                  // Title
+                  Column(
+                    children: [
+                      Text(
+                        'Hesap Güvenliği',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      Text(
+                        'Şifre Değiştir',
+                        style: AppTheme.labelMedium,
+                      ),
+                    ],
+                  ),
+                  // Empty space for alignment
+                  SizedBox(width: 40),
+                ],
+              ),
             ),
 
             // Content
@@ -167,47 +196,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                     children: [
                       const SizedBox(height: 10),
 
-                      // Info Card
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppTheme.primary.withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: AppTheme.primary,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.lock_outline,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'Hesabınızın güvenliğini sağlamak için lütfen güçlü bir şifre kullanın.',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey[700],
-                                  height: 1.4,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 30),
+                    
 
                       // Current Password Field
                       Text(

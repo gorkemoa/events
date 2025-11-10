@@ -10,6 +10,7 @@ import 'package:pixlomi/views/auth/onboarding_page.dart';
 import 'package:pixlomi/views/main_navigation.dart';
 import 'package:pixlomi/views/notifications/notifications_page.dart';
 import 'package:pixlomi/views/profile/change_password_page.dart';
+import 'package:pixlomi/views/profile/settings_page.dart';
 import 'package:pixlomi/services/navigation_service.dart';
 
 void main() {
@@ -47,6 +48,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const MainNavigation(),
         '/notifications': (context) => const NotificationsPage(),
         '/change-password': (context) => const ChangePasswordPage(),
+        '/settings': (context) => const SettingsPage(),
       },
     );
   }
