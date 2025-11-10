@@ -102,4 +102,47 @@ class UserService {
       );
     }
   }
+
+  /// Update user password
+  /// 
+  /// Returns [UpdatePasswordResponse] with success status
+  /// If status code is 200, password update is successful
+  /// If status code is 417, password update failed with error message
+  Future<UpdatePasswordResponse> updatePassword({
+    required UpdatePasswordRequest request,
+  }) async {
+    try {
+      developer.log('🔐 Update Password Request', name: 'UserService');
+      developer.log('URL: ${ApiConstants.updatePassword()}', name: 'UserService');
+      developer.log('Body: (password fields hidden)', name: 'UserService');
+
+      final response = await ApiHelper.put(
+        ApiConstants.updatePassword(),
+        request.toJson(),
+      );
+
+      developer.log('📥 Response Status: ${response.statusCode}', name: 'UserService');
+      developer.log('📥 Response Body: ${response.body}', name: 'UserService');
+
+      final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
+      final passwordResponse = UpdatePasswordResponse.fromJson(jsonResponse);
+      
+      developer.log('✅ Parsed Response - Success: ${passwordResponse.success}', name: 'UserService');
+      if (!passwordResponse.success) {
+        developer.log('❌ Error Message: ${passwordResponse.errorMessage}', name: 'UserService');
+      }
+      
+      return passwordResponse;
+    } catch (e, stackTrace) {
+      // Return error response if network or parsing fails
+      developer.log('❌ Exception occurred', name: 'UserService', error: e, stackTrace: stackTrace);
+      return UpdatePasswordResponse(
+        error: true,
+        success: false,
+        message: '',
+        errorMessage: 'Bir hata oluştu: $e',
+        statusCode: 'ERROR',
+      );
+    }
+  }
 }

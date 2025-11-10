@@ -10,10 +10,13 @@ class ApiConstants {
   /// Authentication endpoints
   static const String login = '${baseUrl}service/auth/login';
   static const String register = '${baseUrl}service/auth/register';
+  static const String checkCode = '${baseUrl}service/auth/code/checkCode';
+  static const String resendCode = '${baseUrl}service/auth/code/authSendCode';
   
   /// User endpoints
   static String getUserById(int userId) => '${baseUrl}service/user/id/$userId';
   static String updateUser(int userId) => '${baseUrl}service/user/update/$userId/account';
+  static String updatePassword() => '${baseUrl}service/user/update/password';
   
   /// Notification endpoints
   static String getNotifications(int userId) => '${baseUrl}service/user/account/$userId/notifications';

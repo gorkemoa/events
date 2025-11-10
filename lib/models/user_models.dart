@@ -64,6 +64,7 @@ class UserData {
 /// Request model for updating user data
 class UpdateUserRequest {
   final String userToken;
+  final String userName;
   final String userFirstname;
   final String userLastname;
   final String userEmail;
@@ -75,6 +76,7 @@ class UpdateUserRequest {
 
   UpdateUserRequest({
     required this.userToken,
+    required this.userName,
     required this.userFirstname,
     required this.userLastname,
     required this.userEmail,
@@ -88,6 +90,7 @@ class UpdateUserRequest {
   Map<String, dynamic> toJson() {
     return {
       'userToken': userToken,
+      'userName': userName,
       'userFirstname': userFirstname,
       'userLastname': userLastname,
       'userEmail': userEmail,
@@ -196,4 +199,57 @@ class User {
       profilePhoto: json['profilePhoto'] ?? '',
     );
   }
+}
+
+/// Request model for updating password
+class UpdatePasswordRequest {
+  final String userToken;
+  final String currentPassword;
+  final String password;
+  final String passwordAgain;
+
+  UpdatePasswordRequest({
+    required this.userToken,
+    required this.currentPassword,
+    required this.password,
+    required this.passwordAgain,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userToken': userToken,
+      'currentPassword': currentPassword,
+      'password': password,
+      'passwordAgain': passwordAgain,
+    };
+  }
+}
+
+/// Response model for update password
+class UpdatePasswordResponse {
+  final bool error;
+  final bool success;
+  final String message;
+  final String? errorMessage;
+  final String statusCode;
+
+  UpdatePasswordResponse({
+    required this.error,
+    required this.success,
+    required this.message,
+    this.errorMessage,
+    required this.statusCode,
+  });
+
+  factory UpdatePasswordResponse.fromJson(Map<String, dynamic> json) {
+    return UpdatePasswordResponse(
+      error: json['error'] ?? false,
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      errorMessage: json['error_message'],
+      statusCode: json['200'] ?? json['417'] ?? '',
+    );
+  }
+
+  bool get isSuccess => success && statusCode == 'OK';
 }

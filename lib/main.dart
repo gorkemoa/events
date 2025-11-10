@@ -4,10 +4,12 @@ import 'package:pixlomi/views/auth/splash_page.dart';
 import 'package:pixlomi/views/auth/auth_page.dart';
 import 'package:pixlomi/views/auth/signup_page.dart';
 import 'package:pixlomi/views/auth/login_page.dart';
+import 'package:pixlomi/views/auth/code_verification_page.dart';
 import 'package:pixlomi/views/auth/face_verification_page.dart';
 import 'package:pixlomi/views/auth/onboarding_page.dart';
 import 'package:pixlomi/views/main_navigation.dart';
 import 'package:pixlomi/views/notifications/notifications_page.dart';
+import 'package:pixlomi/views/profile/change_password_page.dart';
 import 'package:pixlomi/services/navigation_service.dart';
 
 void main() {
@@ -40,9 +42,11 @@ class MyApp extends StatelessWidget {
         '/auth': (context) => const AuthPage(),
         '/signup': (context) => const SignUpPage(),
         '/login': (context) => const LoginPage(),
+        '/codeVerification': (context) => const CodeVerificationPage(),
         '/faceVerification': (context) => const FaceVerificationPage(),
         '/home': (context) => const MainNavigation(),
         '/notifications': (context) => const NotificationsPage(),
+        '/change-password': (context) => const ChangePasswordPage(),
       },
     );
   }

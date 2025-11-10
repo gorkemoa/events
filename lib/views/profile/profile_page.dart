@@ -4,6 +4,9 @@ import 'package:pixlomi/widgets/home_header.dart';
 import 'package:pixlomi/services/user_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/models/user_models.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
+import 'dart:io';
 
 class ProfilePage extends StatefulWidget {
   final VoidCallback? onMenuPressed;
@@ -19,6 +22,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final _userService = UserService();
+  final _imagePicker = ImagePicker();
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
@@ -34,6 +38,7 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isSaving = false;
   bool _isEditMode = false; // Edit mode toggle
   int _selectedGender = 1; // 1 - Erkek, 2 - Kadın, 3 - Belirtilmemiş
+  String? _base64ProfilePhoto; // Yeni profil fotoğrafı için base64 string
 
   @override
   void initState() {
@@ -82,7 +87,7 @@ class _ProfilePageState extends State<ProfilePage> {
           _phoneController.text = _currentUser!.userPhone;
           _addressController.text = _currentUser!.userAddress;
           _birthdayController.text = _currentUser!.userBirthday;
-          _rolesController.text = _currentUser!.userName;
+          _rolesController.text = _currentUser!.userPermissions ?? 'Standart Kullanıcı';
           _eventsController.text = _currentUser!.userRank;
           
           // Parse gender from string to int
@@ -164,6 +169,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
       final updateRequest = UpdateUserRequest(
         userToken: userToken,
+        userName: _userNameController.text,
         userFirstname: _firstNameController.text,
         userLastname: _lastNameController.text,
         userEmail: _emailController.text,
@@ -171,7 +177,7 @@ class _ProfilePageState extends State<ProfilePage> {
         userPhone: _phoneController.text,
         userAddress: _addressController.text,
         userGender: _selectedGender,
-        profilePhoto: '', // Base64 foto için ayrı bir dialog eklenebilir
+        profilePhoto: _base64ProfilePhoto ?? '', // Base64 fotoğrafı gönder
       );
 
       final response = await _userService.updateUser(
@@ -189,6 +195,7 @@ class _ProfilePageState extends State<ProfilePage> {
           );
           setState(() {
             _isEditMode = false;
+            _base64ProfilePhoto = null; // Reset after save
           });
           // Reload user data
           await _loadUserData();
@@ -217,6 +224,80 @@ class _ProfilePageState extends State<ProfilePage> {
         });
       }
     }
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 800, // Optimize image size
+        maxHeight: 800,
+        imageQuality: 85, // Compress to reduce size
+      );
+
+      if (pickedFile != null) {
+        final bytes = await File(pickedFile.path).readAsBytes();
+        final base64String = base64Encode(bytes);
+        
+        // Add data URI prefix
+        final mimeType = pickedFile.path.toLowerCase().endsWith('.png') 
+            ? 'image/png' 
+            : 'image/jpeg';
+        
+        setState(() {
+          _base64ProfilePhoto = 'data:$mimeType;base64,$base64String';
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Fotoğraf seçildi. Kaydetmeyi unutmayın.'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fotoğraf seçilirken hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showImageSourceDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Fotoğraf Seç'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: AppTheme.primary),
+              title: const Text('Galeriden Seç'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: AppTheme.primary),
+              title: const Text('Kamera ile Çek'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -257,54 +338,85 @@ class _ProfilePageState extends State<ProfilePage> {
                             // Profile Picture
                             Stack(
                               children: [
-                                Container(
-                                  width: 100,
-                                  height: 100,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.grey[300]!,
-                                      width: 2,
-                                    ),
-                                    color: Colors.grey[200],
-                                  ),
-                                  child: _currentUser?.profilePhoto.isNotEmpty == true
-                                      ? ClipOval(
-                                          child: Image.network(
-                                            _currentUser!.profilePhoto,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) {
-                                              return Icon(
-                                                Icons.person,
-                                                size: 50,
-                                                color: Colors.grey[400],
-                                              );
-                                            },
-                                          ),
-                                        )
-                                      : Icon(
-                                          Icons.person,
-                                          size: 50,
-                                          color: Colors.grey[400],
-                                        ),
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
+                                GestureDetector(
+                                  onTap: _isEditMode ? _showImageSourceDialog : null,
                                   child: Container(
-                                    padding: const EdgeInsets.all(6),
+                                    width: 100,
+                                    height: 100,
                                     decoration: BoxDecoration(
-                                      color: AppTheme.primary,
                                       shape: BoxShape.circle,
-                                      border: Border.all(color: Colors.white, width: 2),
+                                      border: Border.all(
+                                        color: _isEditMode ? AppTheme.primary : Colors.grey[300]!,
+                                        width: _isEditMode ? 3 : 2,
+                                      ),
+                                      color: Colors.grey[200],
                                     ),
-                                    child: const Icon(
-                                      Icons.camera_alt,
-                                      size: 16,
-                                      color: Colors.white,
+                                    child: ClipOval(
+                                      child: _base64ProfilePhoto != null
+                                          ? Image.memory(
+                                              base64Decode(_base64ProfilePhoto!.split(',').last),
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) {
+                                                return Icon(
+                                                  Icons.person,
+                                                  size: 50,
+                                                  color: Colors.grey[400],
+                                                );
+                                              },
+                                            )
+                                          : (_currentUser?.profilePhoto.isNotEmpty == true
+                                              ? (_currentUser!.profilePhoto.startsWith('data:image')
+                                                  ? Image.memory(
+                                                      base64Decode(_currentUser!.profilePhoto.split(',').last),
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder: (context, error, stackTrace) {
+                                                        return Icon(
+                                                          Icons.person,
+                                                          size: 50,
+                                                          color: Colors.grey[400],
+                                                        );
+                                                      },
+                                                    )
+                                                  : Image.network(
+                                                      _currentUser!.profilePhoto,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder: (context, error, stackTrace) {
+                                                        return Icon(
+                                                          Icons.person,
+                                                          size: 50,
+                                                          color: Colors.grey[400],
+                                                        );
+                                                      },
+                                                    ))
+                                              : Icon(
+                                                  Icons.person,
+                                                  size: 50,
+                                                  color: Colors.grey[400],
+                                                )),
                                     ),
                                   ),
                                 ),
+                                if (_isEditMode)
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: GestureDetector(
+                                      onTap: _showImageSourceDialog,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.primary,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: Colors.white, width: 2),
+                                        ),
+                                        child: const Icon(
+                                          Icons.camera_alt,
+                                          size: 16,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                               ],
                             ),
 
@@ -345,8 +457,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             _buildTextField(
                               label: 'Kullanıcı Adı',
                               controller: _userNameController,
-                              readOnly: true,
-                              enabled: false,
+                               enabled: _isEditMode,
+
                             ),
 
                             const SizedBox(height: 20),
@@ -443,15 +555,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               ],
                             ),
 
-                            const SizedBox(height: 20),
 
-                            // Roles Field (Read-only)
-                            _buildTextField(
-                              label: 'Kullanıcı Adı',
-                              controller: _rolesController,
-                              readOnly: true,
-                              enabled: false,
-                            ),
+                           
 
                             const SizedBox(height: 20),
 
@@ -511,6 +616,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                       onPressed: () {
                                         setState(() {
                                           _isEditMode = false;
+                                          _base64ProfilePhoto = null; // Reset selected photo
                                         });
                                         _loadUserData();
                                       },
@@ -590,7 +696,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               title: 'Şifre Değiştir',
                               onTap: () {
                                 // Navigate to change password page
-                                _showChangePasswordDialog();
+                                Navigator.pushNamed(context, '/change-password');
                               },
                             ),
 
@@ -805,89 +911,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showChangePasswordDialog() {
-    final passwordController = TextEditingController();
-    final newPasswordController = TextEditingController();
-    final confirmPasswordController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Şifre Değiştir'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Mevcut Şifre',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: newPasswordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Yeni Şifre',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: confirmPasswordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Şifreyi Onayla',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (newPasswordController.text != confirmPasswordController.text) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Şifreler eşleşmiyor'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              } else {
-                // Call password change API
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Şifre başarıyla değiştirildi'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-                Navigator.pop(context);
-              }
-              passwordController.dispose();
-              newPasswordController.dispose();
-              confirmPasswordController.dispose();
-            },
-            child: const Text('Kaydet'),
-          ),
-        ],
       ),
     );
   }

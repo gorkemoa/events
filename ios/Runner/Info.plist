@@ -49,6 +49,8 @@
 	<string>Yüz doğrulaması için kameranıza erişmemiz gerekiyor</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Video kayıt özelliği için mikrofona erişim gerekiyor</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Profil fotoğrafı seçmek için fotoğraf kütüphanenize erişmemiz gerekiyor</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Konumunuzu göstermek için konum erişimine ihtiyacımız var</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

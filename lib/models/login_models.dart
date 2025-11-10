@@ -154,3 +154,133 @@ class RegisterData {
     );
   }
 }
+
+/// Request model for code verification
+class CodeVerificationRequest {
+  final String code;
+  final String codeToken;
+
+  CodeVerificationRequest({
+    required this.code,
+    required this.codeToken,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'codeToken': codeToken,
+    };
+  }
+}
+
+/// Response model for code verification
+class CodeVerificationResponse {
+  final bool error;
+  final bool success;
+  final String? successMessage;
+  final String? errorMessage;
+  final CodeVerificationData? data;
+  final String statusCode;
+
+  CodeVerificationResponse({
+    required this.error,
+    required this.success,
+    this.successMessage,
+    this.errorMessage,
+    this.data,
+    required this.statusCode,
+  });
+
+  factory CodeVerificationResponse.fromJson(Map<String, dynamic> json) {
+    return CodeVerificationResponse(
+      error: json['error'] ?? false,
+      success: json['success'] ?? false,
+      successMessage: json['success_message'],
+      errorMessage: json['error_message'],
+      data: json['data'] != null ? CodeVerificationData.fromJson(json['data']) : null,
+      statusCode: json['200'] ?? json['417'] ?? '',
+    );
+  }
+
+  bool get isSuccess => success && statusCode == 'OK';
+}
+
+/// Code verification data model
+class CodeVerificationData {
+  final int userID;
+  final String userToken;
+
+  CodeVerificationData({
+    required this.userID,
+    required this.userToken,
+  });
+
+  factory CodeVerificationData.fromJson(Map<String, dynamic> json) {
+    return CodeVerificationData(
+      userID: json['userID'] ?? 0,
+      userToken: json['userToken'] ?? '',
+    );
+  }
+}
+
+/// Request model for resending code
+class ResendCodeRequest {
+  final String userToken;
+
+  ResendCodeRequest({
+    required this.userToken,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userToken': userToken,
+    };
+  }
+}
+
+/// Response model for resending code
+class ResendCodeResponse {
+  final bool error;
+  final bool success;
+  final String? message;
+  final String? errorMessage;
+  final ResendCodeData? data;
+  final String statusCode;
+
+  ResendCodeResponse({
+    required this.error,
+    required this.success,
+    this.message,
+    this.errorMessage,
+    this.data,
+    required this.statusCode,
+  });
+
+  factory ResendCodeResponse.fromJson(Map<String, dynamic> json) {
+    return ResendCodeResponse(
+      error: json['error'] ?? false,
+      success: json['success'] ?? false,
+      message: json['message'],
+      errorMessage: json['error_message'],
+      data: json['data'] != null ? ResendCodeData.fromJson(json['data']) : null,
+      statusCode: json['200'] ?? json['417'] ?? '',
+    );
+  }
+
+  bool get isSuccess => success && statusCode == 'OK';
+}
+
+/// Resend code data model
+class ResendCodeData {
+  final String codeToken;
+
+  ResendCodeData({
+    required this.codeToken,
+  });
+
+  factory ResendCodeData.fromJson(Map<String, dynamic> json) {
+    return ResendCodeData(
+      codeToken: json['codeToken'] ?? '',
+    );
+  }
+}

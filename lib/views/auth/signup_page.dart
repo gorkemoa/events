@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/auth_service.dart';
+import 'package:pixlomi/services/storage_helper.dart';
 import 'dart:io' show Platform;
 
 class SignUpPage extends StatefulWidget {
@@ -15,7 +16,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final _nameController = TextEditingController(text: 'Ahmet');
   final _surnameController = TextEditingController(text: 'Yılmaz');
   final _usernameController = TextEditingController(text: 'ahmetyilmaz');
-  final _emailController = TextEditingController(text: 'test@example.com');
+  final _emailController = TextEditingController(text: 'gorkemoa35@gmail.com');
   final _passwordController = TextEditingController(text: 'password123');
   final _authService = AuthService();
   bool _obscurePassword = true;
@@ -85,11 +86,24 @@ class _SignUpPageState extends State<SignUpPage> {
               SnackBar(content: Text(response.successMessage ?? 'Hesap başarıyla oluşturuldu!')),
             );
 
-            // TODO: Save user data (userID, userToken, codeToken) to local storage
-            // You can use storage_helper.dart for this
+            // Save codeToken, userToken and userID for later use
+            if (response.data != null) {
+              if (response.data!.codeToken.isNotEmpty) {
+                await StorageHelper.setCodeToken(response.data!.codeToken);
+                print('💾 CodeToken saved: ${response.data!.codeToken}');
+              }
+              
+              // Save userToken and userID temporarily (will be saved again after code verification)
+              await StorageHelper.saveUserSession(
+                userId: response.data!.userID,
+                userToken: response.data!.userToken,
+              );
+              print('💾 UserToken saved: ${response.data!.userToken}');
+              print('💾 UserID saved: ${response.data!.userID}');
+            }
             
-            // Navigate to face verification page or email verification
-            Navigator.of(context).pushReplacementNamed('/faceVerification');
+            // Navigate to code verification page
+            Navigator.of(context).pushReplacementNamed('/codeVerification');
           }
         } else {
           // Show error message
