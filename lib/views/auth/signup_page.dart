@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/auth_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
+import 'package:pixlomi/views/policies/membership_agreement_page.dart';
+import 'package:pixlomi/views/policies/privacy_policy_page.dart';
 import 'dart:io' show Platform;
 
 class SignUpPage extends StatefulWidget {
-  const SignUpPage({Key? key}) : super(key: key);
+  const SignUpPage({super.key});
 
   @override
   State<SignUpPage> createState() => _SignUpPageState();
@@ -303,7 +305,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
                 const SizedBox(height: AppTheme.spacing2XL),
 
-                // Terms Checkbox
+                // Terms and Policies Checkbox
                 Row(
                   children: [
                     Checkbox(
@@ -315,37 +317,58 @@ class _SignUpPageState extends State<SignUpPage> {
                       },
                     ),
                     Expanded(
-                      child: RichText(
-                        text: TextSpan(
-                          children: [
-                            TextSpan(
-                              text: 'Kaydolarak ',
-                              style: AppTheme.captionLarge,
-                            ),
-                            TextSpan(
-                              text: 'Kullanım Koşulları',
-                              style: AppTheme.captionLarge.copyWith(
-                                color: AppTheme.primary,
-                                fontWeight: FontWeight.w600,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Wrap(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const MembershipAgreementPage(),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  'Üyelik Sözleşmesi',
+                                  style: AppTheme.captionLarge.copyWith(
+                                    color: AppTheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
                               ),
-                            ),
-                            TextSpan(
-                              text: ' ve ',
-                              style: AppTheme.captionLarge,
-                            ),
-                            TextSpan(
-                              text: 'Gizlilik Politikası',
-                              style: AppTheme.captionLarge.copyWith(
-                                color: AppTheme.primary,
-                                fontWeight: FontWeight.w600,
+                              Text(
+                                ', ',
+                                style: AppTheme.captionLarge,
                               ),
-                            ),
-                            TextSpan(
-                              text: ' kabul ediyorsunuz',
-                              style: AppTheme.captionLarge,
-                            ),
-                          ],
-                        ),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const PrivacyPolicyPage(),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  'Gizlilik Politikası',
+                                  style: AppTheme.captionLarge.copyWith(
+                                    color: AppTheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                ' ve Kullanım Koşullarını okudum, anladım ve kabul ediyorum.',
+                                style: AppTheme.captionLarge,
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ],

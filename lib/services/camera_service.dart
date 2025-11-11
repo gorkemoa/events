@@ -1,13 +1,18 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 class CameraService {
   CameraController? _controller;
   List<CameraDescription> _cameras = [];
+  CameraDescription? _currentCamera;
   bool _isInitialized = false;
+  bool _isStreamingImages = false;
 
   CameraController? get controller => _controller;
+  CameraDescription? get currentCamera => _currentCamera;
   bool get isInitialized => _isInitialized;
+  bool get isStreamingImages => _isStreamingImages;
 
   Future<void> initializeCameras() async {
     try {
@@ -30,11 +35,12 @@ class CameraService {
       orElse: () => _cameras.first,
     );
 
+    _currentCamera = frontCamera;
     debugPrint('📷 Using camera: ${frontCamera.name} (${frontCamera.lensDirection})');
 
     _controller = CameraController(
       frontCamera,
-      ResolutionPreset.high, // Yüksek çözünürlük - daha iyi yüz tespiti
+      ResolutionPreset.medium, // Medium çözünürlük - daha hızlı ve yeterli
       enableAudio: false,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
@@ -46,7 +52,10 @@ class CameraService {
       if (_controller!.value.isInitialized) {
         await _controller!.setFocusMode(FocusMode.auto);
         await _controller!.setExposureMode(ExposureMode.auto);
-        debugPrint('✅ Auto focus and exposure enabled');
+        
+        // Fotoğrafların dönmesini engelle - portrait modunda kilitle
+        await _controller!.lockCaptureOrientation(DeviceOrientation.portraitUp);
+        debugPrint('✅ Auto focus, exposure enabled and orientation locked to portrait');
       }
       
       _isInitialized = true;
@@ -87,7 +96,46 @@ class CameraService {
     }
   }
 
+  /// Canlı görüntü akışını başlat
+  Future<void> startImageStream(void Function(CameraImage image) onImage) async {
+    if (_controller == null || !_controller!.value.isInitialized) {
+      debugPrint('❌ Camera is not initialized for streaming');
+      return;
+    }
+
+    if (_isStreamingImages) {
+      debugPrint('⚠️ Already streaming images');
+      return;
+    }
+
+    try {
+      await _controller!.startImageStream(onImage);
+      _isStreamingImages = true;
+      debugPrint('✅ Image stream started');
+    } catch (e) {
+      debugPrint('❌ Error starting image stream: $e');
+    }
+  }
+
+  /// Görüntü akışını durdur
+  Future<void> stopImageStream() async {
+    if (_controller == null || !_isStreamingImages) {
+      return;
+    }
+
+    try {
+      await _controller!.stopImageStream();
+      _isStreamingImages = false;
+      debugPrint('✅ Image stream stopped');
+    } catch (e) {
+      debugPrint('❌ Error stopping image stream: $e');
+    }
+  }
+
   void dispose() {
+    if (_isStreamingImages) {
+      stopImageStream();
+    }
     _controller?.dispose();
     _isInitialized = false;
   }

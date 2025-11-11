@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/widgets/home_header.dart';
 import 'package:pixlomi/services/storage_helper.dart';
+import 'package:pixlomi/views/policies/membership_agreement_page.dart';
+import 'package:pixlomi/views/policies/privacy_policy_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final VoidCallback? onMenuPressed;
@@ -76,6 +78,38 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       const SizedBox(height: 30),
 
+                      // Security Section Title
+                      Text(
+                        'Güvenlik',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      _buildSettingsTile(
+                        icon: Icons.face,
+                        title: 'Yüz Doğrulama',
+                        onTap: () {
+                          Navigator.pushNamed(context, '/faceVerification');
+                        },
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      _buildSettingsTile(
+                        icon: Icons.photo_library,
+                        title: 'Doğrulama Fotoğraflarım',
+                        onTap: () {
+                          Navigator.pushNamed(context, '/facePhotos');
+                        },
+                      ),
+
+                      const SizedBox(height: 30),
+
                       // Information Section Title
                       Text(
                         'Bilgi',
@@ -89,11 +123,30 @@ class _SettingsPageState extends State<SettingsPage> {
                       const SizedBox(height: 15),
 
                       _buildSettingsTile(
+                        icon: Icons.description,
+                        title: 'Üyelik Sözleşmesi',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MembershipAgreementPage(),
+                            ),
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      _buildSettingsTile(
                         icon: Icons.privacy_tip,
                         title: 'Gizlilik Politikası',
                         onTap: () {
-                          // Show privacy policy
-                          _showPrivacyPolicyDialog();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PrivacyPolicyPage(),
+                            ),
+                          );
                         },
                       ),
 
@@ -322,46 +375,6 @@ Center(
     );
   }
 
-  void _showPrivacyPolicyDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Gizlilik Politikası'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Gizlilik Politikası',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Uygulamada sunulan hizmetleri ve kullanıcı verilerinizi korumak için gerekli adımları alıyoruz. Tüm kişisel verileriniz güvenli bir şekilde saklanır ve kullanılır.',
-                style: TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                '• Verileriniz sadece gerekli işlemler için kullanılır\n• Verileriniz üçüncü taraflara satılmaz\n• Verilerinizi istediğiniz zaman silebilirsiniz',
-                style: TextStyle(fontSize: 13),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Kapat'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showAboutDialog() {
     showDialog(
       context: context,
@@ -374,6 +387,7 @@ Center(
             children: [
               const Text(
                 'Etkinlikler Uygulaması',
+                
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
