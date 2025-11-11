@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/widgets/home_header.dart';
 import 'package:pixlomi/services/storage_helper.dart';
+import 'package:pixlomi/services/face_photo_service.dart';
 import 'package:pixlomi/views/policies/membership_agreement_page.dart';
 import 'package:pixlomi/views/policies/privacy_policy_page.dart';
 
@@ -18,6 +19,41 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  final FacePhotoService _facePhotoService = FacePhotoService();
+  bool _hasFacePhotos = false;
+  bool _isCheckingPhotos = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFacePhotos();
+  }
+
+  Future<void> _checkFacePhotos() async {
+    try {
+      final userToken = await StorageHelper.getUserToken();
+      if (userToken == null) {
+        setState(() {
+          _isCheckingPhotos = false;
+          _hasFacePhotos = false;
+        });
+        return;
+      }
+
+      final response = await _facePhotoService.getFacePhotos(userToken: userToken);
+      
+      setState(() {
+        _hasFacePhotos = response.isSuccess && response.data != null;
+        _isCheckingPhotos = false;
+      });
+    } catch (e) {
+      setState(() {
+        _hasFacePhotos = false;
+        _isCheckingPhotos = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,23 +126,40 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       const SizedBox(height: 15),
 
-                      _buildSettingsTile(
-                        icon: Icons.face,
-                        title: 'Yüz Doğrulama',
-                        onTap: () {
-                          Navigator.pushNamed(context, '/faceVerification');
-                        },
-                      ),
+                      // Eğer fotoğraflar yoksa "Yüz Doğrulama" göster
+                      if (!_isCheckingPhotos && !_hasFacePhotos) ...[
+                        _buildSettingsTile(
+                          icon: Icons.face,
+                          title: 'Yüz Doğrulama',
+                          onTap: () {
+                            Navigator.pushNamed(context, '/faceVerification');
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                      ],
 
-                      const SizedBox(height: 12),
+                      // Eğer fotoğraflar varsa "Doğrulama Fotoğraflarım" göster
+                      if (!_isCheckingPhotos && _hasFacePhotos) ...[
+                        _buildSettingsTile(
+                          icon: Icons.photo_library,
+                          title: 'Doğrulama Fotoğraflarım',
+                          onTap: () {
+                            Navigator.pushNamed(context, '/facePhotos');
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                      ],
 
-                      _buildSettingsTile(
-                        icon: Icons.photo_library,
-                        title: 'Doğrulama Fotoğraflarım',
-                        onTap: () {
-                          Navigator.pushNamed(context, '/facePhotos');
-                        },
-                      ),
+                      // Loading durumu
+                      if (_isCheckingPhotos) ...[
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
 
                       const SizedBox(height: 30),
 

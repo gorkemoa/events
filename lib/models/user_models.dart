@@ -297,3 +297,128 @@ class DeleteAccountResponse {
 
   bool get isSuccess => success && statusCode == 'OK';
 }
+
+// ============================================
+// FACE PHOTO MODELS
+// ============================================
+
+/// Request model for uploading/updating face photos
+class FacePhotoRequest {
+  final String userToken;
+  final String frontPhoto; // Base64 with data URI prefix
+  final String leftPhoto;  // Base64 with data URI prefix
+  final String rightPhoto; // Base64 with data URI prefix
+
+  FacePhotoRequest({
+    required this.userToken,
+    required this.frontPhoto,
+    required this.leftPhoto,
+    required this.rightPhoto,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userToken': userToken,
+      'frontPhoto': frontPhoto,
+      'leftPhoto': leftPhoto,
+      'rightPhoto': rightPhoto,
+    };
+  }
+}
+
+/// Response model for uploading/updating face photos
+class FacePhotoResponse {
+  final bool error;
+  final bool success;
+  final String? errorMessage;
+  final String statusCode;
+
+  FacePhotoResponse({
+    required this.error,
+    required this.success,
+    this.errorMessage,
+    required this.statusCode,
+  });
+
+  factory FacePhotoResponse.fromJson(Map<String, dynamic> json) {
+    return FacePhotoResponse(
+      error: json['error'] ?? false,
+      success: json['success'] ?? false,
+      errorMessage: json['error_message'],
+      statusCode: json['200'] ?? json['201'] ?? json['417'] ?? '',
+    );
+  }
+
+  bool get isSuccess => success && (statusCode == 'OK' || statusCode == 'Created');
+}
+
+/// Response model for getting face photos
+class GetFacePhotosResponse {
+  final bool error;
+  final bool success;
+  final FacePhotosData? data;
+  final String? errorMessage;
+  final String statusCode;
+
+  GetFacePhotosResponse({
+    required this.error,
+    required this.success,
+    this.data,
+    this.errorMessage,
+    required this.statusCode,
+  });
+
+  factory GetFacePhotosResponse.fromJson(Map<String, dynamic> json) {
+    return GetFacePhotosResponse(
+      error: json['error'] ?? false,
+      success: json['success'] ?? false,
+      data: json['data'] != null ? FacePhotosData.fromJson(json['data']) : null,
+      errorMessage: json['error_message'],
+      statusCode: json['200'] ?? json['417'] ?? '',
+    );
+  }
+
+  bool get isSuccess => success && statusCode == 'OK';
+}
+
+/// Face photos data wrapper
+class FacePhotosData {
+  final UserPhotoData userPhoto;
+  final String message;
+
+  FacePhotosData({
+    required this.userPhoto,
+    required this.message,
+  });
+
+  factory FacePhotosData.fromJson(Map<String, dynamic> json) {
+    return FacePhotosData(
+      userPhoto: UserPhotoData.fromJson(json['userPhoto']),
+      message: json['message'] ?? '',
+    );
+  }
+}
+
+/// User photo data with URLs
+class UserPhotoData {
+  final String frontImage;
+  final String leftImage;
+  final String rightImage;
+  final String createDate;
+
+  UserPhotoData({
+    required this.frontImage,
+    required this.leftImage,
+    required this.rightImage,
+    required this.createDate,
+  });
+
+  factory UserPhotoData.fromJson(Map<String, dynamic> json) {
+    return UserPhotoData(
+      frontImage: json['frontImage'] ?? '',
+      leftImage: json['leftImage'] ?? '',
+      rightImage: json['rightImage'] ?? '',
+      createDate: json['createDate'] ?? '',
+    );
+  }
+}

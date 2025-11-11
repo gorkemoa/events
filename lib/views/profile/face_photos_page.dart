@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:pixlomi/theme/app_theme.dart';
-import 'package:pixlomi/services/constants.dart';
 import 'package:pixlomi/services/storage_helper.dart';
+import 'package:pixlomi/services/face_photo_service.dart';
 import 'package:pixlomi/views/auth/face_verification_page.dart';
 
 class FacePhotosPage extends StatefulWidget {
@@ -14,6 +12,8 @@ class FacePhotosPage extends StatefulWidget {
 }
 
 class _FacePhotosPageState extends State<FacePhotosPage> {
+  final FacePhotoService _facePhotoService = FacePhotoService();
+  
   bool _isLoading = true;
   String? _frontImage;
   String? _leftImage;
@@ -43,43 +43,20 @@ class _FacePhotosPageState extends State<FacePhotosPage> {
         return;
       }
 
-      final url = Uri.parse(
-        '${ApiConstants.baseUrl}service/user/account/photo/all?userToken=$userToken',
-      );
+      final response = await _facePhotoService.getFacePhotos(userToken: userToken);
 
-      final basicAuth = 'Basic ${base64Encode(
-        utf8.encode('${ApiConstants.basicAuthUsername}:${ApiConstants.basicAuthPassword}')
-      )}';
-
-      final response = await http.get(
-        url,
-        headers: {
-          'Authorization': basicAuth,
-        },
-      ).timeout(const Duration(seconds: 15));
-
-      debugPrint('📥 Photos response: ${response.statusCode}');
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true && data['data'] != null) {
-          final userPhoto = data['data']['userPhoto'];
-          setState(() {
-            _frontImage = userPhoto['frontImage'];
-            _leftImage = userPhoto['leftImage'];
-            _rightImage = userPhoto['rightImage'];
-            _createDate = userPhoto['createDate'];
-            _isLoading = false;
-          });
-        } else {
-          setState(() {
-            _errorMessage = 'Fotoğraf bulunamadı';
-            _isLoading = false;
-          });
-        }
+      if (response.isSuccess && response.data != null) {
+        final userPhoto = response.data!.userPhoto;
+        setState(() {
+          _frontImage = userPhoto.frontImage;
+          _leftImage = userPhoto.leftImage;
+          _rightImage = userPhoto.rightImage;
+          _createDate = userPhoto.createDate;
+          _isLoading = false;
+        });
       } else {
         setState(() {
-          _errorMessage = 'Fotoğraflar yüklenemedi';
+          _errorMessage = response.errorMessage ?? 'Fotoğraflar yüklenemedi';
           _isLoading = false;
         });
       }

@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/camera_service.dart';
 import 'package:pixlomi/services/face_detection_service.dart';
-import 'package:pixlomi/services/constants.dart';
+import 'package:pixlomi/services/face_photo_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
+import 'package:pixlomi/models/user_models.dart';
 
 class FaceVerificationPage extends StatefulWidget {
   final bool isUpdateMode;
@@ -25,6 +25,7 @@ class FaceVerificationPage extends StatefulWidget {
 class _FaceVerificationPageState extends State<FaceVerificationPage> {
   final CameraService _cameraService = CameraService();
   final FaceDetectionService _faceDetectionService = FaceDetectionService();
+  final FacePhotoService _facePhotoService = FacePhotoService();
 
   int _currentStep = 0;
   bool _isProcessing = false;
@@ -426,7 +427,7 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
         return false;
       }
 
-      // EXIF orientation varsa otomatik düzelt, yoksa 90 derece sağa döndür (iOS ön kamera için)
+      // EXIF orientation varsa otomatik düzelt
       frontImage = img.bakeOrientation(frontImage);
       leftImage = img.bakeOrientation(leftImage);
       rightImage = img.bakeOrientation(rightImage);
@@ -450,44 +451,24 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
       debugPrint('  - Left: ${leftDataUri.length} chars');
       debugPrint('  - Right: ${rightDataUri.length} chars');
 
-      // API isteğini hazırla - güncelleme moduna göre endpoint seç
-      final endpoint = widget.isUpdateMode 
-          ? 'service/user/account/photo/update'
-          : 'service/user/account/photo/add';
-      final url = Uri.parse('${ApiConstants.baseUrl}$endpoint');
-      
-      final body = jsonEncode({
-        'userToken': userToken,
-        'frontPhoto': frontDataUri,
-        'leftPhoto': leftDataUri,
-        'rightPhoto': rightDataUri,
-      });
+      // Request modelini oluştur
+      final request = FacePhotoRequest(
+        userToken: userToken,
+        frontPhoto: frontDataUri,
+        leftPhoto: leftDataUri,
+        rightPhoto: rightDataUri,
+      );
 
-      debugPrint('📡 Sending POST request to: $url');
-      debugPrint('📡 Mode: ${widget.isUpdateMode ? "UPDATE" : "ADD"}');
+      // Service'i kullanarak API çağrısı yap
+      final response = widget.isUpdateMode
+          ? await _facePhotoService.updateFacePhotos(request: request)
+          : await _facePhotoService.addFacePhotos(request: request);
 
-      // Basic Auth credentials
-      final basicAuth = 'Basic ${base64Encode(
-        utf8.encode('${ApiConstants.basicAuthUsername}:${ApiConstants.basicAuthPassword}')
-      )}';
-
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': basicAuth,
-        },
-        body: body,
-      ).timeout(const Duration(seconds: 30));
-
-      debugPrint('📥 Response status: ${response.statusCode}');
-      debugPrint('📥 Response body: ${response.body}');
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint('✅ Photos uploaded successfully');
+      if (response.isSuccess) {
+        debugPrint('✅ Photos ${widget.isUpdateMode ? "updated" : "uploaded"} successfully');
         return true;
       } else {
-        debugPrint('❌ Upload failed with status ${response.statusCode}');
+        debugPrint('❌ Upload failed: ${response.errorMessage}');
         return false;
       }
     } catch (e) {
