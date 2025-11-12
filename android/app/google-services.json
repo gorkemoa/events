@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1006195128429",
+    "project_id": "pixlomi",
+    "storage_bucket": "pixlomi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1006195128429:android:675efb288b2766af816764",
+        "android_client_info": {
+          "package_name": "com.office701.pixlomi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3EjzNDRMdHqJtfbYrQ65UhpiILjyP2k0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
