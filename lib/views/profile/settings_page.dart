@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
-import 'package:pixlomi/widgets/home_header.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/face_photo_service.dart';
 import 'package:pixlomi/views/policies/membership_agreement_page.dart';
@@ -58,322 +57,322 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            HomeHeader(
-              locationText: 'Ayarlar',
-              subtitle: 'Uygulama Ayarları',
-              onMenuPressed: widget.onMenuPressed,
-              notificationIcon: Icons.notifications_outlined,
-            ),
-
-            // Content
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 20),
-
-                      // Settings Section Title
-                      Text(
-                        'Hesap Ayarları',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-
-                      const SizedBox(height: 15),
-
-                      // Settings Menu Items
-                      _buildSettingsTile(
-                        icon: Icons.lock,
-                        title: 'Şifre Değiştir',
-                        onTap: () {
-                          // Navigate to change password page
-                          Navigator.pushNamed(context, '/change-password');
-                        },
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      _buildSettingsTile(
-                        icon: Icons.notifications,
-                        title: 'Bildirim Ayarları',
-                        onTap: () {
-                          // Navigate to notification settings
-                        },
-                      ),
-
-                      const SizedBox(height: 30),
-
-                      // Security Section Title
-                      Text(
-                        'Güvenlik',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-
-                      const SizedBox(height: 15),
-
-                      // Eğer fotoğraflar yoksa "Yüz Doğrulama" göster
-                      if (!_isCheckingPhotos && !_hasFacePhotos) ...[
-                        _buildSettingsTile(
-                          icon: Icons.face,
-                          title: 'Yüz Doğrulama',
-                          onTap: () {
-                            Navigator.pushNamed(context, '/faceVerification');
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-
-                      // Eğer fotoğraflar varsa "Doğrulama Fotoğraflarım" göster
-                      if (!_isCheckingPhotos && _hasFacePhotos) ...[
-                        _buildSettingsTile(
-                          icon: Icons.photo_library,
-                          title: 'Doğrulama Fotoğraflarım',
-                          onTap: () {
-                            Navigator.pushNamed(context, '/facePhotos');
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-
-                      // Loading durumu
-                      if (_isCheckingPhotos) ...[
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-
-                      const SizedBox(height: 30),
-
-                      // Information Section Title
-                      Text(
-                        'Bilgi',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-
-                      const SizedBox(height: 15),
-
-                      _buildSettingsTile(
-                        icon: Icons.description,
-                        title: 'Üyelik Sözleşmesi',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MembershipAgreementPage(),
-                            ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      _buildSettingsTile(
-                        icon: Icons.privacy_tip,
-                        title: 'Gizlilik Politikası',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const PrivacyPolicyPage(),
-                            ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      _buildSettingsTile(
-                        icon: Icons.info,
-                        title: 'Hakkında',
-                        onTap: () {
-                          // Show about dialog
-                          _showAboutDialog();
-                        },
-                      ),
-
-                     
-
-                      const SizedBox(height: 15),
-
-                      // Logout Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            // Show confirmation dialog
-                            final shouldLogout = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Çıkış Yap'),
-                                content: const Text('Çıkış yapmak istediğinizden emin misiniz?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context, false),
-                                    child: const Text('İptal'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context, true),
-                                    child: const Text('Çıkış Yap'),
-                                  ),
-                                ],
-                              ),
-                            );
-
-                            if (shouldLogout == true) {
-                              await StorageHelper.clearUserSession();
-                              if (mounted) {
-                                Navigator.of(context).pushNamedAndRemoveUntil(
-                                  '/login',
-                                  (route) => false,
-                                );
-                              }
-                            }
-                          },
-                          icon: const Icon(
-                            Icons.logout,
-                            color: Colors.red,
-                          ),
-                          label: const Text(
-                            'Çıkış Yap',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.red,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.red),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-Center(
-  child: OutlinedButton(
-    onPressed: () async {
-      // 1. Onay
-      final firstConfirm = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Hesap Sil'),
-          content: const Text(
-            'Bu işlem geri alınamaz. Hesabınız ve tüm verileriniz silinecektir. '
-            'Devam etmek istediğinizden emin misiniz?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('İptal'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text(
-                'Sil',
-                style: TextStyle(color: Colors.red),
-              ),
-            ),
-          ],
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
+          onPressed: () => Navigator.pop(context),
         ),
-      );
-
-      if (firstConfirm == true && mounted) {
-        // 2. Son Onay
-        final secondConfirm = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Son Onay'),
-            content: const Text(
-              'Hesabınızı kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('İptal'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  'Evet, Sil',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
+        title: const Text(
+          'Ayarlar',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
           ),
-        );
+        ),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
 
-        if (secondConfirm == true) {
-          try {
-            await StorageHelper.clearUserSession();
-            if (mounted) {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                '/login',
-                (route) => false,
-              );
-            }
-          } catch (e) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Bir hata oluştu: $e'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          }
-        }
-      }
-    },
-    style: OutlinedButton.styleFrom(
-      side: const BorderSide(color: Colors.red),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    ),
-    child: const Text(
-      'Hesabı Sil',
-      style: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-        color: Colors.red,
-      ),
-    ),
-  ),
-),
-    const SizedBox(height: 40),
-                    ],
+                // Settings Section Title
+                Text(
+                  'Hesap Ayarları',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
                 ),
-              ),
+
+                const SizedBox(height: 15),
+
+                // Settings Menu Items
+                _buildSettingsTile(
+                  icon: Icons.lock,
+                  title: 'Şifre Değiştir',
+                  onTap: () {
+                    // Navigate to change password page
+                    Navigator.pushNamed(context, '/change-password');
+                  },
+                ),
+
+                const SizedBox(height: 12),
+
+                _buildSettingsTile(
+                  icon: Icons.notifications,
+                  title: 'Bildirim Ayarları',
+                  onTap: () {
+                    // Navigate to notification settings
+                  },
+                ),
+
+                const SizedBox(height: 30),
+
+                // Security Section Title
+                Text(
+                  'Güvenlik',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                // Eğer fotoğraflar yoksa "Yüz Doğrulama" göster
+                if (!_isCheckingPhotos && !_hasFacePhotos) ...[
+                  _buildSettingsTile(
+                    icon: Icons.face,
+                    title: 'Yüz Doğrulama',
+                    onTap: () {
+                      Navigator.pushNamed(context, '/faceVerification');
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                // Eğer fotoğraflar varsa "Doğrulama Fotoğraflarım" göster
+                if (!_isCheckingPhotos && _hasFacePhotos) ...[
+                  _buildSettingsTile(
+                    icon: Icons.photo_library,
+                    title: 'Doğrulama Fotoğraflarım',
+                    onTap: () {
+                      Navigator.pushNamed(context, '/facePhotos');
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                // Loading durumu
+                if (_isCheckingPhotos) ...[
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                const SizedBox(height: 30),
+
+                // Information Section Title
+                Text(
+                  'Bilgi',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                _buildSettingsTile(
+                  icon: Icons.description,
+                  title: 'Üyelik Sözleşmesi',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MembershipAgreementPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 12),
+
+                _buildSettingsTile(
+                  icon: Icons.privacy_tip,
+                  title: 'Gizlilik Politikası',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PrivacyPolicyPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 12),
+
+                _buildSettingsTile(
+                  icon: Icons.info,
+                  title: 'Hakkında',
+                  onTap: () {
+                    // Show about dialog
+                    _showAboutDialog();
+                  },
+                ),
+
+                const SizedBox(height: 15),
+
+                // Logout Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      // Show confirmation dialog
+                      final shouldLogout = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Çıkış Yap'),
+                          content: const Text('Çıkış yapmak istediğinizden emin misiniz?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('İptal'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text('Çıkış Yap'),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (shouldLogout == true) {
+                        await StorageHelper.clearUserSession();
+                        if (mounted) {
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                            '/login',
+                            (route) => false,
+                          );
+                        }
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.logout,
+                      color: Colors.red,
+                    ),
+                    label: const Text(
+                      'Çıkış Yap',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.red,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.red),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+                Center(
+                  child: OutlinedButton(
+                    onPressed: () async {
+                      // 1. Onay
+                      final firstConfirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Hesap Sil'),
+                          content: const Text(
+                            'Bu işlem geri alınamaz. Hesabınız ve tüm verileriniz silinecektir. '
+                            'Devam etmek istediğinizden emin misiniz?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('İptal'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text(
+                                'Sil',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (firstConfirm == true && mounted) {
+                        // 2. Son Onay
+                        final secondConfirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Son Onay'),
+                            content: const Text(
+                              'Hesabınızı kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('İptal'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text(
+                                  'Evet, Sil',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (secondConfirm == true) {
+                          try {
+                            await StorageHelper.clearUserSession();
+                            if (mounted) {
+                              Navigator.of(context).pushNamedAndRemoveUntil(
+                                '/login',
+                                (route) => false,
+                              );
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Bir hata oluştu: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        }
+                      }
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.red),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    ),
+                    child: const Text(
+                      'Hesabı Sil',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

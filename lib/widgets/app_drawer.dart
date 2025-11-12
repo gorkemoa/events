@@ -124,56 +124,49 @@ class _AppDrawerState extends State<AppDrawer> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // Profile Picture
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                          color: Colors.white,
-                        ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            if (_displayProfilePhoto?.isNotEmpty == true)
-                              ClipOval(
-                                child: Image.network(
-                                  _displayProfilePhoto!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Icon(
-                                      Icons.person,
-                                      size: 25,
-                                      color: AppTheme.primary,
-                                    );
-                                  },
-                                ),
-                              )
-                            else
-                              Icon(
-                                Icons.person,
-                                size: 25,
-                                color: AppTheme.primary,
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          if (_displayProfilePhoto?.isNotEmpty == true)
+                            ClipOval(
+                              child: Image.network(
+                                height: 50,
+                                width: 50,
+                                _displayProfilePhoto!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(
+                                    Icons.person,
+                                    size: 25,
+                                    color: AppTheme.backgroundColor,
+                                  );
+                                },
                               ),
-                            if (_isLoadingUser)
-                              Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.black.withOpacity(0.3),
-                                ),
-                                child: const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                    strokeWidth: 2,
+                            )
+                          else
+                            Icon(
+                              Icons.person,
+                              size: 25,
+                              color: AppTheme.backgroundColor,
+                            ),
+                          if (_isLoadingUser)
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.black.withOpacity(0.3),
+                              ),
+                              child: const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
                                   ),
+                                  strokeWidth: 2,
                                 ),
                               ),
-                          ],
-                        ),
+                            ),
+                        ],
                       ),
                       const SizedBox(width: 12),
                       // User Name and Email
