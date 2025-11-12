@@ -97,28 +97,7 @@ class _AppDrawerState extends State<AppDrawer> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Company Name
-                  const Text(
-                    'Office701',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Creative Agency & Information Technology',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.white70,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Divider(color: Colors.white24, thickness: 1),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 25),
                   // User Profile
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -237,47 +216,9 @@ class _AppDrawerState extends State<AppDrawer> {
               ),
             ),
 
-            // Footer - Version Info
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey[50],
-                border: Border(
-                  top: BorderSide(color: Colors.grey[200]!, width: 1),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.copyright, size: 14, color: Colors.grey[600]),
-                      const SizedBox(width: 4),
-                      Text(
-                        '2025 Office701',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Versiyon 1.0.0',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey[500],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
             // Logout Button
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+              padding: const EdgeInsets.fromLTRB(30, 0, 30, 10),
               child: SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -317,7 +258,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   label: const Text(
                     'Çıkış Yap',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 10,
                       fontWeight: FontWeight.w600,
                       color: Colors.red,
                     ),
@@ -329,6 +270,31 @@ class _AppDrawerState extends State<AppDrawer> {
                     ),
                   ),
                 ),
+              ),
+            ),
+
+            // Footer - Version Info
+            Container(
+              margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/logo/pixlomi.png',
+                    height: 52,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(width: 12),
+                  Image.asset(
+                    'assets/logo/office701.png',
+                    height: 18,
+                    fit: BoxFit.contain,
+                  ),
+                ],
               ),
             ),
           ],
@@ -362,7 +328,7 @@ class _AppDrawerState extends State<AppDrawer> {
         color: Colors.grey,
       ),
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
       ),

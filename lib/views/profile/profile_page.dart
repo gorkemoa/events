@@ -238,16 +238,6 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
 
                               const SizedBox(height: AppTheme.spacingXL),
-
-                            Text( 
-                                'Powered by Office701',
-                                textAlign: TextAlign.center,
-                                style: AppTheme.bodySmall.copyWith(
-                                  color: AppTheme.textSecondary,
-                                ),
-                              ),
-                              const SizedBox(height: AppTheme.spacingXL),
-
                               Text( 
                                 'Uygulama Versiyonu ${_currentUser?.userVersion ?? '-'}',
                                 textAlign: TextAlign.center,
@@ -255,6 +245,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                   color: AppTheme.textSecondary,
                                 ),
                               ),
+                                  const SizedBox(height: AppTheme.spacingS),
+                              Image.asset(
+                                'assets/logo/office701.png',
+                                height: 24,
+                                fit: BoxFit.contain,
+                              ),
+                              const SizedBox(height: AppTheme.spacingXL),
                             ],
                           ),
                         ),
