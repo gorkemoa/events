@@ -81,7 +81,7 @@ class _FacePhotosPageState extends State<FacePhotosPage>
           _frontImage = userPhoto.frontImage;
           _leftImage = userPhoto.leftImage;
           _rightImage = userPhoto.rightImage;
-          _createDate = userPhoto.createDate;
+          _createDate = _formatDateTR(userPhoto.createDate);
           _isLoading = false;
         });
         _animationController.forward(from: 0);
@@ -97,6 +97,30 @@ class _FacePhotosPageState extends State<FacePhotosPage>
         _errorMessage = 'Bir hata oluştu: $e';
         _isLoading = false;
       });
+    }
+  }
+
+  String _formatDateTR(String? dateString) {
+    if (dateString == null || dateString.isEmpty) {
+      return 'Tarih bulunamadı';
+    }
+
+    try {
+      final date = DateTime.parse(dateString);
+      
+      final months = [
+        'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+        'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+      ];
+
+      final day = date.day.toString().padLeft(2, '0');
+      final month = months[date.month - 1];
+      final year = date.year;
+      final time = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+
+      return '$day $month $year, $time';
+    } catch (e) {
+      return dateString;
     }
   }
 
@@ -119,10 +143,7 @@ class _FacePhotosPageState extends State<FacePhotosPage>
       backgroundColor: AppTheme.backgroundColor,
       leading: Container(
         margin: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: AppTheme.surfaceColor,
-          borderRadius: BorderRadius.circular(AppTheme.buttonBorderRadius),
-        ),
+       
         child: Material(
           color: Colors.transparent,
           child: InkWell(
@@ -134,8 +155,9 @@ class _FacePhotosPageState extends State<FacePhotosPage>
       ),
       title: const Text(
         'Yüz Doğrulama Fotoğrafları',
-        style: AppTheme.headingSmall,
+        style: AppTheme.labelMedium,
       ),
+      centerTitle: true,
       actions: [
         Container(
           margin: const EdgeInsets.all(8),
@@ -233,7 +255,7 @@ class _FacePhotosPageState extends State<FacePhotosPage>
                 label: const Text(
                   'Yüz Doğrulama Yap',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
@@ -329,7 +351,7 @@ class _FacePhotosPageState extends State<FacePhotosPage>
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(12),
@@ -348,7 +370,7 @@ class _FacePhotosPageState extends State<FacePhotosPage>
                 const Text(
                   'Doğrulama Tamamlandı',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
@@ -603,7 +625,7 @@ class _FacePhotosPageState extends State<FacePhotosPage>
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: const Text(
-                  'Doğrulandi',
+                  'Doğrulandı',
                   style: TextStyle(
                     fontSize: 9,
                     fontWeight: FontWeight.w600,
@@ -621,39 +643,55 @@ class _FacePhotosPageState extends State<FacePhotosPage>
   void _showImageDialog(String imageUrl, String title) {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.close,
-                    color: Colors.black,
-                    size: 20,
+      builder: (context) => GestureDetector(
+        onTap: () => Navigator.pop(context),
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(16),
+          child: GestureDetector(
+            onTap: () {
+              // Dialog içine tıklamayı engelle
+            },
+            child: Stack(
+              children: [
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
-              ),
+                Positioned(
+                  top: 125,
+                  right: -1,
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.contain,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
