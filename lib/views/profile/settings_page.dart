@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/face_photo_service.dart';
+import 'package:pixlomi/views/profile/edit_profile_page.dart';
 import 'package:pixlomi/views/policies/membership_agreement_page.dart';
 import 'package:pixlomi/views/policies/privacy_policy_page.dart';
 
@@ -97,6 +98,21 @@ class _SettingsPageState extends State<SettingsPage> {
                 const SizedBox(height: 15),
 
                 // Settings Menu Items
+                _buildSettingsTile(
+                  icon: Icons.edit,
+                  title: 'Profili Düzenle',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const EditProfilePage(),
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 12),
+
                 _buildSettingsTile(
                   icon: Icons.lock,
                   title: 'Şifre Değiştir',

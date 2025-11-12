@@ -12,6 +12,7 @@ import 'package:pixlomi/views/notifications/notifications_page.dart';
 import 'package:pixlomi/views/profile/change_password_page.dart';
 import 'package:pixlomi/views/profile/settings_page.dart';
 import 'package:pixlomi/views/profile/face_photos_page.dart';
+import 'package:pixlomi/views/profile/edit_profile_page.dart';
 import 'package:pixlomi/services/navigation_service.dart';
 
 void main() {
@@ -51,6 +52,7 @@ class MyApp extends StatelessWidget {
         '/notifications': (context) => const NotificationsPage(),
         '/change-password': (context) => const ChangePasswordPage(),
         '/settings': (context) => const SettingsPage(),
+        '/editProfile': (context) => const EditProfilePage(),
       },
     );
   }
