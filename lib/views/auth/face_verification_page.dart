@@ -22,18 +22,20 @@ class FaceVerificationPage extends StatefulWidget {
   State<FaceVerificationPage> createState() => _FaceVerificationPageState();
 }
 
-class _FaceVerificationPageState extends State<FaceVerificationPage> {
+class _FaceVerificationPageState extends State<FaceVerificationPage> with SingleTickerProviderStateMixin {
   final CameraService _cameraService = CameraService();
   final FaceDetectionService _faceDetectionService = FaceDetectionService();
   final FacePhotoService _facePhotoService = FacePhotoService();
 
   int _currentStep = 0;
-  bool _isProcessing = false;
   bool _isCameraReady = false;
-  String _statusMessage = '';
   bool _hasPermission = false;
   bool _isDetecting = false;
   DateTime? _lastDetectionTime;
+  
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
 
   // Fotoğrafları saklamak için
   final Map<String, XFile?> _capturedImages = {
@@ -47,6 +49,7 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
       'title': 'Ön Yüz',
       'description': 'Yüzünüzü ekran ortasında hizalayın',
       'instruction': 'Düz bakın ve sabit durun',
+      'displayText': 'Ön Yüzünüzü Gösterin',
       'direction': FaceDirection.front,
       'icon': Icons.face,
       'key': 'front',
@@ -55,6 +58,7 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
       'title': 'Sol Taraf',
       'description': 'Başınızı yavaşça sola çevirin',
       'instruction': 'Yaklaşık 30° açıyla sabit durun',
+      'displayText': 'Sola Dönün',
       'direction': FaceDirection.left,
       'icon': Icons.arrow_back,
       'key': 'left',
@@ -63,6 +67,7 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
       'title': 'Sağ Taraf',
       'description': 'Başınızı yavaşça sağa çevirin',
       'instruction': 'Yaklaşık 30° açıyla sabit durun',
+      'displayText': 'Sağa Dönün',
       'direction': FaceDirection.right,
       'icon': Icons.arrow_forward,
       'key': 'right',
@@ -72,6 +77,23 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
   @override
   void initState() {
     super.initState();
+    
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
+    
+    _animationController.forward();
+    
     // Direkt kamerayı başlatmayı dene - bu native izin popup'ı tetikler
     _initializeCameraDirectly();
   }
@@ -89,14 +111,12 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
         setState(() {
           _isCameraReady = true;
           _hasPermission = true;
-          _statusMessage = 'Hazır! Pozisyon: ${_steps[_currentStep]['title']}';
         });
         _startLiveDetection();
       } else {
         debugPrint('❌ Camera initialization failed');
         setState(() {
           _hasPermission = false;
-          _statusMessage = 'Kamera başlatılamadı';
         });
       }
     } catch (e) {
@@ -106,13 +126,11 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
       if (e.toString().contains('denied') || e.toString().contains('authorized')) {
         setState(() {
           _hasPermission = false;
-          _statusMessage = 'Kamera izni gerekli.\n\nAyarlar > Events > Kamera';
         });
         _showPermissionDialog();
       } else {
         setState(() {
           _hasPermission = false;
-          _statusMessage = 'Kamera hatası: $e';
         });
       }
     }
@@ -143,7 +161,7 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
           'Yüz doğrulaması için kamera iznine ihtiyacımız var.\n\n'
           'Lütfen:\n'
           '1. Ayarlar\'a gidin\n'
-          '2. Events uygulamasını bulun\n'
+          '2. Pixlomi uygulamasını bulun\n'
           '3. Kamera iznini açın',
         ),
         actions: [
@@ -165,10 +183,6 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
 
   void _startLiveDetection() async {
     if (!_isCameraReady) return;
-
-    setState(() {
-      _statusMessage = '🎯 "${_steps[_currentStep]['title']}" pozisyonuna geçin';
-    });
 
     // 2 saniye bekle - kullanıcı hazırlansın
     await Future.delayed(const Duration(seconds: 2));
@@ -217,9 +231,6 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
       final faceDetected = result['faceDetected'] as bool;
       
       if (!faceDetected) {
-        setState(() {
-          _statusMessage = '👤 Yüzünüzü kameraya gösterin';
-        });
         _isDetecting = false;
         return;
       }
@@ -257,6 +268,9 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
               _currentStep++;
               _isDetecting = false;
             });
+            // Animasyonu tekrar oynat
+            _animationController.reset();
+            _animationController.forward();
             await Future.delayed(const Duration(milliseconds: 500));
             _startLiveDetection();
           }
@@ -266,10 +280,7 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
           }
         }
       } else {
-        final directionName = _getDirectionName(expectedDirection);
-        setState(() {
-          _statusMessage = '↻ $directionName';
-        });
+        // Wrong direction detected - user will see instruction in UI
       }
     } catch (e) {
       debugPrint('❌ Frame processing error: $e');
@@ -278,24 +289,8 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
     _isDetecting = false;
   }
 
-  String _getDirectionName(FaceDirection direction) {
-    switch (direction) {
-      case FaceDirection.front:
-        return 'Düz bakın';
-      case FaceDirection.left:
-        return 'Sola dönün';
-      case FaceDirection.right:
-        return 'Sağa dönün';
-      case FaceDirection.unknown:
-        return 'Yüz bulunamadı';
-    }
-  }
-
   void _showSuccess(String message) {
     if (!mounted) return;
-    setState(() {
-      _statusMessage = message;
-    });
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -308,10 +303,6 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
 
   void _completeVerification() async {
     // Önce fotoğrafları API'ye yükle
-    setState(() {
-      _statusMessage = 'Fotoğraflar yükleniyor...';
-    });
-
     final success = await _uploadFacesToAPI();
 
     if (!mounted) return;
@@ -477,141 +468,397 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
     }
   }
 
-  void _skipVerification() {
-    Navigator.of(context).pushReplacementNamed('/home');
-  }
-
   @override
   void dispose() {
+    _animationController.dispose();
     _cameraService.stopImageStream();
     _cameraService.dispose();
     _faceDetectionService.dispose();
     super.dispose();
   }
 
+  Widget _buildPermissionStep(String number, String text) {
+    return Row(
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: AppTheme.primary,
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              number,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: AppTheme.bodyMedium.copyWith(
+              color: AppTheme.textSecondary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.backgroundColor,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          TextButton(
-            onPressed: _skipVerification,
-            child: const Text('Atla', style: TextStyle(color: AppTheme.textSecondary)),
-          ),
-        ],
+        backgroundColor: Colors.transparent,
+        leading: widget.isUpdateMode 
+          ? IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceColor,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.arrow_back, color: AppTheme.textPrimary, size: 20),
+              ),
+              onPressed: () => Navigator.pop(context),
+            )
+          : null,
+        actions: widget.isUpdateMode
+            ? null
+            : [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pushReplacementNamed('/home');
+                    },
+                    child: Text(
+                      'Giriş Yap',
+                      style: AppTheme.labelMedium.copyWith(
+                        color: AppTheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
       ),
       body: !_hasPermission
           ? Center(
-              child: Padding(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(AppTheme.spacing2XL),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.camera_alt_outlined, size: 80, color: AppTheme.textTertiary),
-                    const SizedBox(height: AppTheme.spacingXL),
-                    Text('Kamera İzni Gerekli', style: AppTheme.headingSmall, textAlign: TextAlign.center),
-                    const SizedBox(height: AppTheme.spacingM),
-                    Text(_statusMessage, style: AppTheme.bodyMedium, textAlign: TextAlign.center),
-                    const SizedBox(height: AppTheme.spacing2XL),
-                    ElevatedButton(onPressed: _checkAndRequestPermissions, child: const Text('İzin Ver' , style: TextStyle(color: AppTheme.backgroundColor),)),
-                  ],
-                ),
-              ),
-            )
-          : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(AppTheme.spacing2XL),
-                child: Column(
-                  children: [
-                    Text('Yüz Doğrulaması', style: AppTheme.headingMedium),
-                    const SizedBox(height: AppTheme.spacingS),
-                    Text('3 aşamalı yüz taraması', style: AppTheme.bodyMedium),
-                    const SizedBox(height: AppTheme.spacing2XL),
+                    // Camera Icon Container
                     Container(
-                      height: 400,
+                      width: 120,
+                      height: 120,
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceColor,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: _isProcessing ? AppTheme.primary : AppTheme.dividerColor,
-                          width: 3,
-                        ),
+                        color: AppTheme.primary.withOpacity(0.1),
+                        shape: BoxShape.circle,
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(18),
-                        child: _isCameraReady && _cameraService.controller != null
-                            ? CameraPreview(_cameraService.controller!)
-                            : const Center(child: CircularProgressIndicator()),
+                      child: Icon(
+                        Icons.camera_alt_rounded,
+                        size: 60,
+                        color: AppTheme.primary,
                       ),
                     ),
                     const SizedBox(height: AppTheme.spacing2XL),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(_steps.length, (index) {
-                        return Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Column(
+                    
+                    // Title
+                    Text(
+                      'Kamera İzni Gerekli',
+                      style: AppTheme.headingMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppTheme.spacingL),
+                    
+                    // Description
+                    Container(
+                      padding: const EdgeInsets.all(AppTheme.spacingL),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppTheme.dividerColor,
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Container(
-                                width: 48,
-                                height: 48,
+                                padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: index < _currentStep
-                                      ? AppTheme.success
-                                      : index == _currentStep
-                                          ? AppTheme.primary
-                                          : AppTheme.surfaceColor,
-                                  border: Border.all(
-                                    color: index <= _currentStep ? AppTheme.primary : AppTheme.dividerColor,
-                                    width: 2,
-                                  ),
+                                  color: AppTheme.primary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Icon(
-                                  index < _currentStep ? Icons.check : _steps[index]['icon'],
-                                  color: index <= _currentStep ? Colors.white : AppTheme.textTertiary,
-                                  size: 24,
+                                  Icons.info_outline,
+                                  color: AppTheme.primary,
+                                  size: 20,
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                _steps[index]['title'],
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: index <= _currentStep ? AppTheme.primary : AppTheme.textTertiary,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Yüz doğrulaması için kamera iznine ihtiyacımız var. Bu işlem güvenliğiniz için gereklidir.',
+                                  style: AppTheme.bodyMedium.copyWith(
+                                    color: AppTheme.textSecondary,
+                                    height: 1.5,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: AppTheme.spacing2XL),
-                    Container(
-                      padding: const EdgeInsets.all(AppTheme.spacingL),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(_steps[_currentStep]['description'], style: AppTheme.bodyMedium),
-                          const SizedBox(height: 8),
-                          Text(_steps[_currentStep]['instruction'], style: AppTheme.captionLarge),
                         ],
                       ),
                     ),
-                    if (_statusMessage.isNotEmpty) ...[
-                      const SizedBox(height: AppTheme.spacingL),
-                      Text(_statusMessage, style: AppTheme.bodySmall),
-                    ],
+                    const SizedBox(height: AppTheme.spacing2XL),
+                    
+                    // Steps
+                    Container(
+                      padding: const EdgeInsets.all(AppTheme.spacingL),
+                      decoration: BoxDecoration(
+                        color: AppTheme.backgroundColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppTheme.dividerColor,
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'İzin vermek için:',
+                            style: AppTheme.labelMedium.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _buildPermissionStep('1', 'Ayarlar uygulamasını açın'),
+                          const SizedBox(height: 8),
+                          _buildPermissionStep('2', 'Pixlomi uygulamasını bulun'),
+                          const SizedBox(height: 8),
+                          _buildPermissionStep('3', 'Kamera iznini aktif edin'),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppTheme.spacing3XL),
+                    
+                    // Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton.icon(
+                        onPressed: _checkAndRequestPermissions,
+                        icon: const Icon(Icons.settings, color: Colors.white),
+                        label: const Text(
+                          'Ayarları Aç',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primary,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppTheme.primaryLight.withOpacity(0.05),
+                    AppTheme.backgroundColor,
+                    AppTheme.backgroundColor,
+                  ],
+                ),
+              ),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    // Header - Üstte yazı
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacingXL,
+                        vertical: AppTheme.spacingL,
+                      ),
+                      child: AnimatedBuilder(
+                        animation: _animationController,
+                        builder: (context, child) {
+                          return FadeTransition(
+                            opacity: _fadeAnimation,
+                            child: SlideTransition(
+                              position: _slideAnimation,
+                              child: Column(
+                                children: [
+                                  Text(
+                                    _steps[_currentStep]['displayText'] as String,
+                                    style: AppTheme.headingMedium.copyWith(
+                                      color: AppTheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    _steps[_currentStep]['instruction'] as String,
+                                    style: AppTheme.bodyMedium.copyWith(
+                                      color: AppTheme.textSecondary,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    
+                    // Camera Preview with Oval Frame
+                    Expanded(
+                      child: Center(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Oval Camera Container
+                            Container(
+                              width: screenSize.width * 0.75,
+                              height: screenSize.width * 1.0,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(screenSize.width * 0.375),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.secondary.withOpacity(0.2),
+                                    blurRadius: 30,
+                                    spreadRadius: 5,
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(screenSize.width * 0.375),
+                                child: _isCameraReady && _cameraService.controller != null
+                                    ? CameraPreview(_cameraService.controller!)
+                                    : Container(
+                                        color: AppTheme.surfaceColor,
+                                        child: Center(
+                                          child: CircularProgressIndicator(
+                                            color: AppTheme.secondary,
+                                          ),
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            
+                            // Oval Border
+                            Container(
+                              width: screenSize.width * 0.75,
+                              height: screenSize.width * 1.0,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(screenSize.width * 0.375),
+                                border: Border.all(
+                                  color: AppTheme.secondary,
+                                  width: 4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    
+                    // Alt kısım - Buton ve progress
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 60),
+                      child: Column(
+                        children: [
+                          // Capture Button - Mavi yuvarlak
+                          Container(
+                            width: 70,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppTheme.secondary,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.secondary.withOpacity(0.3),
+                                  blurRadius: 20,
+                                  spreadRadius: 5,
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppTheme.secondary,
+                                  border: Border.all(
+                                    color: AppTheme.backgroundColor,
+                                    width: 3,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 30),
+                          
+                          // Progress Indicators - Alt çizgi stili
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(_steps.length, (index) {
+                              final isCompleted = index < _currentStep;
+                              final isCurrent = index == _currentStep;
+                              
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                width: 60,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(2),
+                                  color: isCompleted || isCurrent
+                                      ? AppTheme.textSecondary
+                                      : AppTheme.dividerColor,
+                                ),
+                              );
+                            }),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),

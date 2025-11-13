@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/views/auth/splash_page.dart';
 import 'package:pixlomi/views/auth/auth_page.dart';
@@ -15,8 +16,17 @@ import 'package:pixlomi/views/profile/face_photos_page.dart';
 import 'package:pixlomi/views/profile/edit_profile_page.dart';
 import 'package:pixlomi/services/navigation_service.dart';
 
-void main() {
-  runApp(const MyApp());
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Sadece dikey kullanım (portrait) açık kalsın
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -28,7 +38,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: NavigationService.navigatorKey,
       debugShowCheckedModeBanner: false,
-      title: 'Events App',
+      title: 'Pixlomi',
       theme: AppTheme.lightTheme,
       home: const SplashPage(),
       builder: (context, child) {

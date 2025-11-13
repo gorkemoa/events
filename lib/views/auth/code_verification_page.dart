@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/auth_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
+import 'package:pixlomi/services/face_photo_service.dart';
 
 class CodeVerificationPage extends StatefulWidget {
   const CodeVerificationPage({Key? key}) : super(key: key);
@@ -13,6 +14,7 @@ class CodeVerificationPage extends StatefulWidget {
 
 class _CodeVerificationPageState extends State<CodeVerificationPage> {
   final _authService = AuthService();
+  final _facePhotoService = FacePhotoService();
   final _codeControllers = [
     TextEditingController(),
     TextEditingController(),
@@ -166,6 +168,7 @@ class _CodeVerificationPageState extends State<CodeVerificationPage> {
         
         // Not: userID ve userToken zaten signup sırasında kaydedildi
         // API'den yenisi gelirse güncelle
+        String? finalUserToken;
         if (response.data != null && 
             response.data!.userID > 0 && 
             response.data!.userToken.isNotEmpty) {
@@ -178,13 +181,34 @@ class _CodeVerificationPageState extends State<CodeVerificationPage> {
             userId: response.data!.userID,
             userToken: response.data!.userToken,
           );
+          finalUserToken = response.data!.userToken;
         } else {
           print('ℹ️ API did not return user data, keeping existing session');
+          finalUserToken = await StorageHelper.getUserToken();
         }
 
-        // Face verification sayfasına git
-        if (mounted) {
-          Navigator.of(context).pushReplacementNamed('/faceVerification');
+        // Yüz fotoğraflarını kontrol et
+        if (finalUserToken != null) {
+          final photosResponse = await _facePhotoService.getFacePhotos(
+            userToken: finalUserToken,
+          );
+          
+          if (!mounted) return;
+          
+          // Kayıt sonrası yüz fotoğrafları her zaman boş olmalı
+          // Ama yine de kontrol edelim
+          if (!photosResponse.isSuccess || photosResponse.data == null) {
+            print('⚠️ Yüz fotoğrafları yok (beklenen durum), face_verification\'a yönlendiriliyor');
+            Navigator.of(context).pushReplacementNamed('/faceVerification');
+          } else {
+            print('⚠️ Beklenmeyen durum: Yüz fotoğrafları mevcut, yine de face_verification\'a yönlendiriliyor');
+            Navigator.of(context).pushReplacementNamed('/faceVerification');
+          }
+        } else {
+          // Token yoksa face verification'a git (güvenli seçenek)
+          if (mounted) {
+            Navigator.of(context).pushReplacementNamed('/faceVerification');
+          }
         }
       } else {
         setState(() {

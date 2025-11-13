@@ -369,10 +369,23 @@ class GetFacePhotosResponse {
   });
 
   factory GetFacePhotosResponse.fromJson(Map<String, dynamic> json) {
+    // data alanını güvenli şekilde kontrol et
+    FacePhotosData? parsedData;
+    try {
+      final dataField = json['data'];
+      // data bir Map ise parse et, değilse null bırak (boş liste veya null olabilir)
+      if (dataField != null && dataField is Map<String, dynamic>) {
+        parsedData = FacePhotosData.fromJson(dataField);
+      }
+    } catch (e) {
+      // Parse hatası olursa null bırak
+      parsedData = null;
+    }
+    
     return GetFacePhotosResponse(
       error: json['error'] ?? false,
       success: json['success'] ?? false,
-      data: json['data'] != null ? FacePhotosData.fromJson(json['data']) : null,
+      data: parsedData,
       errorMessage: json['error_message'],
       statusCode: json['200'] ?? json['417'] ?? '',
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:pixlomi/services/storage_helper.dart';
+import 'package:pixlomi/services/face_photo_service.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({Key? key}) : super(key: key);
@@ -13,6 +14,7 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage> {
   late VideoPlayerController _controller;
   bool _isVideoInitialized = false;
+  final FacePhotoService _facePhotoService = FacePhotoService();
 
   @override
   void initState() {
@@ -73,10 +75,33 @@ class _SplashPageState extends State<SplashPage> {
     
     if (!mounted) return;
 
-    if (isLoggedIn) {
-      // Kullanıcı giriş yapmış, ana sayfaya yönlendir
-      print('✅ User logged in, navigating to /home');
-      Navigator.of(context).pushReplacementNamed('/home');
+    if (isLoggedIn && userToken != null) {
+      // Kullanıcı giriş yapmış - yüz fotoğraflarını kontrol et
+      print('✅ User logged in, checking face photos...');
+      
+      try {
+        final photosResponse = await _facePhotoService.getFacePhotos(
+          userToken: userToken,
+        );
+        
+        if (!mounted) return;
+        
+        if (!photosResponse.isSuccess || photosResponse.data == null) {
+          // Yüz fotoğrafları yok - face verification'a yönlendir
+          print('⚠️ Face photos not found, navigating to /faceVerification');
+          Navigator.of(context).pushReplacementNamed('/faceVerification');
+        } else {
+          // Yüz fotoğrafları var - home'a yönlendir
+          print('✅ Face photos found, navigating to /home');
+          Navigator.of(context).pushReplacementNamed('/home');
+        }
+      } catch (e) {
+        print('❌ Error checking face photos: $e');
+        // Hata durumunda güvenli taraf: face verification'a yönlendir
+        if (mounted) {
+          Navigator.of(context).pushReplacementNamed('/faceVerification');
+        }
+      }
     } else if (!hasSeenOnboarding) {
       // Kullanıcı onboarding görmemişse, onboarding'e yönlendir
       print('❌ User not logged in and hasn\'t seen onboarding, navigating to /onboarding');

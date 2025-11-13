@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/auth_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
+import 'package:pixlomi/services/face_photo_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -15,6 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController(text: 'ridvan');
   final _passwordController = TextEditingController(text: '123');
   final _authService = AuthService();
+  final _facePhotoService = FacePhotoService();
   bool _obscurePassword = true;
   bool _isLoading = false;
 
@@ -56,6 +58,13 @@ class _LoginPageState extends State<LoginPage> {
           
           if (!mounted) return;
           
+          // Yüz fotoğraflarını kontrol et
+          final photosResponse = await _facePhotoService.getFacePhotos(
+            userToken: response.data!.token,
+          );
+          
+          if (!mounted) return;
+          
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(response.data?.message ?? 'Giriş başarılı!'),
@@ -63,11 +72,18 @@ class _LoginPageState extends State<LoginPage> {
             ),
           );
           
-          // Navigate to home page and remove all previous routes
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            '/home',
-            (route) => false,
-          );
+          // Yüz fotoğrafları yoksa face_verification'a yönlendir
+          if (!photosResponse.isSuccess || photosResponse.data == null) {
+            print('⚠️ Yüz fotoğrafları yok, face_verification\'a yönlendiriliyor');
+            Navigator.of(context).pushReplacementNamed('/faceVerification');
+          } else {
+            print('✅ Yüz fotoğrafları mevcut, home\'a yönlendiriliyor');
+            // Navigate to home page and remove all previous routes
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              '/home',
+              (route) => false,
+            );
+          }
         } else {
           // Login failed - show error message from server
           ScaffoldMessenger.of(context).showSnackBar(
