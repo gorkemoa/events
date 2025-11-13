@@ -21,4 +21,14 @@ class ApiConstants {
   
   /// Notification endpoints
   static String getNotifications(int userId) => '${baseUrl}service/user/account/$userId/notifications';
+  
+  /// Event endpoints
+  static String getAllEvents(String userToken, {String? city, String? searchText}) {
+    final params = <String>[
+      'userToken=$userToken',
+      if (city != null && city.isNotEmpty) 'city=$city',
+      if (searchText != null && searchText.isNotEmpty) 'searchText=$searchText',
+    ];
+    return '${baseUrl}service/events/event/all?${params.join('&')}';
+  }
 }
