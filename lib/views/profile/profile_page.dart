@@ -130,48 +130,80 @@ class _ProfilePageState extends State<ProfilePage> {
                               const SizedBox(height: AppTheme.spacingL),
 
                               // Profile Picture
-                              Container(
-                                width: 110,
-                                height: 110,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: AppTheme.dividerColor,
-                                    width: 2,
+                              Stack(
+                                children: [
+                                  Container(
+                                    width: 110,
+                                    height: 110,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: AppTheme.dividerColor,
+                                        width: 2,
+                                      ),
+                                      color: AppTheme.surfaceColor,
+                                    ),
+                                    child: ClipOval(
+                                      child: _currentUser?.profilePhoto.isNotEmpty == true
+                                          ? (_currentUser!.profilePhoto.startsWith('data:image')
+                                              ? Image.memory(
+                                                  base64Decode(_currentUser!.profilePhoto.split(',').last),
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stackTrace) {
+                                                    return Icon(
+                                                      Icons.person,
+                                                      size: 50,
+                                                      color: AppTheme.textTertiary,
+                                                    );
+                                                  },
+                                                )
+                                              : Image.network(
+                                                  _currentUser!.profilePhoto,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stackTrace) {
+                                                    return Icon(
+                                                      Icons.person,
+                                                      size: 50,
+                                                      color: AppTheme.textTertiary,
+                                                    );
+                                                  },
+                                                ))
+                                          : Icon(
+                                              Icons.person,
+                                              size: 50,
+                                              color: AppTheme.textTertiary,
+                                            ),
+                                    ),
                                   ),
-                                  color: AppTheme.surfaceColor,
-                                ),
-                                child: ClipOval(
-                                  child: _currentUser?.profilePhoto.isNotEmpty == true
-                                      ? (_currentUser!.profilePhoto.startsWith('data:image')
-                                          ? Image.memory(
-                                              base64Decode(_currentUser!.profilePhoto.split(',').last),
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (context, error, stackTrace) {
-                                                return Icon(
-                                                  Icons.person,
-                                                  size: 50,
-                                                  color: AppTheme.textTertiary,
-                                                );
-                                              },
-                                            )
-                                          : Image.network(
-                                              _currentUser!.profilePhoto,
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (context, error, stackTrace) {
-                                                return Icon(
-                                                  Icons.person,
-                                                  size: 50,
-                                                  color: AppTheme.textTertiary,
-                                                );
-                                              },
-                                            ))
-                                      : Icon(
-                                          Icons.person,
-                                          size: 50,
-                                          color: AppTheme.textTertiary,
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        if (mounted) {
+                                          Navigator.of(context).pushNamed('/editProfile');
+                                        }
+                                      },
+                                      child: Container(
+                                        width: 32,
+                                        height: 32,
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.primary,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: AppTheme.backgroundColor,
+                                            width: 2,
+                                          ),
                                         ),
-                                ),
+                                        child: const Icon(
+                                          Icons.edit,
+                                          size: 16,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
 
                               const SizedBox(height: AppTheme.spacingL),
@@ -237,7 +269,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                               ),
 
-                              const SizedBox(height: AppTheme.spacingXL),
+                              const SizedBox(height: AppTheme.spacingL),
                               Text( 
                                 'Uygulama Versiyonu ${_currentUser?.userVersion ?? '-'}',
                                 textAlign: TextAlign.center,
@@ -245,7 +277,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                   color: AppTheme.textSecondary,
                                 ),
                               ),
-                                  const SizedBox(height: AppTheme.spacingS),
+
+                                  const SizedBox(height: AppTheme.spacing3XL),
                               Image.asset(
                                 'assets/logo/office701.png',
                                 height: 24,
