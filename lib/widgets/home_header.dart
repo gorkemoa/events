@@ -4,6 +4,7 @@ class HomeHeader extends StatelessWidget {
   final String locationText;
   final VoidCallback? onMenuPressed;
   final VoidCallback? onNotificationPressed;
+  final VoidCallback? onLocationPressed;
   final String? subtitle;
   final IconData? notificationIcon;
 
@@ -12,6 +13,7 @@ class HomeHeader extends StatelessWidget {
     required this.locationText,
     this.onMenuPressed,
     this.onNotificationPressed,
+    this.onLocationPressed,
     this.subtitle,
     this.notificationIcon,
   }) : super(key: key);
@@ -36,30 +38,33 @@ class HomeHeader extends StatelessWidget {
             ),
           ),
           // Location
-          Column(
-            children: [
-              Text(
-                subtitle ?? 'Mevcut Konum',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
-              ),
-              Row(
-                children: [
-                  Text(
-                    locationText,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey[500],
-                    ),
+          GestureDetector(
+            onTap: onLocationPressed,
+            child: Column(
+              children: [
+                Text(
+                  subtitle ?? 'Mevcut Konum',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
                   ),
-                  if (subtitle == null)
-                    Icon(Icons.keyboard_arrow_down, size: 18, color: Colors.grey[800]),
-                ],
-              ),
-            ],
+                ),
+                Row(
+                  children: [
+                    Text(
+                      locationText,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                    if (subtitle == null)
+                      Icon(Icons.keyboard_arrow_down, size: 18, color: Colors.grey[800]),
+                  ],
+                ),
+              ],
+            ),
           ),
           // Notification Icon
           GestureDetector(

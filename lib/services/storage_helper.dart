@@ -140,10 +140,19 @@ class StorageHelper {
   static Future<bool> clearUserSession() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      
+      // Get userId before clearing to unsubscribe from Firebase topic
+      final userId = prefs.getInt(_userIdKey);
+      
       await prefs.remove(_userIdKey);
       await prefs.remove(_userTokenKey);
       await prefs.remove(_userNameKey);
       await prefs.remove(_userFullnameKey);
+      
+      // Note: Firebase Messaging unsubscribe should be called from the UI layer
+      // to handle the async operation properly. Return userId for that purpose.
+      print('📤 User session cleared. UserID was: $userId');
+      
       return true;
     } catch (e) {
       return false;

@@ -3,6 +3,7 @@ import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/auth_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/face_photo_service.dart';
+import 'package:pixlomi/services/firebase_messaging_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -55,6 +56,9 @@ class _LoginPageState extends State<LoginPage> {
           print('💾 Session saved: $saved');
           print('  - userId: ${response.data!.userId}');
           print('  - token: ${response.data!.token.substring(0, 10)}...');
+          
+          // Subscribe to Firebase topic with userId
+          await FirebaseMessagingService.subscribeToUserTopic(response.data!.userId.toString());
           
           if (!mounted) return;
           

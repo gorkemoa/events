@@ -3,8 +3,10 @@ import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/widgets/home_header.dart';
 import 'package:pixlomi/views/events/event_detail_page.dart';
 import 'package:pixlomi/models/event_models.dart';
+import 'package:pixlomi/models/city_models.dart';
 import 'package:pixlomi/services/event_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
+import 'package:pixlomi/services/general_service.dart';
 
 class EventsPage extends StatefulWidget {
   final String locationText;
@@ -23,16 +25,34 @@ class EventsPage extends StatefulWidget {
 class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<Event> _events = [];
+  List<City> _cities = [];
   bool _isLoading = false;
   String? _errorMessage;
   final TextEditingController _searchController = TextEditingController();
   String _searchText = '';
+  String _selectedCityName = 'İZMİR';
+  String _selectedCityNo = '35';
+  final GeneralService _generalService = GeneralService();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _loadCities();
     _loadEvents();
+  }
+
+  Future<void> _loadCities() async {
+    try {
+      final response = await _generalService.getAllCities();
+      if (response.isSuccess && response.data != null) {
+        setState(() {
+          _cities = response.data!.cities;
+        });
+      }
+    } catch (e) {
+      print('Şehirler yüklenirken hata: $e');
+    }
   }
 
   Future<void> _loadEvents() async {
@@ -54,7 +74,7 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
 
       final response = await EventService.getAllEvents(
         userToken,
-        city: '35', // İzmir city code
+        city: _selectedCityNo,
         searchText: _searchText.isEmpty ? null : _searchText,
       );
       
@@ -134,6 +154,50 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
     }
   }
 
+  Future<void> _showCityPicker() async {
+    final selectedCity = await showDialog<City>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Şehir Seç'),
+        contentPadding: const EdgeInsets.symmetric(vertical: 16),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: _cities.length,
+            itemBuilder: (context, index) {
+              final city = _cities[index];
+              final isSelected = city.cityNo.toString() == _selectedCityNo;
+              return ListTile(
+                title: Text(
+                  city.cityName,
+                  style: TextStyle(
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isSelected ? AppTheme.primary : Colors.black,
+                  ),
+                ),
+                trailing: isSelected
+                    ? const Icon(Icons.check, color: AppTheme.primary)
+                    : null,
+                onTap: () {
+                  Navigator.pop(context, city);
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    if (selectedCity != null) {
+      setState(() {
+        _selectedCityName = selectedCity.cityName;
+        _selectedCityNo = selectedCity.cityNo.toString();
+      });
+      _loadEvents();
+    }
+  }
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -153,11 +217,12 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
             children: [
               // Header
               HomeHeader(
-                locationText: widget.locationText,
+                locationText: _selectedCityName,
                 onMenuPressed: widget.onMenuPressed,
                 onNotificationPressed: () {
                   Navigator.pushNamed(context, '/notifications');
                 },
+                onLocationPressed: _showCityPicker,
               ),
 
               // Search Bar
@@ -230,8 +295,8 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                     fontWeight: FontWeight.w600,
                   ),
                   tabs: const [
-                    Tab(text: 'Yaklaşan Etkinlikler'),
-                    Tab(text: 'Etkinlik Paylaş'),
+                    Tab(text: 'Tüm Etkinlikler'),
+                    Tab(text: 'Geçmiş Etkinlikler'),
                   ],
                 ),
               ),
@@ -303,7 +368,7 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                                   ),
                     // Post Events Tab
                     const Center(
-                      child: Text('Etkinlik Paylaş'),
+                      child: Text('Geçmiş Etkinlikler'),
                     ),
                   ],
                 ),

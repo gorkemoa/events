@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/face_photo_service.dart';
+import 'package:pixlomi/services/firebase_messaging_service.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({Key? key}) : super(key: key);
@@ -78,6 +79,11 @@ class _SplashPageState extends State<SplashPage> {
     if (isLoggedIn && userToken != null) {
       // Kullanıcı giriş yapmış - yüz fotoğraflarını kontrol et
       print('✅ User logged in, checking face photos...');
+      
+      // Subscribe to Firebase topic with userId
+      if (userId != null) {
+        await FirebaseMessagingService.subscribeToUserTopic(userId.toString());
+      }
       
       try {
         final photosResponse = await _facePhotoService.getFacePhotos(

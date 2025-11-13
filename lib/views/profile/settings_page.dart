@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/face_photo_service.dart';
+import 'package:pixlomi/services/firebase_messaging_service.dart';
 import 'package:pixlomi/views/profile/edit_profile_page.dart';
 import 'package:pixlomi/views/policies/membership_agreement_page.dart';
 import 'package:pixlomi/views/policies/privacy_policy_page.dart';
@@ -262,7 +263,17 @@ class _SettingsPageState extends State<SettingsPage> {
                       );
 
                       if (shouldLogout == true) {
+                        // Get userId before clearing session
+                        final userId = await StorageHelper.getUserId();
+                        
+                        // Clear user session
                         await StorageHelper.clearUserSession();
+                        
+                        // Unsubscribe from Firebase topic
+                        if (userId != null) {
+                          await FirebaseMessagingService.unsubscribeFromUserTopic(userId.toString());
+                        }
+                        
                         if (mounted) {
                           Navigator.of(context).pushNamedAndRemoveUntil(
                             '/login',
@@ -348,7 +359,17 @@ class _SettingsPageState extends State<SettingsPage> {
 
                         if (secondConfirm == true) {
                           try {
+                            // Get userId before clearing session
+                            final userId = await StorageHelper.getUserId();
+                            
+                            // Clear user session
                             await StorageHelper.clearUserSession();
+                            
+                            // Unsubscribe from Firebase topic
+                            if (userId != null) {
+                              await FirebaseMessagingService.unsubscribeFromUserTopic(userId.toString());
+                            }
+                            
                             if (mounted) {
                               Navigator.of(context).pushNamedAndRemoveUntil(
                                 '/login',

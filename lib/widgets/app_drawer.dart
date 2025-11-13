@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/user_service.dart';
+import 'package:pixlomi/services/firebase_messaging_service.dart';
 
 class AppDrawer extends StatefulWidget {
   final String? userFullname;
@@ -274,7 +275,17 @@ class _AppDrawerState extends State<AppDrawer> {
                     );
 
                     if (shouldLogout == true) {
+                      // Get userId before clearing session
+                      final userId = await StorageHelper.getUserId();
+                      
+                      // Clear user session
                       await StorageHelper.clearUserSession();
+                      
+                      // Unsubscribe from Firebase topic
+                      if (userId != null) {
+                        await FirebaseMessagingService.unsubscribeFromUserTopic(userId.toString());
+                      }
+                      
                       if (mounted) {
                         Navigator.of(context).pushNamedAndRemoveUntil(
                           '/login',

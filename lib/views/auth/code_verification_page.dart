@@ -4,6 +4,7 @@ import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/auth_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/face_photo_service.dart';
+import 'package:pixlomi/services/firebase_messaging_service.dart';
 
 class CodeVerificationPage extends StatefulWidget {
   const CodeVerificationPage({Key? key}) : super(key: key);
@@ -181,6 +182,10 @@ class _CodeVerificationPageState extends State<CodeVerificationPage> {
             userId: response.data!.userID,
             userToken: response.data!.userToken,
           );
+          
+          // Subscribe to Firebase topic with userId
+          await FirebaseMessagingService.subscribeToUserTopic(response.data!.userID.toString());
+          
           finalUserToken = response.data!.userToken;
         } else {
           print('ℹ️ API did not return user data, keeping existing session');

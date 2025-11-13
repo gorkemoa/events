@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/views/auth/splash_page.dart';
 import 'package:pixlomi/views/auth/auth_page.dart';
@@ -15,10 +16,20 @@ import 'package:pixlomi/views/profile/settings_page.dart';
 import 'package:pixlomi/views/profile/face_photos_page.dart';
 import 'package:pixlomi/views/profile/edit_profile_page.dart';
 import 'package:pixlomi/services/navigation_service.dart';
+import 'package:pixlomi/services/firebase_messaging_service.dart';
+import 'firebase_options.dart';
 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Initialize Firebase Messaging
+  await FirebaseMessagingService.initialize();
 
   // Sadece dikey kullanım (portrait) açık kalsın
   await SystemChrome.setPreferredOrientations([
