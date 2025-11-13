@@ -372,8 +372,8 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
                     onPressed: () {
                       Navigator.of(context).pop();
                       if (widget.isUpdateMode) {
-                        // Güncelleme modunda fotoğraflar sayfasına geri dön
-                        Navigator.of(context).pushReplacementNamed('/facePhotos');
+                        // Güncelleme modunda bir önceki sayfaya result ile dön
+                        Navigator.of(context).pop(true);
                       } else {
                         // İlk kayıt modunda home'a git
                         Navigator.of(context).pushReplacementNamed('/home');

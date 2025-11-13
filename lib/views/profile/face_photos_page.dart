@@ -436,13 +436,18 @@ class _FacePhotosPageState extends State<FacePhotosPage>
           width: double.infinity,
           height: 56,
           child: ElevatedButton.icon(
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const FaceVerificationPage(isUpdateMode: true),
                 ),
               );
+              
+              // Güncelleme başarılı ise fotoğrafları yeniden yükle
+              if (result == true && mounted) {
+                _loadPhotos();
+              }
             },
             icon: const Icon(Icons.camera_alt, color: Colors.white),
             label: const Text(
