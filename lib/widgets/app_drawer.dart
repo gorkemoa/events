@@ -26,6 +26,7 @@ class _AppDrawerState extends State<AppDrawer> {
   String? _displayFullname;
   String? _displayEmail;
   String? _displayProfilePhoto;
+  String? _appVersion;
   bool _isLoadingUser = false;
 
   @override
@@ -56,6 +57,7 @@ class _AppDrawerState extends State<AppDrawer> {
             _displayFullname = response.data!.user.userFullname;
             _displayEmail = response.data!.user.userEmail;
             _displayProfilePhoto = response.data!.user.profilePhoto;
+            _appVersion = response.data!.user.userVersion;
           });
         } else {
           setState(() {
@@ -81,9 +83,9 @@ class _AppDrawerState extends State<AppDrawer> {
         color: Colors.white,
         child: Column(
           children: [
-            // Header - Company Logo/Brand Section
+            // User Profile Section with Pixlomi Logo
             Container(
-              padding: const EdgeInsets.fromLTRB(20, 50, 20, 25),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 25),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -96,8 +98,17 @@ class _AppDrawerState extends State<AppDrawer> {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 25),
+                children: [                  
+                  const SizedBox(height: 20),
+                  Center(
+                    child: Image.asset(
+                      'assets/logo/pixlomi.png',
+                      height: 72,
+                      width: 300,
+                      fit: BoxFit.contain,
+                      color: Colors.white,
+                    ),
+                  ),
                   // User Profile
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -216,6 +227,24 @@ class _AppDrawerState extends State<AppDrawer> {
               ),
             ),
 
+            // Footer - Company Info
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+              ),
+              child: Center(
+                child: Text(
+                  '© Office701 Bilgi Teknolojileri.\nTüm hakları saklıdır.\nVersiyon $_appVersion',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
             // Logout Button
             Padding(
               padding: const EdgeInsets.fromLTRB(30, 0, 30, 10),
@@ -270,31 +299,6 @@ class _AppDrawerState extends State<AppDrawer> {
                     ),
                   ),
                 ),
-              ),
-            ),
-
-            // Footer - Version Info
-            Container(
-              margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    'assets/logo/pixlomi.png',
-                    height: 52,
-                    fit: BoxFit.contain,
-                  ),
-                  const SizedBox(width: 12),
-                  Image.asset(
-                    'assets/logo/office701.png',
-                    height: 18,
-                    fit: BoxFit.contain,
-                  ),
-                ],
               ),
             ),
           ],
@@ -382,9 +386,9 @@ class _AppDrawerState extends State<AppDrawer> {
                 children: [
                   Icon(Icons.verified, size: 16, color: AppTheme.primary),
                   const SizedBox(width: 6),
-                  const Text(
-                    'Versiyon 1.0.0',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                  Text(
+                    'Versiyon ${_appVersion ?? '1.0.0'}',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
