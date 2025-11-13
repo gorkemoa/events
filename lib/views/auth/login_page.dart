@@ -3,6 +3,7 @@ import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/auth_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/face_photo_service.dart';
+import 'package:pixlomi/services/firebase_messaging_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -56,33 +57,42 @@ class _LoginPageState extends State<LoginPage> {
           print('  - userId: ${response.data!.userId}');
           print('  - token: ${response.data!.token.substring(0, 10)}...');
           
+          // Subscribe to Firebase topic with userId
+          await FirebaseMessagingService.subscribeToUserTopic(response.data!.userId.toString());
+          
           if (!mounted) return;
           
           // Yüz fotoğraflarını kontrol et
-          final photosResponse = await _facePhotoService.getFacePhotos(
-            userToken: response.data!.token,
-          );
-          
-          if (!mounted) return;
-          
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(response.data?.message ?? 'Giriş başarılı!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          
-          // Yüz fotoğrafları yoksa face_verification'a yönlendir
-          if (!photosResponse.isSuccess || photosResponse.data == null) {
-            print('⚠️ Yüz fotoğrafları yok, face_verification\'a yönlendiriliyor');
-            Navigator.of(context).pushReplacementNamed('/faceVerification');
-          } else {
-            print('✅ Yüz fotoğrafları mevcut, home\'a yönlendiriliyor');
-            // Navigate to home page and remove all previous routes
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              '/home',
-              (route) => false,
+          try {
+            final photosResponse = await _facePhotoService.getFacePhotos(
+              userToken: response.data!.token,
             );
+            
+            if (!mounted) return;
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(response.data?.message ?? 'Giriş başarılı!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            
+            // Yüz fotoğrafları yoksa face_verification'a yönlendir
+            if (!photosResponse.isSuccess || photosResponse.data == null) {
+              print('⚠️ Yüz fotoğrafları yok, face_verification\'a yönlendiriliyor');
+              Navigator.of(context).pushReplacementNamed('/faceVerification');
+            } else {
+              print('✅ Yüz fotoğrafları mevcut, home\'a yönlendiriliyor');
+              // Navigate to home page and remove all previous routes
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                '/home',
+                (route) => false,
+              );
+            }
+          } catch (e) {
+            print('❌ Error checking face photos: $e');
+            // 403 hatası durumunda ApiHelper zaten login'e yönlendirdi
+            return;
           }
         } else {
           // Login failed - show error message from server

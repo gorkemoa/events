@@ -18,6 +18,7 @@ class ApiHelper {
   static Future<void> _checkResponse(http.Response response) async {
     if (response.statusCode == 403) {
       await _handle403();
+      throw Exception('Session expired - Token is invalid');
     }
   }
   /// Get common headers with Basic Auth

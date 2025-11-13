@@ -31,4 +31,7 @@ class ApiConstants {
     ];
     return '${baseUrl}service/events/event/all?${params.join('&')}';
   }
+  
+  /// General endpoints
+  static const String getAllCities = '${baseUrl}service/general/general/cities/all';
 }
