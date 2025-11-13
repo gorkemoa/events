@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pixlomi/theme/app_theme.dart';
 
 class HomeHeader extends StatelessWidget {
   final String locationText;
@@ -42,15 +41,19 @@ class HomeHeader extends StatelessWidget {
               Text(
                 subtitle ?? 'Mevcut Konum',
                 style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey[600],
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
                 ),
               ),
               Row(
                 children: [
                   Text(
                     locationText,
-                    style: AppTheme.labelMedium,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey[500],
+                    ),
                   ),
                   if (subtitle == null)
                     Icon(Icons.keyboard_arrow_down, size: 18, color: Colors.grey[800]),
