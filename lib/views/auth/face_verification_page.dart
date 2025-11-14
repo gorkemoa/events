@@ -544,7 +544,7 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> with Single
                       Navigator.of(context).pushReplacementNamed('/home');
                     },
                     child: Text(
-                      'Giriş Yap',
+                      'Daha Sonra',
                       style: AppTheme.labelMedium.copyWith(
                         color: AppTheme.primary,
                         fontWeight: FontWeight.w600,
