@@ -62,7 +62,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _startAutoScroll() {
-    _autoScrollTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    _autoScrollTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (_pageController.hasClients) {
         final nextPage = _pageController.page! + 1;
         _pageController.animateToPage(
