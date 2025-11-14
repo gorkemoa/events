@@ -476,6 +476,7 @@ class _PhotoActionIconButton extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    // ignore: unused_element_parameter
     this.color,
   });
 

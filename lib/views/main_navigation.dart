@@ -60,7 +60,7 @@ class _MainNavigationState extends State<MainNavigation> {
 
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks.first;
-        String locationName = '${place.locality}';
+        String locationName = '${place.administrativeArea}';
         setState(() {
           _locationText = locationName;
         });

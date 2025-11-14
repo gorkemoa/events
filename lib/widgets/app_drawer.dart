@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/storage_helper.dart';
-import 'package:pixlomi/services/user_service.dart';
 import 'package:pixlomi/services/firebase_messaging_service.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -23,12 +22,8 @@ class AppDrawer extends StatefulWidget {
 }
 
 class _AppDrawerState extends State<AppDrawer> {
-  final _userService = UserService();
-  String? _displayFullname;
-  String? _displayEmail;
-  String? _displayProfilePhoto;
+ 
   String? _appVersion;
-  bool _isLoadingUser = false;
 
   @override
   void initState() {
@@ -37,44 +32,9 @@ class _AppDrawerState extends State<AppDrawer> {
   }
 
   Future<void> _loadUserEmail() async {
-    setState(() {
-      _isLoadingUser = true;
-      _displayFullname = widget.userFullname ?? 'Hoş Geldin';
-      _displayProfilePhoto = widget.profilePhoto;
-    });
+ 
 
-    try {
-      final userId = await StorageHelper.getUserId();
-      final userToken = await StorageHelper.getUserToken();
 
-      if (userId != null && userToken != null) {
-        final response = await _userService.getUserById(
-          userId: userId,
-          userToken: userToken,
-        );
-
-        if (response.isSuccess && response.data != null) {
-          setState(() {
-            _displayFullname = response.data!.user.userFullname;
-            _displayEmail = response.data!.user.userEmail;
-            _displayProfilePhoto = response.data!.user.profilePhoto;
-            _appVersion = response.data!.user.userVersion;
-          });
-        } else {
-          setState(() {
-            _displayEmail = widget.userEmail ?? 'Email alınamadı';
-          });
-        }
-      }
-    } catch (e) {
-      setState(() {
-        _displayEmail = widget.userEmail ?? 'Email alınamadı';
-      });
-    } finally {
-      setState(() {
-        _isLoadingUser = false;
-      });
-    }
   }
 
   @override
@@ -89,106 +49,25 @@ class _AppDrawerState extends State<AppDrawer> {
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 25),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    AppTheme.primary,
-                    AppTheme.primary.withOpacity(0.8),
-                  ],
+                  colors: [AppTheme.primary, AppTheme.primary.withOpacity(0.8)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [                  
-                  const SizedBox(height: 20),
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 45),
                   Image.asset(
                     'assets/logo/pixlomi.png',
-                    height: 72,
-                    width: 120,
+                    height: 60,
+                    width: 200,
                     fit: BoxFit.contain,
                     color: Colors.white,
                   ),
                   // User Profile
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Profile Picture
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          if (_displayProfilePhoto?.isNotEmpty == true)
-                            ClipOval(
-                              child: Image.network(
-                                height: 50,
-                                width: 50,
-                                _displayProfilePhoto!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Icon(
-                                    Icons.person,
-                                    size: 25,
-                                    color: AppTheme.backgroundColor,
-                                  );
-                                },
-                              ),
-                            )
-                          else
-                            Icon(
-                              Icons.person,
-                              size: 25,
-                              color: AppTheme.backgroundColor,
-                            ),
-                          if (_isLoadingUser)
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.black.withOpacity(0.3),
-                              ),
-                              child: const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(width: 12),
-                      // User Name and Email
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              _displayFullname ?? 'Hoş Geldin',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              _displayEmail?.isNotEmpty == true ? _displayEmail! : 'Email adresiniz',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Colors.white70,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+
+                  Row(),
                 ],
               ),
             ),
@@ -227,40 +106,30 @@ class _AppDrawerState extends State<AppDrawer> {
             ),
 
             // Footer - Company Info
-Container(
-  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-  decoration: BoxDecoration(
-    color: Colors.grey[200],
-  ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start, // ilk satır solda
-    children: [
-      const Text(
-        '© Office701 Bilgi Teknolojileri | Tüm hakları saklıdır.',
-        style: TextStyle(
-          fontSize: 10,
-          color: Colors.grey,
-        ),
-      ),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              decoration: BoxDecoration(color: Colors.grey[200]),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start, // ilk satır solda
+                children: [
+                  Text(
+                    '© Office701 Bilgi Teknolojileri | Tüm Hakları Saklıdır. (v$_appVersion)',
+                    style: const TextStyle(fontSize: 9.7, color: Colors.grey),
+                  ),
 
-      const SizedBox(height: 10),
+                  const SizedBox(height: 10),
+                   Center(
+              child: Image.asset(
+                'assets/logo/office701.png',
+                height: 16,
+                fit: BoxFit.contain,
+              ),
+            ),
 
-      // LOGO ORTADA
-      Center(
-        child: Image.asset(
-          'assets/logo/office701.png',
-          height: 16,
-          fit: BoxFit.contain,
-        ),
-      ),
-
-      const SizedBox(height: 4),
-
-     
-    ],
-  ),
-),
-
+                ],
+              ),
+            ),
+         
             const SizedBox(height: 10),
             // Logout Button
             Padding(
@@ -276,7 +145,9 @@ Container(
                       context: context,
                       builder: (context) => AlertDialog(
                         title: const Text('Çıkış Yap'),
-                        content: const Text('Çıkış yapmak istediğinizden emin misiniz?'),
+                        content: const Text(
+                          'Çıkış yapmak istediğinizden emin misiniz?',
+                        ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context, false),
@@ -293,20 +164,21 @@ Container(
                     if (shouldLogout == true) {
                       // Get userId before clearing session
                       final userId = await StorageHelper.getUserId();
-                      
+
                       // Clear user session
                       await StorageHelper.clearUserSession();
-                      
+
                       // Unsubscribe from Firebase topic
                       if (userId != null) {
-                        await FirebaseMessagingService.unsubscribeFromUserTopic(userId.toString());
-                      }
-                      
-                      if (mounted) {
-                        Navigator.of(context).pushNamedAndRemoveUntil(
-                          '/login',
-                          (route) => false,
+                        await FirebaseMessagingService.unsubscribeFromUserTopic(
+                          userId.toString(),
                         );
+                      }
+
+                      if (mounted) {
+                        Navigator.of(
+                          context,
+                        ).pushNamedAndRemoveUntil('/login', (route) => false);
                       }
                     }
                   },
@@ -327,10 +199,10 @@ Container(
                   ),
                 ),
               ),
-          
             ),
-                        const SizedBox(height: 10),
+            const SizedBox(height: 10),
 
+            // LOGO ORTADA
           ],
         ),
       ),
@@ -343,11 +215,7 @@ Container(
     required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: AppTheme.primary,
-        size: 24,
-      ),
+      leading: Icon(icon, color: AppTheme.primary, size: 24),
       title: Text(
         title,
         style: const TextStyle(
@@ -363,12 +231,9 @@ Container(
       ),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     );
   }
-
 
   void _showAboutDialog() {
     showDialog(
@@ -388,10 +253,7 @@ Container(
             children: [
               const Text(
                 'Office701',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               const Text(
@@ -401,10 +263,7 @@ Container(
               const SizedBox(height: 16),
               const Text(
                 'Etkinlikler Uygulaması',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               const Text(
@@ -418,7 +277,10 @@ Container(
                   const SizedBox(width: 6),
                   Text(
                     'Versiyon ${_appVersion ?? '1.0.0'}',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
@@ -458,17 +320,17 @@ Container(
             children: [
               const Text(
                 'Size nasıl yardımcı olabiliriz?',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 16),
               _buildInfoRow(Icons.email_outlined, 'destek@office701.com'),
               const SizedBox(height: 12),
               _buildInfoRow(Icons.phone_outlined, '+90 (850) 444 0701'),
               const SizedBox(height: 12),
-              _buildInfoRow(Icons.access_time, 'Pazartesi - Cuma, 09:00 - 18:30'),
+              _buildInfoRow(
+                Icons.access_time,
+                'Pazartesi - Cuma, 09:00 - 18:30',
+              ),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -478,18 +340,16 @@ Container(
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.lightbulb_outline, 
-                      color: AppTheme.primary, 
+                    Icon(
+                      Icons.lightbulb_outline,
+                      color: AppTheme.primary,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Sıkça sorulan sorular için yardım merkezimizi ziyaret edebilirsiniz.',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppTheme.primary,
-                        ),
+                        style: TextStyle(fontSize: 11, color: AppTheme.primary),
                       ),
                     ),
                   ],
@@ -526,10 +386,7 @@ Container(
             children: [
               const Text(
                 'Office701',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               const Text(
@@ -544,7 +401,6 @@ Container(
               _buildInfoRow(Icons.phone_outlined, '+90 (850) 444 0701'),
               const SizedBox(height: 12),
               _buildInfoRow(Icons.language, 'www.office701.com'),
-             
             ],
           ),
         ),
@@ -563,15 +419,8 @@ Container(
       children: [
         Icon(icon, size: 18, color: Colors.grey[600]),
         const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(fontSize: 13),
-          ),
-        ),
+        Expanded(child: Text(text, style: const TextStyle(fontSize: 13))),
       ],
     );
   }
-
- 
 }

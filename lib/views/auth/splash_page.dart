@@ -103,9 +103,21 @@ class _SplashPageState extends State<SplashPage> {
         }
       } catch (e) {
         print('❌ Error checking face photos: $e');
-        // 403 hatası durumunda ApiHelper zaten login'e yönlendirdi, sadece return
-        // Diğer hatalar için de navigation yapma, kullanıcı zaten yönlendirildi veya uygun sayfada
-        return;
+        
+        if (!mounted) return;
+        
+        // 403 hatası durumunda session temizlenmiş olabilir, tekrar kontrol et
+        final stillLoggedIn = await StorageHelper.isLoggedIn();
+        
+        if (!stillLoggedIn) {
+          // Session temizlenmiş (403 hatası), ApiHelper zaten login'e yönlendirdi
+          print('🔒 Session was cleared (403), user redirected to login');
+          return;
+        }
+        
+        // Başka bir hata - yine de login'e yönlendir
+        print('⚠️ Unknown error, redirecting to auth');
+        Navigator.of(context).pushReplacementNamed('/auth');
       }
     } else if (!hasSeenOnboarding) {
       // Kullanıcı onboarding görmemişse, onboarding'e yönlendir

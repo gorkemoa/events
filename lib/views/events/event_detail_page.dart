@@ -1,42 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/photo_service.dart';
+import 'package:pixlomi/viewmodels/event_detail_viewmodel.dart';
 
 class EventDetailPage extends StatefulWidget {
-  final String eventTitle;
-  final String clientName;
-  final String eventDate;
-  final String eventTime;
-  final String location;
+  final int? eventID;
+  final String? eventCode;
 
   const EventDetailPage({
     Key? key,
-    required this.eventTitle,
-    required this.clientName,
-    required this.eventDate,
-    required this.eventTime,
-    required this.location,
-  }) : super(key: key);
+    this.eventID,
+    this.eventCode,
+  }) : assert(eventID != null || eventCode != null, 'Either eventID or eventCode must be provided'),
+       super(key: key);
 
   @override
   State<EventDetailPage> createState() => _EventDetailPageState();
 }
 
 class _EventDetailPageState extends State<EventDetailPage> {
-  // Örnek fotoğraflar - Gerçek uygulamada API'den gelecek
-  final List<String> _photos = [
-    'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1464207687429-7505649dae38?w=400&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop',
-  ];
+  late final EventDetailViewModel _viewModel;
 
-  // Seçim modu için state
-  bool _isSelectionMode = false;
-  final Set<int> _selectedPhotos = {};
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = EventDetailViewModel();
+    _loadEventDetail();
+  }
 
-  // Grid sütun sayısı state
-  int _gridColumnCount = 3;
+  Future<void> _loadEventDetail() async {
+    if (widget.eventID != null) {
+      await _viewModel.fetchEventDetailById(widget.eventID!);
+    } else if (widget.eventCode != null) {
+      await _viewModel.fetchEventDetailByCode(widget.eventCode!);
+    }
+    
+    if (mounted && _viewModel.errorMessage != null) {
+      _showSnackBar(_viewModel.errorMessage!);
+    }
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +58,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          widget.eventTitle,
+          _viewModel.eventDetail?.eventTitle ?? 'Etkinlik Detayı',
           style: AppTheme.labelLarge,
         ),
         centerTitle: false,
@@ -61,9 +69,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
               borderRadius: BorderRadius.circular(12),
             ),
             onSelected: (value) {
-              setState(() {
-                _gridColumnCount = value;
-              });
+              _viewModel.setGridColumnCount(value);
             },
             itemBuilder: (BuildContext context) => [
               PopupMenuItem(
@@ -73,13 +79,13 @@ class _EventDetailPageState extends State<EventDetailPage> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: _gridColumnCount == 3 ? AppTheme.primary : Colors.grey[200],
+                        color: _viewModel.gridColumnCount == 3 ? AppTheme.primary : Colors.grey[200],
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Icon(
                         Icons.grid_3x3_rounded,
                         size: 20,
-                        color: _gridColumnCount == 3 ? Colors.white : Colors.black,
+                        color: _viewModel.gridColumnCount == 3 ? Colors.white : Colors.black,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -94,13 +100,13 @@ class _EventDetailPageState extends State<EventDetailPage> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: _gridColumnCount == 4 ? AppTheme.primary : Colors.grey[200],
+                        color: _viewModel.gridColumnCount == 4 ? AppTheme.primary : Colors.grey[200],
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Icon(
                         Icons.grid_4x4_rounded,
                         size: 20,
-                        color: _gridColumnCount == 4 ? Colors.white : Colors.black,
+                        color: _viewModel.gridColumnCount == 4 ? Colors.white : Colors.black,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -115,13 +121,13 @@ class _EventDetailPageState extends State<EventDetailPage> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: _gridColumnCount == 5 ? AppTheme.primary : Colors.grey[200],
+                        color: _viewModel.gridColumnCount == 5 ? AppTheme.primary : Colors.grey[200],
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Icon(
                         Icons.grid_on_rounded,
                         size: 20,
-                        color: _gridColumnCount == 5 ? Colors.white : Colors.black,
+                        color: _viewModel.gridColumnCount == 5 ? Colors.white : Colors.black,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -134,458 +140,479 @@ class _EventDetailPageState extends State<EventDetailPage> {
           const SizedBox(width: 8),
         ],
       ),
-      body: Column(
-        children: [
-          // Etkinlik Bilgileri
-          Container(
-            margin: const EdgeInsets.all(AppTheme.spacingL),
-            padding: const EdgeInsets.all(AppTheme.spacingL),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Katılımcı',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w500,
+      body: AnimatedBuilder(
+        animation: _viewModel,
+        builder: (context, child) {
+          // Loading state
+          if (_viewModel.isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          // Error state
+          if (_viewModel.eventDetail == null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Colors.grey[300],
                   ),
+                  const SizedBox(height: AppTheme.spacingM),
+                  Text(
+                    _viewModel.errorMessage ?? 'Etkinlik bulunamadı',
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spacingL),
+                  ElevatedButton(
+                    onPressed: _loadEventDetail,
+                    child: const Text('Tekrar Dene'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final event = _viewModel.eventDetail!;
+          final photos = _viewModel.photoUrls;
+
+          return Column(
+            children: [
+              // Etkinlik Bilgileri
+              Container(
+                margin: const EdgeInsets.all(AppTheme.spacingL),
+                padding: const EdgeInsets.all(AppTheme.spacingL),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  widget.clientName,
-                  style: AppTheme.labelMedium,
-                ),
-                const SizedBox(height: AppTheme.spacingM),
-                Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Tarih',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            widget.eventDate,
-                            style: AppTheme.bodySmall,
-                          ),
-                        ],
+                    const Text(
+                      'Etkinlik Bilgisi',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Saat',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            widget.eventTime,
-                            style: AppTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppTheme.spacingM),
-                const Text(
-                  'Konum',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.location_on,
-                      size: 16,
-                      color: AppTheme.primary,
-                    ),
-                    const SizedBox(width: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      widget.location,
-                      style: AppTheme.bodySmall,
+                      event.eventCode,
+                      style: AppTheme.labelMedium,
                     ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Fotoğraflar Başlığı
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingL),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  _isSelectionMode
-                      ? '${_selectedPhotos.length} seçildi'
-                      : 'Etkinlik Fotoğrafları (${_photos.length})',
-                  style: AppTheme.labelLarge,
-                ),
-                Row(
-                  children: [
-                    if (!_isSelectionMode)
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _isSelectionMode = true;
-                          });
-                        },
-                        child: const Text(
-                          'Seç',
-                          style: TextStyle(
-                            color: AppTheme.primary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    if (_isSelectionMode)
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _isSelectionMode = false;
-                            _selectedPhotos.clear();
-                          });
-                        },
-                        child: const Text(
-                          'İptal',
-                          style: TextStyle(
-                            color: AppTheme.primary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: AppTheme.spacingM),
-
-          // Fotoğraf Grid'i
-          Expanded(
-            child: _photos.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    const SizedBox(height: AppTheme.spacingM),
+                    Row(
                       children: [
-                        Icon(
-                          Icons.photo_library_outlined,
-                          size: 64,
-                          color: Colors.grey[300],
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Başlangıç',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                event.eventStartDate,
+                                style: AppTheme.bodySmall,
+                              ),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: AppTheme.spacingM),
-                        Text(
-                          'Henüz fotoğraf yüklenmedi',
-                          style: TextStyle(
-                            color: Colors.grey[400],
-                            fontSize: 14,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Bitiş',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                event.eventEndDate,
+                                style: AppTheme.bodySmall,
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  )
-                : GridView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppTheme.spacingL,
-                      vertical: AppTheme.spacingS,
+                    const SizedBox(height: AppTheme.spacingM),
+                    const Text(
+                      'Konum',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: _gridColumnCount,
-                      crossAxisSpacing: AppTheme.spacingS,
-                      mainAxisSpacing: AppTheme.spacingS,
-                      childAspectRatio: 1,
-                    ),
-                    itemCount: _photos.length,
-                    itemBuilder: (context, index) {
-                      final isSelected = _selectedPhotos.contains(index);
-                      return GestureDetector(
-                        onTap: () {
-                          if (_isSelectionMode) {
-                            setState(() {
-                              if (isSelected) {
-                                _selectedPhotos.remove(index);
-                              } else {
-                                _selectedPhotos.add(index);
-                              }
-                              // Eğer hiç seçim yapılmamışsa seçim modundan çık
-                              if (_selectedPhotos.isEmpty) {
-                                _isSelectionMode = false;
-                              }
-                            });
-                          } else {
-                            _showPhotoDetail(index);
-                          }
-                        },
-                        onLongPress: () {
-                          setState(() {
-                            _isSelectionMode = true;
-                            _selectedPhotos.add(index);
-                          });
-                        },
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              Image.network(
-                                _photos[index],
-                                fit: BoxFit.cover,
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Container(
-                                    color: Colors.grey[200],
-                                    child: const Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                              // Hover efekti için gradient overlay
-                              Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      Colors.transparent,
-                                      Colors.black.withOpacity(0.1),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              // Seçim modu overlay
-                              if (_isSelectionMode)
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? Colors.black.withOpacity(0.3)
-                                        : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                              // Seçim checkbox'ı
-                              if (_isSelectionMode)
-                                Positioned(
-                                  top: 8,
-                                  right: 8,
-                                  child: Container(
-                                    width: 28,
-                                    height: 28,
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? AppTheme.primary
-                                          : Colors.white,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: isSelected
-                                            ? AppTheme.primary
-                                            : Colors.grey[400]!,
-                                        width: 2,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.2),
-                                          blurRadius: 4,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: isSelected
-                                        ? const Icon(
-                                            Icons.check,
-                                            size: 16,
-                                            color: Colors.white,
-                                          )
-                                        : null,
-                                  ),
-                                ),
-                            ],
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on,
+                          size: 16,
+                          color: AppTheme.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            event.eventLocation,
+                            style: AppTheme.bodySmall,
                           ),
                         ),
-                      );
-                    },
-                  ),
-          ),
-
-          // Alt Buton / Seçim Aksiyon Barı
-          if (!_isSelectionMode)
-            Container(
-              padding: const EdgeInsets.all(AppTheme.spacingL),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -5),
-                  ),
-                ],
-              ),
-              child: SafeArea(
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _downloadAllPhotos();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: AppTheme.primary,
-                      elevation: 0,
-                      side: const BorderSide(color: AppTheme.primary, width: 2),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      ],
                     ),
-                    child: const Text(
-                      'Telefon Galerisine İndir',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                  ],
                 ),
               ),
-            )
-          else
-            Container(
-              padding: const EdgeInsets.all(AppTheme.spacingL),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -5),
-                  ),
-                ],
-              ),
-              child: SafeArea(
+
+              // Fotoğraflar Başlığı
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingL),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Hepsini seç
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
+                    Text(
+                      _viewModel.isSelectionMode
+                          ? '${_viewModel.selectedPhotos.length} seçildi'
+                          : 'Etkinlik Fotoğrafları (${photos.length})',
+                      style: AppTheme.labelLarge,
+                    ),
+                    Row(
+                      children: [
+                        if (!_viewModel.isSelectionMode)
+                          GestureDetector(
                             onTap: () {
-                              setState(() {
-                                if (_selectedPhotos.length == _photos.length) {
-                                  _selectedPhotos.clear();
-                                  _isSelectionMode = false;
-                                } else {
-                                  _selectedPhotos.addAll(
-                                    List.generate(_photos.length, (i) => i),
-                                  );
-                                }
-                              });
+                              _viewModel.enableSelectionMode();
                             },
-                            borderRadius: BorderRadius.circular(10),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              child: Center(
-                                child: Text(
-                                  _selectedPhotos.length == _photos.length
-                                      ? 'Seçimi Kaldır'
-                                      : 'Hepsini Seç',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppTheme.primary,
+                            child: const Text(
+                              'Seç',
+                              style: TextStyle(
+                                color: AppTheme.primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        if (_viewModel.isSelectionMode)
+                          GestureDetector(
+                            onTap: () {
+                              _viewModel.disableSelectionMode();
+                            },
+                            child: const Text(
+                              'İptal',
+                              style: TextStyle(
+                                color: AppTheme.primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: AppTheme.spacingM),
+
+              // Fotoğraf Grid'i
+              Expanded(
+                child: photos.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.photo_library_outlined,
+                              size: 64,
+                              color: Colors.grey[300],
+                            ),
+                            const SizedBox(height: AppTheme.spacingM),
+                            Text(
+                              'Henüz fotoğraf yüklenmedi',
+                              style: TextStyle(
+                                color: Colors.grey[400],
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : GridView.builder(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacingL,
+                          vertical: AppTheme.spacingS,
+                        ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: _viewModel.gridColumnCount,
+                          crossAxisSpacing: AppTheme.spacingS,
+                          mainAxisSpacing: AppTheme.spacingS,
+                          childAspectRatio: 1,
+                        ),
+                        itemCount: photos.length,
+                        itemBuilder: (context, index) {
+                          final isSelected = _viewModel.selectedPhotos.contains(index);
+                          return GestureDetector(
+                            onTap: () {
+                              if (_viewModel.isSelectionMode) {
+                                _viewModel.togglePhotoSelection(index);
+                              } else {
+                                _showPhotoDetail(index);
+                              }
+                            },
+                            onLongPress: () {
+                              _viewModel.enableSelectionMode();
+                              _viewModel.togglePhotoSelection(index);
+                            },
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  Image.network(
+                                    photos[index],
+                                    fit: BoxFit.cover,
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Container(
+                                        color: Colors.grey[200],
+                                        child: const Center(
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  // Hover efekti için gradient overlay
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Colors.transparent,
+                                          Colors.black.withOpacity(0.1),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  // Seçim modu overlay
+                                  if (_viewModel.isSelectionMode)
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? Colors.black.withOpacity(0.3)
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                  // Seçim checkbox'ı
+                                  if (_viewModel.isSelectionMode)
+                                    Positioned(
+                                      top: 8,
+                                      right: 8,
+                                      child: Container(
+                                        width: 28,
+                                        height: 28,
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? AppTheme.primary
+                                              : Colors.white,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: isSelected
+                                                ? AppTheme.primary
+                                                : Colors.grey[400]!,
+                                            width: 2,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(0.2),
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: isSelected
+                                            ? const Icon(
+                                                Icons.check,
+                                                size: 16,
+                                                color: Colors.white,
+                                              )
+                                            : null,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+
+              // Alt Buton / Seçim Aksiyon Barı
+              if (!_viewModel.isSelectionMode)
+                Container(
+                  padding: const EdgeInsets.all(AppTheme.spacingL),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, -5),
+                      ),
+                    ],
+                  ),
+                  child: SafeArea(
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _downloadAllPhotos();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppTheme.primary,
+                          elevation: 0,
+                          side: const BorderSide(color: AppTheme.primary, width: 2),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Telefon Galerisine İndir',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.all(AppTheme.spacingL),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, -5),
+                      ),
+                    ],
+                  ),
+                  child: SafeArea(
+                    child: Row(
+                      children: [
+                        // Hepsini seç
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  _viewModel.selectAllPhotos();
+                                },
+                                borderRadius: BorderRadius.circular(10),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  child: Center(
+                                    child: Text(
+                                      _viewModel.selectedPhotos.length == photos.length
+                                          ? 'Seçimi Kaldır'
+                                          : 'Hepsini Seç',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.primary,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
+                        const SizedBox(width: AppTheme.spacingM),
+                        // İndir butonu
+                        Expanded(
+                          child: _SelectionActionButton(
+                            icon: Icons.download_rounded,
+                            label: 'İndir',
+                            onTap: () {
+                              _downloadSelectedPhotos();
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: AppTheme.spacingS),
+                        // Paylaş butonu
+                        Expanded(
+                          child: _SelectionActionButton(
+                            icon: Icons.share_rounded,
+                            label: 'Paylaş',
+                            onTap: () {
+                              _shareSelectedPhotos();
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: AppTheme.spacingS),
+                        // Sil butonu
+                        Expanded(
+                          child: _SelectionActionButton(
+                            icon: Icons.delete_rounded,
+                            label: 'Sil',
+                            color: AppTheme.error,
+                            onTap: () {
+                              _deleteSelectedPhotos();
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: AppTheme.spacingM),
-                    // İndir butonu
-                    Expanded(
-                      child: _SelectionActionButton(
-                        icon: Icons.download_rounded,
-                        label: 'İndir',
-                        onTap: () {
-                          _downloadSelectedPhotos();
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: AppTheme.spacingS),
-                    // Paylaş butonu
-                    Expanded(
-                      child: _SelectionActionButton(
-                        icon: Icons.share_rounded,
-                        label: 'Paylaş',
-                        onTap: () {
-                          _shareSelectedPhotos();
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: AppTheme.spacingS),
-                    // Sil butonu
-                    Expanded(
-                      child: _SelectionActionButton(
-                        icon: Icons.delete_rounded,
-                        label: 'Sil',
-                        color: AppTheme.error,
-                        onTap: () {
-                          _deleteSelectedPhotos();
-                        },
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
 
-
   void _showPhotoDetail(int index) {
+    final photos = _viewModel.mainPhotoUrls;
+    
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => _PhotoDetailScreen(
-          photos: _photos,
+          photos: photos,
           initialIndex: index,
           onDelete: (photoIndex) {
             _confirmDelete(photoIndex);
@@ -612,9 +639,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
             ),
             TextButton(
               onPressed: () {
-                setState(() {
-                  _photos.removeAt(index);
-                });
+                // TODO: Implement delete API
                 Navigator.pop(context);
                 _showSnackBar('Fotoğraf silindi');
               },
@@ -696,7 +721,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   void _downloadAllPhotos() {
-    if (_photos.isEmpty) return;
+    final photos = _viewModel.mainPhotoUrls;
+    if (photos.isEmpty) return;
 
     showDialog(
       context: context,
@@ -707,7 +733,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
           ),
           title: const Text('Tüm Fotoğrafları İndir'),
           content: Text(
-            '${_photos.length} fotoğrafı galeriye kaydetmek istediğinizden emin misiniz?',
+            '${photos.length} fotoğrafı galeriye kaydetmek istediğinizden emin misiniz?',
           ),
           actions: [
             TextButton(
@@ -734,7 +760,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Text('${_photos.length} fotoğraf indiriliyor...'),
+                        Text('${photos.length} fotoğraf indiriliyor...'),
                       ],
                     ),
                     backgroundColor: AppTheme.primary,
@@ -747,7 +773,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                 );
 
                 // Arka planda indir - kullanıcı app'i kapatsa da devam eder
-                _downloadInBackground(_photos);
+                _downloadInBackground(photos);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primary,
@@ -764,7 +790,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   void _downloadSelectedPhotos() {
-    if (_selectedPhotos.isEmpty) return;
+    final selectedPhotos = _viewModel.selectedPhotos;
+    final photos = _viewModel.mainPhotoUrls;
+    
+    if (selectedPhotos.isEmpty) return;
     
     showDialog(
       context: context,
@@ -775,7 +804,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
           ),
           title: const Text('Fotoğrafları İndir'),
           content: Text(
-            '${_selectedPhotos.length} fotoğraf telefon galerisine indirilecektir.',
+            '${selectedPhotos.length} fotoğraf telefon galerisine indirilecektir.',
           ),
           actions: [
             TextButton(
@@ -787,7 +816,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                 Navigator.pop(dialogContext);
                 
                 // Seçili fotoğrafların URL'lerini al
-                final selectedUrls = _selectedPhotos.map((index) => _photos[index]).toList();
+                final selectedUrls = selectedPhotos.map((index) => photos[index]).toList();
                 
                 // Başlangıç bildirimi
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -803,7 +832,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Text('${_selectedPhotos.length} fotoğraf indiriliyor...'),
+                        Text('${selectedPhotos.length} fotoğraf indiriliyor...'),
                       ],
                     ),
                     backgroundColor: AppTheme.primary,
@@ -819,10 +848,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                 _downloadInBackground(selectedUrls);
                 
                 // Seçimi temizle
-                setState(() {
-                  _selectedPhotos.clear();
-                  _isSelectionMode = false;
-                });
+                _viewModel.disableSelectionMode();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primary,
@@ -839,13 +865,13 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   void _shareSelectedPhotos() {
-    if (_selectedPhotos.isEmpty) return;
+    if (_viewModel.selectedPhotos.isEmpty) return;
     
-    _showSnackBar('${_selectedPhotos.length} fotoğraf paylaşılıyor...');
+    _showSnackBar('${_viewModel.selectedPhotos.length} fotoğraf paylaşılıyor...');
   }
 
   void _deleteSelectedPhotos() {
-    if (_selectedPhotos.isEmpty) return;
+    if (_viewModel.selectedPhotos.isEmpty) return;
     
     showDialog(
       context: context,
@@ -856,7 +882,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
           ),
           title: const Text('Fotoğrafları Sil'),
           content: Text(
-            '${_selectedPhotos.length} fotoğrafı silmek istediğinizden emin misiniz?',
+            '${_viewModel.selectedPhotos.length} fotoğrafı silmek istediğinizden emin misiniz?',
           ),
           actions: [
             TextButton(
@@ -864,17 +890,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
               child: const Text('İptal'),
             ),
             TextButton(
-              onPressed: () {
-                final sortedIndices = _selectedPhotos.toList()..sort((a, b) => b.compareTo(a));
-                setState(() {
-                  for (final index in sortedIndices) {
-                    _photos.removeAt(index);
-                  }
-                  _selectedPhotos.clear();
-                  _isSelectionMode = false;
-                });
+              onPressed: () async {
+                await _viewModel.deleteSelectedPhotos();
                 Navigator.pop(context);
-                _showSnackBar('${sortedIndices.length} fotoğraf silindi');
+                _showSnackBar('Fotoğraflar silindi');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.error,

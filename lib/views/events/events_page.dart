@@ -162,30 +162,6 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
     }
   }
 
-  String _formatFullDate(String dateTimeString) {
-    // Expected format: "14.11.2025 15:00"
-    try {
-      final datePart = dateTimeString.split(' ')[0];
-      final parts = datePart.split('.');
-      if (parts.length >= 3) {
-        final day = parts[0];
-        final month = parts[1];
-        final year = parts[2];
-        final monthNames = [
-          '', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-          'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
-        ];
-        final monthIndex = int.tryParse(month) ?? 0;
-        if (monthIndex > 0 && monthIndex < monthNames.length) {
-          return '$day ${monthNames[monthIndex]} $year';
-        }
-      }
-      return datePart;
-    } catch (e) {
-      return dateTimeString;
-    }
-  }
-
   Future<void> _showCityPicker() async {
     final selectedCity = await showDialog<City>(
       context: context,
@@ -499,11 +475,7 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                                             context,
                                             MaterialPageRoute(
                                               builder: (context) => EventDetailPage(
-                                                eventTitle: event.eventTitle,
-                                                clientName: 'Görkem Öztürk',
-                                                eventDate: _formatFullDate(event.eventStartDate),
-                                                eventTime: _formatTime(event.eventStartDate),
-                                                location: event.eventLocation,
+                                                eventID: event.eventID,
                                               ),
                                             ),
                                           );

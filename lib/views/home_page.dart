@@ -6,6 +6,9 @@ import 'package:pixlomi/services/user_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/models/user_models.dart';
 import 'package:pixlomi/views/qr/qr_scanner_page.dart';
+import 'package:pixlomi/services/event_service.dart';
+import 'package:pixlomi/models/event_models.dart';
+import 'package:pixlomi/views/events/event_detail_page.dart';
 
 class HomePage extends StatefulWidget {
   final String locationText;
@@ -29,6 +32,8 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _eventCodeController = TextEditingController();
   final FocusNode _eventCodeFocusNode = FocusNode();
   bool _isSearching = false;
+  List<Event> _attendedEvents = [];
+  bool _isLoadingEvents = false;
 
   @override
   void initState() {
@@ -40,6 +45,7 @@ class _HomePageState extends State<HomePage> {
     );
     _startAutoScroll();
     _loadUserData();
+    _loadAttendedEvents();
     
     // TextField focus listener
     _eventCodeFocusNode.addListener(() {
@@ -76,6 +82,46 @@ class _HomePageState extends State<HomePage> {
     } catch (e) {
       // Sessizce hata yakalama, kullanıcı deneyimini etkilememek için
       debugPrint('Error loading user data: $e');
+    }
+  }
+
+  Future<void> _loadAttendedEvents() async {
+    try {
+      setState(() {
+        _isLoadingEvents = true;
+      });
+
+      final userToken = await StorageHelper.getUserToken();
+      
+      if (userToken == null || userToken.isEmpty) {
+        setState(() {
+          _isLoadingEvents = false;
+        });
+        return;
+      }
+
+      final response = await EventService.getAllEvents(userToken);
+      
+      if (response != null && response.success) {
+        // Sadece eşleşen fotoğrafı olan etkinlikleri filtrele (imageCount > 0)
+        final attendedEvents = response.data.events
+            .where((event) => event.imageCount > 0)
+            .toList();
+        
+        setState(() {
+          _attendedEvents = attendedEvents;
+          _isLoadingEvents = false;
+        });
+      } else {
+        setState(() {
+          _isLoadingEvents = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading attended events: $e');
+      setState(() {
+        _isLoadingEvents = false;
+      });
     }
   }
 
@@ -397,7 +443,7 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Yaklaşan Etkinlikler',
+                      'Katıldığım Etkinlikler',
                       style: AppTheme.labelLarge,
                     ),
                     GestureDetector(
@@ -414,26 +460,65 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 15),
 
               // Events List
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    _EventCard(
-                      day: '10',
-                      month: 'ARA',
-                      title: 'Yıldönümü\nEtkinliği',
-                      color: const Color(0xFFFFE5EC),
-                    ),
-                    const SizedBox(width: 12),
-                    _EventCard(
-                      day: '10',
-                      month: 'ARA',
-                      title: 'Doğum Günü\nKutlaması',
-                      color: const Color(0xFFE3F2FD),
-                    ),
-                  ],
-                ),
-              ),
+              _isLoadingEvents
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  : _attendedEvents.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                          child: Center(
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.event_busy,
+                                  size: 48,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Henüz katıldığınız etkinlik yok',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : SizedBox(
+                          height: 130,
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _attendedEvents.length,
+                            itemBuilder: (context, index) {
+                              final event = _attendedEvents[index];
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  right: index < _attendedEvents.length - 1 ? 12 : 0,
+                                ),
+                                child: _EventCard(
+                                  event: event,
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => EventDetailPage(
+                                          eventID: event.eventID,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
 
               const SizedBox(height: 100),
               ],
@@ -497,22 +582,64 @@ class _ServiceCard extends StatelessWidget {
 
 // Event Card Widget
 class _EventCard extends StatelessWidget {
-  final String day;
-  final String month;
-  final String title;
-  final Color color;
+  final Event event;
+  final VoidCallback? onTap;
 
   const _EventCard({
-    required this.day,
-    required this.month,
-    required this.title,
-    required this.color,
+    required this.event,
+    this.onTap,
   });
+
+  String _formatDate(String dateTimeString) {
+    try {
+      // Format: "14.11.2025 15:00" -> "14"
+      final parts = dateTimeString.split(' ');
+      final dateParts = parts[0].split('.');
+      return dateParts[0]; // day
+    } catch (e) {
+      return '00';
+    }
+  }
+
+  String _formatMonth(String dateTimeString) {
+    try {
+      // Format: "14.11.2025 15:00" -> "KAS"
+      final parts = dateTimeString.split(' ');
+      final dateParts = parts[0].split('.');
+      final month = int.parse(dateParts[1]);
+      
+      const months = [
+        'OCA', 'ŞUB', 'MAR', 'NİS', 'MAY', 'HAZ',
+        'TEM', 'AĞU', 'EYL', 'EKİ', 'KAS', 'ARA'
+      ];
+      
+      return months[month - 1];
+    } catch (e) {
+      return 'AY';
+    }
+  }
+
+  Color _getEventColor(int index) {
+    final colors = [
+      const Color(0xFFFFE5EC),
+      const Color(0xFFE3F2FD),
+      const Color(0xFFFCE4EC),
+      const Color(0xFFF3E5F5),
+      const Color(0xFFE8F5F9),
+    ];
+    return colors[index % colors.length];
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
+    final day = _formatDate(event.eventStartDate);
+    final month = _formatMonth(event.eventStartDate);
+    final color = _getEventColor(event.eventID);
+
+    return GestureDetector(
+      onTap: onTap,
       child: Container(
+        width: 150,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: color,
@@ -527,6 +654,7 @@ class _EventCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -551,24 +679,38 @@ class _EventCard extends StatelessWidget {
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(
-                    Icons.bookmark_border,
-                    size: 20,
-                    color: Colors.grey[800],
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.photo_library,
+                        size: 14,
+                        color: AppTheme.primary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${event.imageCount}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.primary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             Text(
-              title,
+              event.eventTitle,
               style: AppTheme.labelSmall,
               maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
