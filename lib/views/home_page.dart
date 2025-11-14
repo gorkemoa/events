@@ -106,6 +106,7 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
 
+
               // Search Bar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -128,61 +129,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
 
-              const SizedBox(height: 10),
-
-              // Explore our services
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Hizmetlerimizi Keşfedin',
-                      style: AppTheme.labelLarge,
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              // Services Carousel
-              SizedBox(
-                height: 150,
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemBuilder: (context, index) {
-                    // Sonsuz döngü için modulo kullan
-                    final serviceIndex = index % 4;
-                    final services = [
-                      _ServiceCard(
-                        title: 'Yıldönümü\nFotoğrafçılığı',
-                        icon: Icons.cake,
-                        backgroundColor: const Color.fromARGB(255, 241, 245, 201),
-                      ),
-                      _ServiceCard(
-                        title: 'Doğum Günü\nFotoğrafçılığı',
-                        icon: Icons.celebration,
-                        backgroundColor: const Color(0xFFE3F2FD),
-                      ),
-                      _ServiceCard(
-                        title: 'Düğün\nFotoğrafçılığı',
-                        icon: Icons.favorite,
-                        backgroundColor: const Color(0xFFFCE4EC),
-                      ),
-                      _ServiceCard(
-                        title: 'Nişan\nFotoğrafçılığı',
-                        icon: Icons.diamond,
-                        backgroundColor: const Color(0xFFF3E5F5),
-                      ),
-                    ];
-                    return services[serviceIndex];
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 25),
-
+              const SizedBox(height: 20),
               // View pictures with QR Code section
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -265,6 +212,60 @@ class _HomePageState extends State<HomePage> {
               ),
 
               const SizedBox(height: 25),
+
+
+              // Explore our services
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Hizmetlerimizi Keşfedin',
+                      style: AppTheme.labelLarge,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Services Carousel
+              SizedBox(
+                height: 150,
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemBuilder: (context, index) {
+                    // Sonsuz döngü için modulo kullan
+                    final serviceIndex = index % 4;
+                    final services = [
+                      _ServiceCard(
+                        title: 'Yıldönümü\nFotoğrafçılığı',
+                        icon: Icons.cake,
+                        backgroundColor: const Color.fromARGB(255, 241, 245, 201),
+                      ),
+                      _ServiceCard(
+                        title: 'Doğum Günü\nFotoğrafçılığı',
+                        icon: Icons.celebration,
+                        backgroundColor: const Color(0xFFE3F2FD),
+                      ),
+                      _ServiceCard(
+                        title: 'Düğün\nFotoğrafçılığı',
+                        icon: Icons.favorite,
+                        backgroundColor: const Color(0xFFFCE4EC),
+                      ),
+                      _ServiceCard(
+                        title: 'Nişan\nFotoğrafçılığı',
+                        icon: Icons.diamond,
+                        backgroundColor: const Color(0xFFF3E5F5),
+                      ),
+                    ];
+                    return services[serviceIndex];
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 20),
 
               // Upcoming Events
               Padding(

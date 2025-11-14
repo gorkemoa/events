@@ -5,11 +5,8 @@ import 'package:pixlomi/widgets/home_header.dart';
 
 class GalleryPage extends StatefulWidget {
   final VoidCallback? onMenuPressed;
-  
-  const GalleryPage({
-    Key? key,
-    this.onMenuPressed,
-  }) : super(key: key);
+
+  const GalleryPage({Key? key, this.onMenuPressed}) : super(key: key);
 
   @override
   State<GalleryPage> createState() => _GalleryPageState();
@@ -20,12 +17,13 @@ class _GalleryPageState extends State<GalleryPage> {
   final Set<String> _favorites = {};
   bool _isSelectionMode = false;
   final Set<String> _selectedPhotos = {};
-  
+
   // Sample photos data - çekilen fotoğraflar
   final List<Map<String, dynamic>> photos = [
     {
       'id': '1',
-      'url': 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=500&fit=crop',
+      'url':
+          'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=500&fit=crop',
       'title': 'Kahve Festivali Stand',
       'date': '5 Kasım 2025',
       'time': '10:30',
@@ -34,7 +32,8 @@ class _GalleryPageState extends State<GalleryPage> {
     },
     {
       'id': '2',
-      'url': 'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=400&h=300&fit=crop',
+      'url':
+          'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=400&h=300&fit=crop',
       'title': 'Barista Yarışması',
       'date': '5 Kasım 2025',
       'time': '14:00',
@@ -43,7 +42,8 @@ class _GalleryPageState extends State<GalleryPage> {
     },
     {
       'id': '3',
-      'url': 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=400&h=400&fit=crop',
+      'url':
+          'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=400&h=400&fit=crop',
       'title': 'Ticari Fuarı',
       'date': '3 Kasım 2025',
       'time': '09:15',
@@ -52,7 +52,8 @@ class _GalleryPageState extends State<GalleryPage> {
     },
     {
       'id': '4',
-      'url': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=500&fit=crop',
+      'url':
+          'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=500&fit=crop',
       'title': 'Kurumsal Etkinlik',
       'date': '2 Kasım 2025',
       'time': '18:00',
@@ -61,7 +62,8 @@ class _GalleryPageState extends State<GalleryPage> {
     },
     {
       'id': '5',
-      'url': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=400&fit=crop',
+      'url':
+          'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=400&fit=crop',
       'title': 'Ağ Oluşturma Etkinliği',
       'date': '1 Kasım 2025',
       'time': '17:30',
@@ -70,7 +72,8 @@ class _GalleryPageState extends State<GalleryPage> {
     },
     {
       'id': '6',
-      'url': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=350&fit=crop',
+      'url':
+          'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=350&fit=crop',
       'title': 'Seminer Sunumu',
       'date': '31 Ekim 2025',
       'time': '11:00',
@@ -79,7 +82,8 @@ class _GalleryPageState extends State<GalleryPage> {
     },
     {
       'id': '7',
-      'url': 'https://images.unsplash.com/photo-1517457373614-b7152f800fd1?w=400&h=500&fit=crop',
+      'url':
+          'https://images.unsplash.com/photo-1517457373614-b7152f800fd1?w=400&h=500&fit=crop',
       'title': 'Başarı Ödülü Töreni',
       'date': '30 Ekim 2025',
       'time': '19:00',
@@ -88,7 +92,8 @@ class _GalleryPageState extends State<GalleryPage> {
     },
     {
       'id': '8',
-      'url': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=400&fit=crop',
+      'url':
+          'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=400&fit=crop',
       'title': 'Ticari Ortaklık İmza',
       'date': '29 Ekim 2025',
       'time': '15:45',
@@ -97,7 +102,8 @@ class _GalleryPageState extends State<GalleryPage> {
     },
     {
       'id': '9',
-      'url': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=500&fit=crop',
+      'url':
+          'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=500&fit=crop',
       'title': 'Müşteri Sunumu',
       'date': '28 Ekim 2025',
       'time': '13:30',
@@ -157,7 +163,9 @@ class _GalleryPageState extends State<GalleryPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Fotoğrafları Sil'),
-        content: Text('${_selectedPhotos.length} fotoğrafı silmek istediğinize emin misiniz?'),
+        content: Text(
+          '${_selectedPhotos.length} fotoğrafı silmek istediğinize emin misiniz?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -166,7 +174,9 @@ class _GalleryPageState extends State<GalleryPage> {
           TextButton(
             onPressed: () {
               setState(() {
-                photos.removeWhere((photo) => _selectedPhotos.contains(photo['id']));
+                photos.removeWhere(
+                  (photo) => _selectedPhotos.contains(photo['id']),
+                );
                 _selectedPhotos.clear();
                 _isSelectionMode = false;
               });
@@ -225,168 +235,174 @@ class _GalleryPageState extends State<GalleryPage> {
                           }
                         });
                       },
-                      isAllSelected: _selectedPhotos.length == filteredPhotos.length && filteredPhotos.isNotEmpty,
+                      isAllSelected:
+                          _selectedPhotos.length == filteredPhotos.length &&
+                          filteredPhotos.isNotEmpty,
                     )
                   : HomeHeader(
-                      locationText: 'Fotoğraflar',
-                      subtitle: '${photos.length} fotoğraf',
+                      subtitle: 'Fotoğraflar',
+                      locationText: '${photos.length} fotoğraf',
                       onMenuPressed: widget.onMenuPressed,
                       onNotificationPressed: () {
                         Navigator.pushNamed(context, '/notifications');
                       },
                     ),
 
-            // Etkinliklere göre Filter - Horizontal Scroll
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingL),
-              child: Row(
-                children: filterOptions.map((filter) {
-                  final isSelected = _selectedFilter == filter;
-                  int count = 0;
-                  
-                  if (filter == 'Tümü') {
-                    count = photos.length;
-                  } else if (filter == 'Favoriler') {
-                    count = _favorites.length;
-                  } else {
-                    count = photos.where((p) => p['event'] == filter).length;
-                  }
-                  
-                  return Padding(
-                    padding: const EdgeInsets.only(right: AppTheme.spacingM),
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedFilter = filter;
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppTheme.spacingL,
-                          vertical: AppTheme.spacingS,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected 
-                            ? AppTheme.primary 
-                            : Colors.grey[100],
-                          borderRadius: BorderRadius.circular(20),
-                          border: isSelected
-                            ? null
-                            : Border.all(color: Colors.grey[300]!),
-                        ),
-                        child: Row(
-                          children: [
-                            if (filter == 'Favoriler')
-                              const Icon(
-                                Icons.star,
-                                size: 16,
-                                color: Color(0xFFFFB800),
+              // Etkinliklere göre Filter - Horizontal Scroll
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacingL,
+                ),
+                child: Row(
+                  children: filterOptions.map((filter) {
+                    final isSelected = _selectedFilter == filter;
+                    int count = 0;
+
+                    if (filter == 'Tümü') {
+                      count = photos.length;
+                    } else if (filter == 'Favoriler') {
+                      count = _favorites.length;
+                    } else {
+                      count = photos.where((p) => p['event'] == filter).length;
+                    }
+
+                    return Padding(
+                      padding: const EdgeInsets.only(right: AppTheme.spacingM),
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedFilter = filter;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacingL,
+                            vertical: AppTheme.spacingS,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppTheme.primary
+                                : Colors.grey[100],
+                            borderRadius: BorderRadius.circular(20),
+                            border: isSelected
+                                ? null
+                                : Border.all(color: Colors.grey[300]!),
+                          ),
+                          child: Row(
+                            children: [
+                              if (filter == 'Favoriler')
+                                const Icon(
+                                  Icons.star,
+                                  size: 16,
+                                  color: Color(0xFFFFB800),
+                                ),
+                              if (filter == 'Favoriler')
+                                const SizedBox(width: 6),
+                              Text(
+                                '$filter ($count)',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : AppTheme.textPrimary,
+                                ),
                               ),
-                            if (filter == 'Favoriler')
-                              const SizedBox(width: 6),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              const SizedBox(height: AppTheme.spacingL),
+
+              // Photos Grid - iPhone Photos App style
+              Expanded(
+                child: filteredPhotos.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.image_not_supported_outlined,
+                              size: 64,
+                              color: AppTheme.textTertiary,
+                            ),
+                            const SizedBox(height: AppTheme.spacingL),
                             Text(
-                              '$filter ($count)',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: isSelected 
-                                  ? Colors.white 
-                                  : AppTheme.textPrimary,
+                              'Bu etkinlikten fotoğraf yok',
+                              style: AppTheme.labelMedium.copyWith(
+                                color: AppTheme.textTertiary,
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-
-            const SizedBox(height: AppTheme.spacingL),
-
-            // Photos Grid - iPhone Photos App style
-            Expanded(
-              child: filteredPhotos.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.image_not_supported_outlined,
-                            size: 64,
-                            color: AppTheme.textTertiary,
-                          ),
-                          const SizedBox(height: AppTheme.spacingL),
-                          Text(
-                            'Bu etkinlikten fotoğraf yok',
-                            style: AppTheme.labelMedium.copyWith(
-                              color: AppTheme.textTertiary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacingL,
-                      ),
-                      child: GridView.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          mainAxisSpacing: 1,
-                          crossAxisSpacing: 1,
-                          childAspectRatio: 1,
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacingL,
                         ),
-                        itemCount: filteredPhotos.length,
-                        itemBuilder: (context, index) {
-                          final photo = filteredPhotos[index];
-                          final isFavorite = _favorites.contains(photo['id']);
-                          final isSelected = _selectedPhotos.contains(photo['id']);
-                          return _PhotoTile(
-                            imageUrl: photo['url'],
-                            isFavorite: isFavorite,
-                            isSelected: isSelected,
-                            isSelectionMode: _isSelectionMode,
-                            onTap: () {
-                              if (_isSelectionMode) {
-                                _togglePhotoSelection(photo['id']);
-                              } else {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => PhotoDetailPage(
-                                      photo: photo,
-                                      allPhotos: filteredPhotos,
-                                      initialIndex: index,
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
-                            onLongPress: () {
-                              if (!_isSelectionMode) {
-                                setState(() {
-                                  _isSelectionMode = true;
-                                  _selectedPhotos.add(photo['id']);
-                                });
-                              }
-                            },
-                            onFavoriteTap: () {
-                              setState(() {
-                                if (isFavorite) {
-                                  _favorites.remove(photo['id']);
+                        child: GridView.builder(
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                mainAxisSpacing: 1,
+                                crossAxisSpacing: 1,
+                                childAspectRatio: 1,
+                              ),
+                          itemCount: filteredPhotos.length,
+                          itemBuilder: (context, index) {
+                            final photo = filteredPhotos[index];
+                            final isFavorite = _favorites.contains(photo['id']);
+                            final isSelected = _selectedPhotos.contains(
+                              photo['id'],
+                            );
+                            return _PhotoTile(
+                              imageUrl: photo['url'],
+                              isFavorite: isFavorite,
+                              isSelected: isSelected,
+                              isSelectionMode: _isSelectionMode,
+                              onTap: () {
+                                if (_isSelectionMode) {
+                                  _togglePhotoSelection(photo['id']);
                                 } else {
-                                  _favorites.add(photo['id']);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PhotoDetailPage(
+                                        photo: photo,
+                                        allPhotos: filteredPhotos,
+                                        initialIndex: index,
+                                      ),
+                                    ),
+                                  );
                                 }
-                              });
-                            },
-                          );
-                        },
+                              },
+                              onLongPress: () {
+                                if (!_isSelectionMode) {
+                                  setState(() {
+                                    _isSelectionMode = true;
+                                    _selectedPhotos.add(photo['id']);
+                                  });
+                                }
+                              },
+                              onFavoriteTap: () {
+                                setState(() {
+                                  if (isFavorite) {
+                                    _favorites.remove(photo['id']);
+                                  } else {
+                                    _favorites.add(photo['id']);
+                                  }
+                                });
+                              },
+                            );
+                          },
+                        ),
                       ),
-                    ),
               ),
             ],
           ),
@@ -398,10 +414,7 @@ class _GalleryPageState extends State<GalleryPage> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 border: Border(
-                  top: BorderSide(
-                    color: Colors.grey[200]!,
-                    width: 0.5,
-                  ),
+                  top: BorderSide(color: Colors.grey[200]!, width: 0.5),
                 ),
               ),
               child: SafeArea(
@@ -484,10 +497,7 @@ class _PhotoTile extends StatelessWidget {
               },
             ),
             // Overlay when selected
-            if (isSelected)
-              Container(
-                color: AppTheme.primary.withOpacity(0.2),
-              ),
+            if (isSelected) Container(color: AppTheme.primary.withOpacity(0.2)),
             // Favori butonu - sadece seçim modu değilse göster
             if (!isSelectionMode)
               Positioned(
@@ -503,7 +513,9 @@ class _PhotoTile extends StatelessWidget {
                     ),
                     child: Icon(
                       isFavorite ? Icons.star : Icons.star_outline,
-                      color: isFavorite ? const Color(0xFFFFB800) : Colors.white,
+                      color: isFavorite
+                          ? const Color(0xFFFFB800)
+                          : Colors.white,
                       size: 16,
                     ),
                   ),
@@ -526,11 +538,7 @@ class _PhotoTile extends StatelessWidget {
                     ),
                   ),
                   child: isSelected
-                      ? const Icon(
-                          Icons.check,
-                          size: 16,
-                          color: Colors.white,
-                        )
+                      ? const Icon(Icons.check, size: 16, color: Colors.white)
                       : null,
                 ),
               ),
@@ -629,7 +637,7 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final buttonColor = color ?? AppTheme.primary;
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -637,11 +645,7 @@ class _ActionButton extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: buttonColor,
-              size: 28,
-            ),
+            Icon(icon, color: buttonColor, size: 28),
             const SizedBox(height: 4),
             Text(
               label,
