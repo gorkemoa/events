@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
+import 'package:pixlomi/services/photo_service.dart';
 
 class EventDetailPage extends StatefulWidget {
   final String eventTitle;
@@ -454,7 +455,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      _markAsDone();
+                      _downloadAllPhotos();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
@@ -628,28 +629,125 @@ class _EventDetailPageState extends State<EventDetailPage> {
     );
   }
 
-  void _markAsDone() {
+  Future<void> _downloadInBackground(List<String> photoUrls) async {
+    try {
+      print('🔄 Arka planda indiriliyor: ${photoUrls.length} fotoğraf');
+      
+      final successCount = await PhotoService.downloadPhotos(photoUrls);
+      
+      print('✅ İndirme tamamlandı: $successCount/${photoUrls.length}');
+
+      // Sonuç bildirimi
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  successCount == photoUrls.length ? Icons.check_circle : Icons.warning,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    successCount == photoUrls.length
+                        ? '$successCount fotoğraf galeriye kaydedildi'
+                        : successCount > 0
+                            ? '$successCount/${photoUrls.length} fotoğraf kaydedildi'
+                            : 'Fotoğraflar kaydedilemedi',
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: successCount > 0 ? Colors.green : Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ Arka plan indirme hatası: $e');
+      
+      if (mounted) {
+        final errorMessage = e.toString().replaceAll('Exception: ', '');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                Expanded(child: Text(errorMessage)),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
+  }
+
+  void _downloadAllPhotos() {
+    if (_photos.isEmpty) return;
+
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text('Etkinliği Tamamla'),
-          content: const Text(
-            'Bu etkinliği tamamlandı olarak işaretlemek istediğinizden emin misiniz?',
+          title: const Text('Tüm Fotoğrafları İndir'),
+          content: Text(
+            '${_photos.length} fotoğrafı galeriye kaydetmek istediğinizden emin misiniz?',
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('İptal'),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Dialog'u kapat
-                Navigator.pop(context); // Detay sayfasından çık
-                _showSnackBar('Etkinlik tamamlandı olarak işaretlendi');
+              onPressed: () async {
+                Navigator.pop(dialogContext); // Onay dialog'unu kapat
+
+                if (!mounted) return;
+
+                // Başlangıç bildirimi - kullanıcı uygulamayı kapatabilir
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text('${_photos.length} fotoğraf indiriliyor...'),
+                      ],
+                    ),
+                    backgroundColor: AppTheme.primary,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+
+                // Arka planda indir - kullanıcı app'i kapatsa da devam eder
+                _downloadInBackground(_photos);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primary,
@@ -657,7 +755,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text('Tamamla'),
+              child: const Text('İndir' , style: TextStyle(color: Colors.white),),
             ),
           ],
         );
@@ -670,7 +768,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
     
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -681,13 +779,50 @@ class _EventDetailPageState extends State<EventDetailPage> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('İptal'),
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(context);
-                _showSnackBar('${_selectedPhotos.length} fotoğraf indiriliyor...');
+                Navigator.pop(dialogContext);
+                
+                // Seçili fotoğrafların URL'lerini al
+                final selectedUrls = _selectedPhotos.map((index) => _photos[index]).toList();
+                
+                // Başlangıç bildirimi
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text('${_selectedPhotos.length} fotoğraf indiriliyor...'),
+                      ],
+                    ),
+                    backgroundColor: AppTheme.primary,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+                
+                // Arka planda indir
+                _downloadInBackground(selectedUrls);
+                
+                // Seçimi temizle
+                setState(() {
+                  _selectedPhotos.clear();
+                  _isSelectionMode = false;
+                });
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primary,
@@ -1015,30 +1150,68 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
     );
   }
 
-  void _downloadPhoto() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Fotoğraf indiriliyor...'),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: AppTheme.primary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+  void _downloadPhoto() async {
+    try {
+      final currentPhotoUrl = widget.photos[_currentIndex];
+      final success = await PhotoService.downloadPhoto(currentPhotoUrl);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(success ? 'Fotoğraf galeriye kaydedildi' : 'İndirme başarısız'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: success ? AppTheme.primary : Colors.red,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        final errorMessage = e.toString().replaceAll('Exception: ', '');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
   }
 
-  void _sharePhoto() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Paylaşım seçenekleri açılıyor...'),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: AppTheme.primary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+  void _sharePhoto() async {
+    try {
+      final currentPhotoUrl = widget.photos[_currentIndex];
+      
+      // iOS için share position
+      final box = context.findRenderObject() as RenderBox?;
+      final sharePositionOrigin = box != null
+          ? box.localToGlobal(Offset.zero) & box.size
+          : null;
+      
+      await PhotoService.sharePhoto(
+        currentPhotoUrl,
+        sharePositionOrigin: sharePositionOrigin,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Paylaşım hatası: $e'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   void _showPhotoInfo() {

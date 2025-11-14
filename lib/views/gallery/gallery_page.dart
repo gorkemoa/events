@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/views/gallery/photo_detail_page.dart';
 import 'package:pixlomi/widgets/home_header.dart';
+import 'package:pixlomi/services/photo_service.dart';
 
 class GalleryPage extends StatefulWidget {
   final VoidCallback? onMenuPressed;
@@ -148,14 +149,117 @@ class _GalleryPageState extends State<GalleryPage> {
     });
   }
 
-  void _downloadSelectedPhotos() {
-    // Download logic here
+  Future<void> _downloadInBackground(List<String> photoUrls) async {
+    try {
+      print('🔄 Arka planda indiriliyor: ${photoUrls.length} fotoğraf');
+      
+      final successCount = await PhotoService.downloadPhotos(photoUrls);
+      
+      print('✅ İndirme tamamlandı: $successCount/${photoUrls.length}');
+
+      // Sonuç bildirimi
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  successCount == photoUrls.length ? Icons.check_circle : Icons.warning,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    successCount == photoUrls.length
+                        ? '$successCount fotoğraf galeriye kaydedildi'
+                        : successCount > 0
+                            ? '$successCount/${photoUrls.length} fotoğraf kaydedildi'
+                            : 'Fotoğraflar kaydedilemedi',
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: successCount > 0 ? Colors.green : Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ Arka plan indirme hatası: $e');
+      
+      if (mounted) {
+        final errorMessage = e.toString().replaceAll('Exception: ', '');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                Expanded(child: Text(errorMessage)),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
+  }
+
+  void _downloadSelectedPhotos() async {
+    if (_selectedPhotos.isEmpty) return;
+
+    // Seçili fotoğrafların URL'lerini al
+    final selectedUrls = photos
+        .where((photo) => _selectedPhotos.contains(photo['id']))
+        .map((photo) => photo['url'] as String)
+        .toList();
+
+    final photoCount = selectedUrls.length;
+
+    // Başlangıç bildirimi - kullanıcı uygulamayı kapatabilir
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${_selectedPhotos.length} fotoğraf indiriliyor...'),
+        content: Row(
+          children: [
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text('$photoCount fotoğraf indiriliyor...'),
+          ],
+        ),
         backgroundColor: AppTheme.primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        duration: const Duration(seconds: 3),
       ),
     );
+
+    // Seçimi temizle - kullanıcı devam edebilsin
+    setState(() {
+      _selectedPhotos.clear();
+      _isSelectionMode = false;
+    });
+
+    // Arka planda indir - kullanıcı app'i kapatsa da devam eder
+    _downloadInBackground(selectedUrls);
   }
 
   void _deleteSelectedPhotos() {
@@ -195,14 +299,54 @@ class _GalleryPageState extends State<GalleryPage> {
     );
   }
 
-  void _shareSelectedPhotos() {
-    // Share logic here
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${_selectedPhotos.length} fotoğraf paylaşılıyor...'),
-        backgroundColor: AppTheme.primary,
+  void _shareSelectedPhotos() async {
+    if (_selectedPhotos.isEmpty) return;
+
+    // Loading göster
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: AppTheme.primary),
       ),
     );
+
+    try {
+      // Seçili fotoğrafların URL'lerini al
+      final selectedUrls = photos
+          .where((photo) => _selectedPhotos.contains(photo['id']))
+          .map((photo) => photo['url'] as String)
+          .toList();
+
+      // iOS için share position
+      final box = context.findRenderObject() as RenderBox?;
+      final sharePositionOrigin = box != null
+          ? box.localToGlobal(Offset.zero) & box.size
+          : null;
+
+      // Fotoğrafları paylaş
+      await PhotoService.sharePhotos(
+        selectedUrls,
+        sharePositionOrigin: sharePositionOrigin,
+      );
+
+      // Loading'i kapat
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      // Loading'i kapat
+      if (mounted) Navigator.pop(context);
+
+      // Hata göster
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Paylaşım hatası: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   @override

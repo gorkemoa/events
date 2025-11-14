@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
+import 'package:pixlomi/services/photo_service.dart';
 
 class PhotoDetailPage extends StatefulWidget {
   final Map<String, dynamic> photo;
@@ -139,7 +140,31 @@ class _PhotoDetailPageState extends State<PhotoDetailPage> {
                         ),
                         const SizedBox(width: AppTheme.spacingM),
                         GestureDetector(
-                          onTap: () {},
+                          onTap: () async {
+                            final currentPhoto = widget.allPhotos[_currentIndex];
+                            try {
+                              // iOS için share position
+                              final box = context.findRenderObject() as RenderBox?;
+                              final sharePositionOrigin = box != null
+                                  ? box.localToGlobal(Offset.zero) & box.size
+                                  : null;
+                              
+                              await PhotoService.sharePhoto(
+                                currentPhoto['url'],
+                                text: currentPhoto['title'] ?? 'Pixlomi ile paylaşıldı',
+                                sharePositionOrigin: sharePositionOrigin,
+                              );
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Paylaşım hatası: $e'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          },
                           child: Container(
                             padding: const EdgeInsets.all(AppTheme.spacingXS),
                             decoration: BoxDecoration(
