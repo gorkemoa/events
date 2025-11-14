@@ -296,7 +296,7 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                   ),
                   tabs: const [
                     Tab(text: 'Tüm Etkinlikler'),
-                    Tab(text: 'Geçmiş Etkinlikler'),
+                    Tab(text: 'Dahil Oldığım Etkinlikler'),
                   ],
                 ),
               ),
@@ -368,7 +368,7 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                                   ),
                     // Post Events Tab
                     const Center(
-                      child: Text('Geçmiş Etkinlikler'),
+                      child: Text('Dahil Oldığım Etkinlikler'),
                     ),
                   ],
                 ),

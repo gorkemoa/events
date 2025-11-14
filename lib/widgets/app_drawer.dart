@@ -104,7 +104,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   Image.asset(
                     'assets/logo/pixlomi.png',
                     height: 72,
-                    width: 100,
+                    width: 120,
                     fit: BoxFit.contain,
                     color: Colors.white,
                   ),
@@ -227,22 +227,40 @@ class _AppDrawerState extends State<AppDrawer> {
             ),
 
             // Footer - Company Info
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-              ),
-              child: Center(
-                child: Text(
-                  '© Office701 Bilgi Teknolojileri.\nTüm hakları saklıdır.\nVersiyon $_appVersion',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-            ),
+Container(
+  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+  decoration: BoxDecoration(
+    color: Colors.grey[200],
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start, // ilk satır solda
+    children: [
+      const Text(
+        '© Office701 Bilgi Teknolojileri | Tüm hakları saklıdır.',
+        style: TextStyle(
+          fontSize: 10,
+          color: Colors.grey,
+        ),
+      ),
+
+      const SizedBox(height: 10),
+
+      // LOGO ORTADA
+      Center(
+        child: Image.asset(
+          'assets/logo/office701.png',
+          height: 16,
+          fit: BoxFit.contain,
+        ),
+      ),
+
+      const SizedBox(height: 4),
+
+     
+    ],
+  ),
+),
+
             const SizedBox(height: 10),
             // Logout Button
             Padding(

@@ -29,12 +29,20 @@ class HomeHeader extends StatelessWidget {
           GestureDetector(
             onTap: onMenuPressed,
             child: Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
                 color: Colors.grey[100],
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.menu, size: 24),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.asset(
+                  'assets/logo/logo.png',
+                  width: 35,
+                  height: 35,
+                  fit: BoxFit.contain,
+                ),
+              ),
             ),
           ),
           // Location
@@ -54,13 +62,14 @@ class HomeHeader extends StatelessWidget {
                   children: [
                     Text(
                       locationText,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey[500],
-                      ),
+                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
                     ),
                     if (subtitle == null)
-                      Icon(Icons.keyboard_arrow_down, size: 18, color: Colors.grey[800]),
+                      Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 18,
+                        color: Colors.grey[800],
+                      ),
                   ],
                 ),
               ],
@@ -75,7 +84,10 @@ class HomeHeader extends StatelessWidget {
                 color: Colors.grey[100],
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(notificationIcon ?? Icons.notifications_outlined, size: 24),
+              child: Icon(
+                notificationIcon ?? Icons.notifications_outlined,
+                size: 24,
+              ),
             ),
           ),
         ],

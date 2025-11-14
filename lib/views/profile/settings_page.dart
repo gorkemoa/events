@@ -197,6 +197,17 @@ class _SettingsPageState extends State<SettingsPage> {
                 const SizedBox(height: 15),
 
                 _buildSettingsTile(
+                  icon: Icons.info,
+                  title: 'Hakkında',
+                  onTap: () {
+                    // Show about dialog
+                    _showAboutDialog();
+                  },
+                ),
+
+                const SizedBox(height: 12),
+
+                _buildSettingsTile(
                   icon: Icons.description,
                   title: 'Üyelik Sözleşmesi',
                   onTap: () {
@@ -224,18 +235,99 @@ class _SettingsPageState extends State<SettingsPage> {
                   },
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 15),
 
                 _buildSettingsTile(
-                  icon: Icons.info,
-                  title: 'Hakkında',
-                  onTap: () {
-                    // Show about dialog
-                    _showAboutDialog();
+                  icon: Icons.delete_forever,
+                  title: 'Hesabı Sil',
+                  titleColor: Colors.red,
+                  iconColor: Colors.red,
+                  onTap: () async {
+                    // 1. Onay
+                    final firstConfirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Hesap Sil'),
+                        content: const Text(
+                          'Bu işlem geri alınamaz. Hesabınız ve tüm verileriniz silinecektir. '
+                          'Devam etmek istediğinizden emin misiniz?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('İptal'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text(
+                              'Sil',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (firstConfirm == true && mounted) {
+                      // 2. Son Onay
+                      final secondConfirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Son Onay'),
+                          content: const Text(
+                            'Hesabınızı kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('İptal'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text(
+                                'Evet, Sil',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (secondConfirm == true) {
+                        try {
+                          // Get userId before clearing session
+                          final userId = await StorageHelper.getUserId();
+                          
+                          // Clear user session
+                          await StorageHelper.clearUserSession();
+                          
+                          // Unsubscribe from Firebase topic
+                          if (userId != null) {
+                            await FirebaseMessagingService.unsubscribeFromUserTopic(userId.toString());
+                          }
+                          
+                          if (mounted) {
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/login',
+                              (route) => false,
+                            );
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Bir hata oluştu: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      }
+                    }
                   },
                 ),
 
-                const SizedBox(height: 15),
+                const SizedBox(height: 30),
 
                 // Logout Button
                 SizedBox(
@@ -302,110 +394,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 12),
-                Center(
-                  child: OutlinedButton(
-                    onPressed: () async {
-                      // 1. Onay
-                      final firstConfirm = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Hesap Sil'),
-                          content: const Text(
-                            'Bu işlem geri alınamaz. Hesabınız ve tüm verileriniz silinecektir. '
-                            'Devam etmek istediğinizden emin misiniz?',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: const Text('İptal'),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              child: const Text(
-                                'Sil',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-
-                      if (firstConfirm == true && mounted) {
-                        // 2. Son Onay
-                        final secondConfirm = await showDialog<bool>(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Son Onay'),
-                            content: const Text(
-                              'Hesabınızı kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text('İptal'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                child: const Text(
-                                  'Evet, Sil',
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-
-                        if (secondConfirm == true) {
-                          try {
-                            // Get userId before clearing session
-                            final userId = await StorageHelper.getUserId();
-                            
-                            // Clear user session
-                            await StorageHelper.clearUserSession();
-                            
-                            // Unsubscribe from Firebase topic
-                            if (userId != null) {
-                              await FirebaseMessagingService.unsubscribeFromUserTopic(userId.toString());
-                            }
-                            
-                            if (mounted) {
-                              Navigator.of(context).pushNamedAndRemoveUntil(
-                                '/login',
-                                (route) => false,
-                              );
-                            }
-                          } catch (e) {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Bir hata oluştu: $e'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            }
-                          }
-                        }
-                      }
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.red),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    ),
-                    child: const Text(
-                      'Hesabı Sil',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.red,
-                      ),
-                    ),
-                  ),
-                ),
                 const SizedBox(height: 40),
               ],
             ),
@@ -419,7 +407,12 @@ class _SettingsPageState extends State<SettingsPage> {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
+    Color? titleColor,
+    Color? iconColor,
   }) {
+    final effectiveIconColor = iconColor ?? AppTheme.primary;
+    final effectiveTitleColor = titleColor ?? Colors.black87;
+    
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -433,22 +426,22 @@ class _SettingsPageState extends State<SettingsPage> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppTheme.primary.withOpacity(0.1),
+                    color: effectiveIconColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     icon,
-                    color: AppTheme.primary,
+                    color: effectiveIconColor,
                     size: 20,
                   ),
                 ),
                 const SizedBox(width: 16),
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: Colors.black87,
+                    color: effectiveTitleColor,
                   ),
                 ),
               ],

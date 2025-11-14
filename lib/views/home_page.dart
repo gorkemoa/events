@@ -140,13 +140,6 @@ class _HomePageState extends State<HomePage> {
                       'Hizmetlerimizi Keşfedin',
                       style: AppTheme.labelLarge,
                     ),
-                    GestureDetector(
-                      onTap: () {},
-                      child: const Text(
-                        'Tümünü Gör >',
-                        style: AppTheme.bodySmall,
-                      ),
-                    ),
                   ],
                 ),
               ),
