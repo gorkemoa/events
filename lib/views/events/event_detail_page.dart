@@ -786,6 +786,7 @@ class _PhotoDetailScreen extends StatefulWidget {
 class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
   late PageController _pageController;
   late int _currentIndex;
+  bool _isUIVisible = true;
 
   @override
   void initState() {
@@ -800,13 +801,19 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
     super.dispose();
   }
 
+  void _toggleUI() {
+    setState(() {
+      _isUIVisible = !_isUIVisible;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Fotoğraf PageView
+          // Fotoğraf PageView with Dismissible
           PageView.builder(
             controller: _pageController,
             onPageChanged: (index) {
@@ -816,10 +823,10 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
             },
             itemCount: widget.photos.length,
             itemBuilder: (context, index) {
-              return Center(
-                child: InteractiveViewer(
-                  minScale: 0.5,
-                  maxScale: 4.0,
+              return _DismissiblePhotoView(
+                onDismissed: () => Navigator.pop(context),
+                onTap: _toggleUI,
+                child: Center(
                   child: Image.network(
                     widget.photos[index],
                     fit: BoxFit.contain,
@@ -842,8 +849,10 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
           ),
 
           // Üst Bar (Geri butonu ve sayaç)
-          Positioned(
-            top: 0,
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            top: _isUIVisible ? 0 : -100,
             left: 0,
             right: 0,
             child: Container(
@@ -892,8 +901,10 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
           ),
 
           // Alt Aksiyon Barı
-          Positioned(
-            bottom: -20,
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            bottom: _isUIVisible ? -20 : -200,
             left: 0,
             right: 0,
             child: Container(
@@ -953,8 +964,10 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
 
           // Fotoğraf küçük resimleri (thumbnail)
           if (widget.photos.length > 1)
-            Positioned(
-              bottom: 120,
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              bottom: _isUIVisible ? 120 : -100,
               left: 0,
               right: 0,
               child: SizedBox(
@@ -1175,6 +1188,75 @@ class _InfoRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// iOS-style Dismissible Photo View
+class _DismissiblePhotoView extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onDismissed;
+  final VoidCallback onTap;
+
+  const _DismissiblePhotoView({
+    required this.child,
+    required this.onDismissed,
+    required this.onTap,
+  });
+
+  @override
+  State<_DismissiblePhotoView> createState() => _DismissiblePhotoViewState();
+}
+
+class _DismissiblePhotoViewState extends State<_DismissiblePhotoView> {
+  double _dragOffset = 0;
+  bool _isDragging = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final dismissThreshold = screenHeight * 0.2;
+    final dragProgress = (_dragOffset.abs() / dismissThreshold).clamp(0.0, 1.0);
+    final opacity = 1.0 - (dragProgress * 0.7);
+    final scale = 1.0 - (dragProgress * 0.2);
+
+    return GestureDetector(
+      onTap: widget.onTap,
+      onVerticalDragStart: (details) {
+        setState(() {
+          _isDragging = true;
+        });
+      },
+      onVerticalDragUpdate: (details) {
+        setState(() {
+          _dragOffset += details.delta.dy;
+          // Only allow downward drag
+          if (_dragOffset < 0) {
+            _dragOffset = 0;
+          }
+        });
+      },
+      onVerticalDragEnd: (details) {
+        if (_dragOffset > dismissThreshold) {
+          widget.onDismissed();
+        } else {
+          setState(() {
+            _dragOffset = 0;
+            _isDragging = false;
+          });
+        }
+      },
+      child: AnimatedContainer(
+        duration: _isDragging ? Duration.zero : const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+        transform: Matrix4.identity()
+          ..translate(0.0, _dragOffset, 0.0)
+          ..scale(scale),
+        child: Opacity(
+          opacity: opacity,
+          child: widget.child,
+        ),
+      ),
     );
   }
 }

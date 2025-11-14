@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/widgets/home_header.dart';
 import 'package:pixlomi/views/events/event_detail_page.dart';
-import 'package:pixlomi/models/event_models.dart';
+import 'package:pixlomi/models/event_models.dart' as models;
 import 'package:pixlomi/models/city_models.dart';
 import 'package:pixlomi/services/event_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/general_service.dart';
+import 'package:device_calendar/device_calendar.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 class EventsPage extends StatefulWidget {
   final String locationText;
@@ -24,34 +26,64 @@ class EventsPage extends StatefulWidget {
 
 class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  List<Event> _events = [];
+  List<models.Event> _events = [];
   List<City> _cities = [];
   bool _isLoading = false;
   String? _errorMessage;
   final TextEditingController _searchController = TextEditingController();
   String _searchText = '';
-  String _selectedCityName = 'İZMİR';
-  String _selectedCityNo = '35';
+  late String _selectedCityName;
+  String? _selectedCityNo;
   final GeneralService _generalService = GeneralService();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _selectedCityName = widget.locationText;
     _loadCities();
-    _loadEvents();
+  }
+
+  @override
+  void didUpdateWidget(EventsPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.locationText != widget.locationText) {
+      setState(() {
+        _selectedCityName = widget.locationText;
+      });
+      _loadCities();
+    }
   }
 
   Future<void> _loadCities() async {
     try {
       final response = await _generalService.getAllCities();
       if (response.isSuccess && response.data != null) {
-        setState(() {
-          _cities = response.data!.cities;
-        });
+        _cities = response.data!.cities;
+        
+        // widget.locationText ile eşleşen şehri bul
+        final matchingCity = _cities.firstWhere(
+          (city) => city.cityName.toLowerCase() == widget.locationText.toLowerCase(),
+          orElse: () => City(cityNo: 0, cityName: widget.locationText),
+        );
+        
+        // Eşleşme varsa şehir numarasını kullan, yoksa sadece ismi göster
+        if (matchingCity.cityNo != 0) {
+          setState(() {
+            _selectedCityNo = matchingCity.cityNo.toString();
+          });
+        }
+        
+        // Etkinlikleri yükle
+        _loadEvents();
+      } else {
+        // API başarısız olsa bile etkinlikleri yükle
+        _loadEvents();
       }
     } catch (e) {
       print('Şehirler yüklenirken hata: $e');
+      // Hata durumunda da etkinlikleri yükle
+      _loadEvents();
     }
   }
 
@@ -157,33 +189,140 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
   Future<void> _showCityPicker() async {
     final selectedCity = await showDialog<City>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Şehir Seç'),
-        contentPadding: const EdgeInsets.symmetric(vertical: 16),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: _cities.length,
-            itemBuilder: (context, index) {
-              final city = _cities[index];
-              final isSelected = city.cityNo.toString() == _selectedCityNo;
-              return ListTile(
-                title: Text(
-                  city.cityName,
-                  style: TextStyle(
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    color: isSelected ? AppTheme.primary : Colors.black,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
+        ),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(AppTheme.spacingL),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(AppTheme.cardBorderRadius),
+                    topRight: Radius.circular(AppTheme.cardBorderRadius),
                   ),
                 ),
-                trailing: isSelected
-                    ? const Icon(Icons.check, color: AppTheme.primary)
-                    : null,
-                onTap: () {
-                  Navigator.pop(context, city);
-                },
-              );
-            },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Şehir Seç',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              ),
+              // Mevcut Konum Butonu
+              Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: AppTheme.dividerColor.withOpacity(0.3),
+                      width: 0.5,
+                    ),
+                  ),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacingL,
+                    vertical: AppTheme.spacingS,
+                  ),
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.my_location,
+                      size: 20,
+                      color: AppTheme.primary,
+                    ),
+                  ),
+                  title: Text(
+                    widget.locationText,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.primary,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'Mevcut Konum',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.textTertiary,
+                    ),
+                  ),
+                  onTap: () {
+                    // Mevcut konumun API'de olup olmadığını kontrol et
+                    final matchingCity = _cities.firstWhere(
+                      (city) => city.cityName.toLowerCase() == widget.locationText.toLowerCase(),
+                      orElse: () => City(cityNo: 0, cityName: widget.locationText),
+                    );
+                    Navigator.pop(context, matchingCity);
+                  },
+                ),
+              ),
+              // Şehir Listesi
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _cities.length,
+                  itemBuilder: (context, index) {
+                    final city = _cities[index];
+                    final isSelected = city.cityNo.toString() == _selectedCityNo;
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppTheme.primary.withOpacity(0.05) : null,
+                        border: Border(
+                          bottom: BorderSide(
+                            color: AppTheme.dividerColor.withOpacity(0.3),
+                            width: 0.5,
+                          ),
+                        ),
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacingL,
+                          vertical: AppTheme.spacingXS,
+                        ),
+                        title: Text(
+                          city.cityName,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                            color: isSelected ? AppTheme.primary : AppTheme.textPrimary,
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? const Icon(Icons.check_circle, color: AppTheme.primary, size: 20)
+                            : null,
+                        onTap: () {
+                          Navigator.pop(context, city);
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -192,7 +331,12 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
     if (selectedCity != null) {
       setState(() {
         _selectedCityName = selectedCity.cityName;
-        _selectedCityNo = selectedCity.cityNo.toString();
+        _selectedCityNo = selectedCity.cityNo != 0 ? selectedCity.cityNo.toString() : null;
+        
+        // Eğer seçilen şehir API'de yoksa ve listede de yoksa, listeye ekle
+        if (selectedCity.cityNo == 0 && !_cities.any((c) => c.cityName == selectedCity.cityName)) {
+          _cities.insert(0, selectedCity);
+        }
       });
       _loadEvents();
     }
@@ -273,7 +417,7 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                 ),
               ),
 
-    const SizedBox(height: 16),
+    const SizedBox(height: 20),
               // Tabs
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -296,12 +440,12 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                   ),
                   tabs: const [
                     Tab(text: 'Tüm Etkinlikler'),
-                    Tab(text: 'Dahil Oldığım Etkinlikler'),
+                    Tab(text: 'Katıldığım Etkinlikler'),
                   ],
                 ),
               ),
 
-             const SizedBox(height: 16),
+             const SizedBox(height: 10),
 
               // Events List
               Expanded(
@@ -348,7 +492,8 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                                         location: '${event.eventCity} - ${event.eventDistrict}',
                                         eventStatus: event.eventStatus,
                                         eventEndDate: _formatDate(event.eventEndDate),
-                                        isFavorite: false,
+                                        eventStartDate: event.eventStartDate,
+                                        eventEndDateFull: event.eventEndDate,
                                         onTap: () {
                                           Navigator.push(
                                             context,
@@ -368,7 +513,7 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                                   ),
                     // Post Events Tab
                     const Center(
-                      child: Text('Dahil Oldığım Etkinlikler'),
+                      child: Text('Katıldığım Etkinlikler'),
                     ),
                   ],
                 ),
@@ -389,7 +534,8 @@ class _EventCard extends StatelessWidget {
   final String location;
   final String eventStatus;
   final String eventEndDate;
-  final bool isFavorite;
+  final String eventStartDate;
+  final String eventEndDateFull;
   final VoidCallback? onTap;
 
   const _EventCard({
@@ -400,9 +546,148 @@ class _EventCard extends StatelessWidget {
     required this.location,
     required this.eventStatus,
     required this.eventEndDate,
-    required this.isFavorite,
+    required this.eventStartDate,
+    required this.eventEndDateFull,
     this.onTap,
   });
+
+  DateTime _parseEventDateTime(String dateTimeString) {
+    try {
+      // Format: "14.11.2025 15:00"
+      final parts = dateTimeString.split(' ');
+      final dateParts = parts[0].split('.');
+      final timeParts = parts[1].split(':');
+      
+      return DateTime(
+        int.parse(dateParts[2]), // year
+        int.parse(dateParts[1]), // month
+        int.parse(dateParts[0]), // day
+        int.parse(timeParts[0]), // hour
+        int.parse(timeParts[1]), // minute
+      );
+    } catch (e) {
+      return DateTime.now();
+    }
+  }
+
+  Future<void> _addToCalendar(BuildContext context) async {
+    // Önce kullanıcıya onay sor
+    final shouldAdd = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Takvime Ekle'),
+        content: Text('$title etkinliğini takviminize eklemek istiyor musunuz?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('İptal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Ekle'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldAdd != true) return;
+
+    final deviceCalendarPlugin = DeviceCalendarPlugin();
+    
+    try {
+      // İzin kontrolü
+      var permissionsGranted = await deviceCalendarPlugin.hasPermissions();
+      if (permissionsGranted.isSuccess && (permissionsGranted.data == null || !permissionsGranted.data!)) {
+        permissionsGranted = await deviceCalendarPlugin.requestPermissions();
+        if (!permissionsGranted.isSuccess || permissionsGranted.data == null || !permissionsGranted.data!) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Takvim izni reddedildi')),
+            );
+          }
+          return;
+        }
+      }
+
+      // Takvimleri al
+      final calendarsResult = await deviceCalendarPlugin.retrieveCalendars();
+      if (!calendarsResult.isSuccess || calendarsResult.data == null || calendarsResult.data!.isEmpty) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Takvim bulunamadı')),
+          );
+        }
+        return;
+      }
+
+      // İlk takvimi seç (varsayılan takvim)
+      final calendarId = calendarsResult.data!.first.id;
+      
+      final startDate = _parseEventDateTime(eventStartDate);
+      final endDate = _parseEventDateTime(eventEndDateFull);
+
+      // Aynı etkinliğin daha önce eklenip eklenmediğini kontrol et
+      final existingEventsResult = await deviceCalendarPlugin.retrieveEvents(
+        calendarId,
+        RetrieveEventsParams(
+          startDate: startDate.subtract(const Duration(hours: 1)),
+          endDate: endDate.add(const Duration(hours: 1)),
+        ),
+      );
+
+      if (existingEventsResult.isSuccess && existingEventsResult.data != null) {
+        final isDuplicate = existingEventsResult.data!.any((event) =>
+            event.title == title &&
+            event.location == location &&
+            event.start != null &&
+            event.start!.isAtSameMomentAs(tz.TZDateTime.from(startDate, tz.local)));
+
+        if (isDuplicate) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Bu etkinlik zaten takviminizde mevcut'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          return;
+        }
+      }
+
+      final calendarEvent = Event(
+        calendarId,
+        title: title,
+        description: 'Etkinlik Durumu: $eventStatus',
+        location: location,
+        start: tz.TZDateTime.from(startDate, tz.local),
+        end: tz.TZDateTime.from(endDate, tz.local),
+      );
+
+      final createEventResult = await deviceCalendarPlugin.createOrUpdateEvent(calendarEvent);
+      
+      if (context.mounted) {
+        if (createEventResult?.isSuccess == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Etkinlik takvime eklendi'),
+              backgroundColor: AppTheme.primary,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Etkinlik eklenemedi')),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Hata: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -510,13 +795,23 @@ class _EventCard extends StatelessWidget {
               ),
             ),
           ),
-          // Favorite Icon
+          // Calendar Icon
           Padding(
             padding: const EdgeInsets.only(right: AppTheme.spacingM),
-            child: Icon(
-              isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: isFavorite ? AppTheme.error : AppTheme.textTertiary,
-              size: 20,
+            child: GestureDetector(
+              onTap: () => _addToCalendar(context),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.calendar_today,
+                  color: AppTheme.primary,
+                  size: 20,
+                ),
+              ),
             ),
           ),
         ],

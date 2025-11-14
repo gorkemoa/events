@@ -36,6 +36,8 @@
 	<string>Video kayıt özelliği için mikrofona erişim gerekiyor</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Profil fotoğrafı seçmek için fotoğraf kütüphanenize erişmemiz gerekiyor</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Etkinlikleri takviminize ekleyebilmek için takvim erişimine ihtiyacımız var</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

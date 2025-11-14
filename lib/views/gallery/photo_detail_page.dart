@@ -20,6 +20,7 @@ class PhotoDetailPage extends StatefulWidget {
 class _PhotoDetailPageState extends State<PhotoDetailPage> {
   late PageController _pageController;
   late int _currentIndex;
+  bool _isUIVisible = true;
 
   @override
   void initState() {
@@ -34,6 +35,12 @@ class _PhotoDetailPageState extends State<PhotoDetailPage> {
     super.dispose();
   }
 
+  void _toggleUI() {
+    setState(() {
+      _isUIVisible = !_isUIVisible;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,7 +48,7 @@ class _PhotoDetailPageState extends State<PhotoDetailPage> {
       body: SafeArea(
         child: Stack(
           children: [
-            // Photo Viewer
+            // Photo Viewer with Dismissible
             PageView.builder(
               controller: _pageController,
               onPageChanged: (index) {
@@ -52,10 +59,9 @@ class _PhotoDetailPageState extends State<PhotoDetailPage> {
               itemCount: widget.allPhotos.length,
               itemBuilder: (context, index) {
                 final photo = widget.allPhotos[index];
-                return GestureDetector(
-                  onTap: () {
-                    // Toggle UI visibility
-                  },
+                return _DismissiblePhotoView(
+                  onDismissed: () => Navigator.pop(context),
+                  onTap: _toggleUI,
                   child: Container(
                     color: Colors.black,
                     child: Image.network(
@@ -77,8 +83,10 @@ class _PhotoDetailPageState extends State<PhotoDetailPage> {
             ),
 
             // Header
-            Positioned(
-              top: 0,
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              top: _isUIVisible ? 0 : -100,
               left: 0,
               right: 0,
               child: Container(
@@ -152,8 +160,10 @@ class _PhotoDetailPageState extends State<PhotoDetailPage> {
             ),
 
             // Bottom Info
-            Positioned(
-              bottom: 0,
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              bottom: _isUIVisible ? 0 : -200,
               left: 0,
               right: 0,
               child: Container(
@@ -227,6 +237,75 @@ class _PhotoDetailPageState extends State<PhotoDetailPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// iOS-style Dismissible Photo View
+class _DismissiblePhotoView extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onDismissed;
+  final VoidCallback onTap;
+
+  const _DismissiblePhotoView({
+    required this.child,
+    required this.onDismissed,
+    required this.onTap,
+  });
+
+  @override
+  State<_DismissiblePhotoView> createState() => _DismissiblePhotoViewState();
+}
+
+class _DismissiblePhotoViewState extends State<_DismissiblePhotoView> {
+  double _dragOffset = 0;
+  bool _isDragging = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final dismissThreshold = screenHeight * 0.2;
+    final dragProgress = (_dragOffset.abs() / dismissThreshold).clamp(0.0, 1.0);
+    final opacity = 1.0 - (dragProgress * 0.7);
+    final scale = 1.0 - (dragProgress * 0.2);
+
+    return GestureDetector(
+      onTap: widget.onTap,
+      onVerticalDragStart: (details) {
+        setState(() {
+          _isDragging = true;
+        });
+      },
+      onVerticalDragUpdate: (details) {
+        setState(() {
+          _dragOffset += details.delta.dy;
+          // Only allow downward drag
+          if (_dragOffset < 0) {
+            _dragOffset = 0;
+          }
+        });
+      },
+      onVerticalDragEnd: (details) {
+        if (_dragOffset > dismissThreshold) {
+          widget.onDismissed();
+        } else {
+          setState(() {
+            _dragOffset = 0;
+            _isDragging = false;
+          });
+        }
+      },
+      child: AnimatedContainer(
+        duration: _isDragging ? Duration.zero : const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+        transform: Matrix4.identity()
+          ..translate(0.0, _dragOffset, 0.0)
+          ..scale(scale),
+        child: Opacity(
+          opacity: opacity,
+          child: widget.child,
         ),
       ),
     );
