@@ -13,12 +13,9 @@ import 'package:pixlomi/views/events/event_detail_page.dart';
 class HomePage extends StatefulWidget {
   final String locationText;
   final VoidCallback? onMenuPressed;
-  
-  const HomePage({
-    Key? key,
-    required this.locationText,
-    this.onMenuPressed,
-  }) : super(key: key);
+
+  const HomePage({Key? key, required this.locationText, this.onMenuPressed})
+    : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -46,18 +43,22 @@ class _HomePageState extends State<HomePage> {
     _startAutoScroll();
     _loadUserData();
     _loadAttendedEvents();
-    
+
     // TextField focus listener
     _eventCodeFocusNode.addListener(() {
       setState(() {
-        _isSearching = _eventCodeFocusNode.hasFocus || _eventCodeController.text.isNotEmpty;
+        _isSearching =
+            _eventCodeFocusNode.hasFocus ||
+            _eventCodeController.text.isNotEmpty;
       });
     });
-    
+
     // Text değişikliği listener
     _eventCodeController.addListener(() {
       setState(() {
-        _isSearching = _eventCodeFocusNode.hasFocus || _eventCodeController.text.isNotEmpty;
+        _isSearching =
+            _eventCodeFocusNode.hasFocus ||
+            _eventCodeController.text.isNotEmpty;
       });
     });
   }
@@ -92,7 +93,7 @@ class _HomePageState extends State<HomePage> {
       });
 
       final userToken = await StorageHelper.getUserToken();
-      
+
       if (userToken == null || userToken.isEmpty) {
         setState(() {
           _isLoadingEvents = false;
@@ -101,13 +102,13 @@ class _HomePageState extends State<HomePage> {
       }
 
       final response = await EventService.getAllEvents(userToken);
-      
+
       if (response != null && response.success) {
         // Sadece eşleşen fotoğrafı olan etkinlikleri filtrele (imageCount > 0)
         final attendedEvents = response.data.events
             .where((event) => event.imageCount > 0)
             .toList();
-        
+
         setState(() {
           _attendedEvents = attendedEvents;
           _isLoadingEvents = false;
@@ -141,20 +142,18 @@ class _HomePageState extends State<HomePage> {
   void _searchEventCode(String eventCode) {
     // Event kodu ile arama yap
     debugPrint('🔍 Searching for event code: $eventCode');
-    
+
     // TextField'ı temizle ve focus'u kaldır
     _eventCodeController.clear();
     _eventCodeFocusNode.unfocus();
-    
+
     // TODO: API çağrısı ile event kodunu ara
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('$eventCode kodu aranıyor...'),
         backgroundColor: AppTheme.primary,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }
@@ -162,26 +161,24 @@ class _HomePageState extends State<HomePage> {
   void _scanQRCode() async {
     // QR kod okuyucu aç
     debugPrint('📷 Opening QR code scanner...');
-    
+
     try {
       // QR Scanner sayfasını aç
       final result = await Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => const QRScannerPage(),
-        ),
+        MaterialPageRoute(builder: (context) => const QRScannerPage()),
       );
-      
+
       // QR koddan dönen sonucu işle
       if (result != null && result is String) {
         debugPrint('✅ QR Code result: $result');
-        
+
         // Event kodunu ara
         _searchEventCode(result);
       }
     } catch (e) {
       debugPrint('❌ QR Scanner error: $e');
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -216,311 +213,357 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-              // Header with Location and Notification
-              HomeHeader(
-                locationText: widget.locationText,
-                subtitle: _currentUser != null 
-                    ? 'Hoş geldin, ${_currentUser!.userFirstname}' 
-                    : null,
-                onMenuPressed: widget.onMenuPressed,
-                onNotificationPressed: () {
-                  Navigator.pushNamed(context, '/notifications');
-                },
-              ),
+                // Header with Location and Notification
+                HomeHeader(
+                  locationText: widget.locationText,
+                  subtitle: _currentUser != null
+                      ? 'Hoş geldin, ${_currentUser!.userFirstname}'
+                      : null,
+                  onMenuPressed: widget.onMenuPressed,
+                  onNotificationPressed: () {
+                    Navigator.pushNamed(context, '/notifications');
+                  },
+                ),
 
-
-              // Search Bar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                // Search Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
                   ),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Ne arıyorsunuz?',
-                      hintStyle: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[500],
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Ne arıyorsunuz?',
+                        hintStyle: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[500],
+                        ),
+                        prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                       ),
-                      prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 20),
-              // View pictures with QR Code section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8F5F9),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    children: [
-                      // Left side image
-                      Container(
-                        width: 55,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          image: const DecorationImage(
-                            image: AssetImage('assets/icon/71252051.png'),
-                            fit: BoxFit.cover,
+                const SizedBox(height: 20),
+                // View pictures with QR Code section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F5F9),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        // Left side image
+                        Container(
+                          width: 55,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            image: const DecorationImage(
+                              image: AssetImage('assets/icon/71252051.png'),
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      // Right side content
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Etkinlik Kodunu Girin veya QR Tarayın',
-                              style: AppTheme.labelSmall,
-                            ),
-                            const SizedBox(height: 12),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8),
+                        const SizedBox(width: 16),
+                        // Right side content
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Etkinlik Kodunu Girin veya QR Tarayın',
+                                style: AppTheme.labelSmall,
                               ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: TextField(
-                                      controller: _eventCodeController,
-                                      focusNode: _eventCodeFocusNode,
-                                      textCapitalization: TextCapitalization.characters,
-                                      maxLength: 6,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: 1.2,
-                                      ),
-                                      decoration: InputDecoration(
-                                        hintText: _eventCodeFocusNode.hasFocus || _eventCodeController.text.isNotEmpty
-                                            ? null
-                                            : 'PX-XXXXXX',
-                                        hintStyle: TextStyle(
+                              const SizedBox(height: 12),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _eventCodeController,
+                                        focusNode: _eventCodeFocusNode,
+                                        textCapitalization:
+                                            TextCapitalization.characters,
+                                        maxLength: 6,
+                                        style: const TextStyle(
                                           fontSize: 14,
-                                          color: Colors.grey[400],
                                           fontWeight: FontWeight.w600,
                                           letterSpacing: 1.2,
                                         ),
-                                        prefixText: _eventCodeFocusNode.hasFocus || _eventCodeController.text.isNotEmpty
-                                            ? 'PX-'
-                                            : null,
-                                        prefixStyle: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.grey[400],
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 1.2,
+                                        decoration: InputDecoration(
+                                          hintText:
+                                              _eventCodeFocusNode.hasFocus ||
+                                                  _eventCodeController
+                                                      .text
+                                                      .isNotEmpty
+                                              ? null
+                                              : 'PX-XXXXXX',
+                                          hintStyle: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[400],
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 1.2,
+                                          ),
+                                          prefixText:
+                                              _eventCodeFocusNode.hasFocus ||
+                                                  _eventCodeController
+                                                      .text
+                                                      .isNotEmpty
+                                              ? 'PX-'
+                                              : null,
+                                          prefixStyle: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[400],
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 1.2,
+                                          ),
+                                          counterText: '',
+                                          border: InputBorder.none,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 12,
+                                                vertical: 12,
+                                              ),
                                         ),
-                                        counterText: '',
-                                        border: InputBorder.none,
-                                        contentPadding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 12,
-                                        ),
+                                        onSubmitted: (value) {
+                                          if (value.length == 6) {
+                                            _searchEventCode('PX-$value');
+                                          }
+                                        },
                                       ),
-                                      onSubmitted: (value) {
-                                        if (value.length == 6) {
-                                          _searchEventCode('PX-$value');
+                                    ),
+                                    GestureDetector(
+                                      onTap: () {
+                                        if (_isSearching &&
+                                            _eventCodeController.text.length ==
+                                                6) {
+                                          _searchEventCode(
+                                            'PX-${_eventCodeController.text}',
+                                          );
+                                        } else if (!_isSearching) {
+                                          _scanQRCode();
                                         }
                                       },
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      if (_isSearching && _eventCodeController.text.length == 6) {
-                                        _searchEventCode('PX-${_eventCodeController.text}');
-                                      } else if (!_isSearching) {
-                                        _scanQRCode();
-                                      }
-                                    },
-                                    child: Container(
-                                      margin: const EdgeInsets.all(4),
-                                      padding: const EdgeInsets.all(10),
-                                      decoration: BoxDecoration(
-                                        color: (_isSearching && _eventCodeController.text.length == 6)
-                                            ? AppTheme.primary
-                                            : !_isSearching
-                                                ? AppTheme.primary
-                                                : Colors.grey[300],
-                                        shape: BoxShape.circle,
+                                      child: Container(
+                                        margin: const EdgeInsets.all(4),
+                                        padding: const EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                          color:
+                                              (_isSearching &&
+                                                  _eventCodeController
+                                                          .text
+                                                          .length ==
+                                                      6)
+                                              ? AppTheme.primary
+                                              : !_isSearching
+                                              ? AppTheme.primary
+                                              : Colors.grey[300],
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          _isSearching &&
+                                                  _eventCodeController
+                                                      .text
+                                                      .isNotEmpty
+                                              ? Icons.search
+                                              : Icons.qr_code_scanner,
+                                          color:
+                                              (_isSearching &&
+                                                  _eventCodeController
+                                                          .text
+                                                          .length ==
+                                                      6)
+                                              ? Colors.white
+                                              : !_isSearching
+                                              ? Colors.white
+                                              : Colors.grey[500],
+                                          size: 20,
+                                        ),
                                       ),
-                                      child: Icon(
-                                        _isSearching && _eventCodeController.text.isNotEmpty
-                                            ? Icons.search
-                                            : Icons.qr_code_scanner,
-                                        color: (_isSearching && _eventCodeController.text.length == 6)
-                                            ? Colors.white
-                                            : !_isSearching
-                                                ? Colors.white
-                                                : Colors.grey[500],
-                                        size: 20,
-                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 25),
+
+                // Explore our services
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Hizmetlerimizi Keşfedin',
+                        style: AppTheme.labelLarge,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Services Carousel
+                SizedBox(
+                  height: 150,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemBuilder: (context, index) {
+                      // Sonsuz döngü için modulo kullan
+                      final serviceIndex = index % 4;
+                      final services = [
+                        _ServiceCard(
+                          title: 'Yıldönümü\nFotoğrafçılığı',
+                          icon: Icons.cake,
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            241,
+                            245,
+                            201,
+                          ),
+                          imagePath: 'assets/slider/foto3.jpg',
+                        ),
+                        _ServiceCard(
+                          title: 'Doğum Günü\nFotoğrafçılığı',
+                          icon: Icons.celebration,
+                          backgroundColor: const Color(0xFFE3F2FD),
+                          imagePath: 'assets/slider/foto4.png',
+                        ),
+                        _ServiceCard(
+                          title: 'Düğün\nFotoğrafçılığı',
+                          icon: Icons.favorite,
+                          backgroundColor: const Color(0xFFFCE4EC),
+                          imagePath: 'assets/slider/foto5.png',
+                        ),
+                        _ServiceCard(
+                          title: 'Nişan\nFotoğrafçılığı',
+                          icon: Icons.diamond,
+                          backgroundColor: const Color(0xFFF3E5F5),
+                          imagePath: 'assets/slider/foto13.jpeg',
+                        ),
+                      ];
+                      return services[serviceIndex];
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Upcoming Events
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Katıldığım Etkinlikler',
+                        style: AppTheme.labelLarge,
+                      ),
+                      GestureDetector(
+                        onTap: () {},
+                        child: const Text(
+                          'Tümünü Gör >',
+                          style: AppTheme.bodySmall,
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 25),
+                const SizedBox(height: 15),
 
-
-              // Explore our services
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Hizmetlerimizi Keşfedin',
-                      style: AppTheme.labelLarge,
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Services Carousel
-              SizedBox(
-                height: 150,
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemBuilder: (context, index) {
-                    // Sonsuz döngü için modulo kullan
-                    final serviceIndex = index % 4;
-                    final services = [
-                      _ServiceCard(
-                        title: 'Yıldönümü\nFotoğrafçılığı',
-                        icon: Icons.cake,
-                        backgroundColor: const Color.fromARGB(255, 241, 245, 201),
-                      ),
-                      _ServiceCard(
-                        title: 'Doğum Günü\nFotoğrafçılığı',
-                        icon: Icons.celebration,
-                        backgroundColor: const Color(0xFFE3F2FD),
-                      ),
-                      _ServiceCard(
-                        title: 'Düğün\nFotoğrafçılığı',
-                        icon: Icons.favorite,
-                        backgroundColor: const Color(0xFFFCE4EC),
-                      ),
-                      _ServiceCard(
-                        title: 'Nişan\nFotoğrafçılığı',
-                        icon: Icons.diamond,
-                        backgroundColor: const Color(0xFFF3E5F5),
-                      ),
-                    ];
-                    return services[serviceIndex];
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Upcoming Events
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Katıldığım Etkinlikler',
-                      style: AppTheme.labelLarge,
-                    ),
-                    GestureDetector(
-                      onTap: () {},
-                      child: const Text(
-                        'Tümünü Gör >',
-                        style: AppTheme.bodySmall,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              // Events List
-              _isLoadingEvents
-                  ? const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                      child: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
-                  : _attendedEvents.isEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                          child: Center(
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.event_busy,
-                                  size: 48,
-                                  color: Colors.grey[400],
+                // Events List
+                _isLoadingEvents
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 20,
+                        ),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    : _attendedEvents.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 20,
+                        ),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.event_busy,
+                                size: 48,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Henüz katıldığınız etkinlik yok',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
                                 ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'Henüz katıldığınız etkinlik yok',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      : SizedBox(
-                          height: 130,
-                          child: ListView.builder(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _attendedEvents.length,
-                            itemBuilder: (context, index) {
-                              final event = _attendedEvents[index];
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  right: index < _attendedEvents.length - 1 ? 12 : 0,
-                                ),
-                                child: _EventCard(
-                                  event: event,
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => EventDetailPage(
-                                          eventID: event.eventID,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              );
-                            },
+                              ),
+                            ],
                           ),
                         ),
+                      )
+                    : SizedBox(
+                        height: 130,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _attendedEvents.length,
+                          itemBuilder: (context, index) {
+                            final event = _attendedEvents[index];
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                right: index < _attendedEvents.length - 1
+                                    ? 12
+                                    : 0,
+                              ),
+                              child: _EventCard(
+                                event: event,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EventDetailPage(
+                                        eventID: event.eventID,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
 
-              const SizedBox(height: 100),
+                const SizedBox(height: 100),
               ],
             ),
           ),
@@ -535,11 +578,13 @@ class _ServiceCard extends StatelessWidget {
   final String title;
   final IconData icon;
   final Color backgroundColor;
+  final String? imagePath;
 
   const _ServiceCard({
     required this.title,
     required this.icon,
     required this.backgroundColor,
+    this.imagePath,
   });
 
   @override
@@ -547,8 +592,11 @@ class _ServiceCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: imagePath != null ? Colors.transparent : backgroundColor,
         borderRadius: BorderRadius.circular(16),
+        image: imagePath != null
+            ? DecorationImage(image: AssetImage(imagePath!), fit: BoxFit.cover)
+            : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
@@ -557,25 +605,23 @@ class _ServiceCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 48,
-            color: AppTheme.primary,
-          ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(
-              title,
-              textAlign: TextAlign.center,
-              style: AppTheme.labelSmall,
-            ),
-          ),
-        ],
-      ),
+      child: imagePath == null
+          ? Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 48, color: AppTheme.primary),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: AppTheme.labelSmall,
+                  ),
+                ),
+              ],
+            )
+          : const SizedBox(),
     );
   }
 }
@@ -585,10 +631,7 @@ class _EventCard extends StatelessWidget {
   final Event event;
   final VoidCallback? onTap;
 
-  const _EventCard({
-    required this.event,
-    this.onTap,
-  });
+  const _EventCard({required this.event, this.onTap});
 
   String _formatDate(String dateTimeString) {
     try {
@@ -607,12 +650,22 @@ class _EventCard extends StatelessWidget {
       final parts = dateTimeString.split(' ');
       final dateParts = parts[0].split('.');
       final month = int.parse(dateParts[1]);
-      
+
       const months = [
-        'OCA', 'ŞUB', 'MAR', 'NİS', 'MAY', 'HAZ',
-        'TEM', 'AĞU', 'EYL', 'EKİ', 'KAS', 'ARA'
+        'OCA',
+        'ŞUB',
+        'MAR',
+        'NİS',
+        'MAY',
+        'HAZ',
+        'TEM',
+        'AĞU',
+        'EYL',
+        'EKİ',
+        'KAS',
+        'ARA',
       ];
-      
+
       return months[month - 1];
     } catch (e) {
       return 'AY';
@@ -672,10 +725,7 @@ class _EventCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      month,
-                      style: AppTheme.captionSmall,
-                    ),
+                    Text(month, style: AppTheme.captionSmall),
                   ],
                 ),
                 Container(
