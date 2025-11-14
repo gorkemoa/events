@@ -16,6 +16,7 @@ class GalleryPage extends StatefulWidget {
 class _GalleryPageState extends State<GalleryPage> {
   String _selectedFilter = 'Tümü';
   final Set<String> _favorites = {};
+  final Set<String> _hiddenPhotos = {};
   bool _isSelectionMode = false;
   final Set<String> _selectedPhotos = {};
 
@@ -115,16 +116,18 @@ class _GalleryPageState extends State<GalleryPage> {
 
   List<Map<String, dynamic>> get filteredPhotos {
     if (_selectedFilter == 'Tümü') {
-      return photos;
+      return photos.where((photo) => !_hiddenPhotos.contains(photo['id'])).toList();
     } else if (_selectedFilter == 'Favoriler') {
-      return photos.where((photo) => _favorites.contains(photo['id'])).toList();
+      return photos.where((photo) => _favorites.contains(photo['id']) && !_hiddenPhotos.contains(photo['id'])).toList();
+    } else if (_selectedFilter == 'Gizlediklerim') {
+      return photos.where((photo) => _hiddenPhotos.contains(photo['id'])).toList();
     }
-    return photos.where((photo) => photo['event'] == _selectedFilter).toList();
+    return photos.where((photo) => photo['event'] == _selectedFilter && !_hiddenPhotos.contains(photo['id'])).toList();
   }
 
   List<String> get filterOptions {
     final events = photos.map((p) => p['event'] as String).toSet().toList();
-    return ['Tümü', 'Favoriler', ...events];
+    return ['Tümü', 'Favoriler', 'Gizlediklerim', ...events];
   }
 
   void _toggleSelectionMode() {
@@ -404,11 +407,13 @@ class _GalleryPageState extends State<GalleryPage> {
                     int count = 0;
 
                     if (filter == 'Tümü') {
-                      count = photos.length;
+                      count = photos.where((p) => !_hiddenPhotos.contains(p['id'])).length;
                     } else if (filter == 'Favoriler') {
                       count = _favorites.length;
+                    } else if (filter == 'Gizlediklerim') {
+                      count = _hiddenPhotos.length;
                     } else {
-                      count = photos.where((p) => p['event'] == filter).length;
+                      count = photos.where((p) => p['event'] == filter && !_hiddenPhotos.contains(p['id'])).length;
                     }
 
                     return Padding(
@@ -442,6 +447,14 @@ class _GalleryPageState extends State<GalleryPage> {
                                   color: Color(0xFFFFB800),
                                 ),
                               if (filter == 'Favoriler')
+                                const SizedBox(width: 6),
+                              if (filter == 'Gizlediklerim')
+                                Icon(
+                                  Icons.visibility_off,
+                                  size: 16,
+                                  color: isSelected ? Colors.white : AppTheme.textSecondary,
+                                ),
+                              if (filter == 'Gizlediklerim')
                                 const SizedBox(width: 6),
                               Text(
                                 '$filter ($count)',

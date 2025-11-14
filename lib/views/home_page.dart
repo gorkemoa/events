@@ -5,6 +5,7 @@ import 'package:pixlomi/widgets/home_header.dart';
 import 'package:pixlomi/services/user_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/models/user_models.dart';
+import 'package:pixlomi/views/qr/qr_scanner_page.dart';
 
 class HomePage extends StatefulWidget {
   final String locationText;
@@ -25,6 +26,9 @@ class _HomePageState extends State<HomePage> {
   late PageController _pageController;
   Timer? _autoScrollTimer;
   User? _currentUser;
+  final TextEditingController _eventCodeController = TextEditingController();
+  final FocusNode _eventCodeFocusNode = FocusNode();
+  bool _isSearching = false;
 
   @override
   void initState() {
@@ -36,6 +40,20 @@ class _HomePageState extends State<HomePage> {
     );
     _startAutoScroll();
     _loadUserData();
+    
+    // TextField focus listener
+    _eventCodeFocusNode.addListener(() {
+      setState(() {
+        _isSearching = _eventCodeFocusNode.hasFocus || _eventCodeController.text.isNotEmpty;
+      });
+    });
+    
+    // Text değişikliği listener
+    _eventCodeController.addListener(() {
+      setState(() {
+        _isSearching = _eventCodeFocusNode.hasFocus || _eventCodeController.text.isNotEmpty;
+      });
+    });
   }
 
   Future<void> _loadUserData() async {
@@ -74,10 +92,68 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _searchEventCode(String eventCode) {
+    // Event kodu ile arama yap
+    debugPrint('🔍 Searching for event code: $eventCode');
+    
+    // TextField'ı temizle ve focus'u kaldır
+    _eventCodeController.clear();
+    _eventCodeFocusNode.unfocus();
+    
+    // TODO: API çağrısı ile event kodunu ara
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$eventCode kodu aranıyor...'),
+        backgroundColor: AppTheme.primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
+  }
+
+  void _scanQRCode() async {
+    // QR kod okuyucu aç
+    debugPrint('📷 Opening QR code scanner...');
+    
+    try {
+      // QR Scanner sayfasını aç
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const QRScannerPage(),
+        ),
+      );
+      
+      // QR koddan dönen sonucu işle
+      if (result != null && result is String) {
+        debugPrint('✅ QR Code result: $result');
+        
+        // Event kodunu ara
+        _searchEventCode(result);
+      }
+    } catch (e) {
+      debugPrint('❌ QR Scanner error: $e');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('QR okuma hatası: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   void dispose() {
     _autoScrollTimer?.cancel();
     _pageController.dispose();
+    _eventCodeController.dispose();
+    _eventCodeFocusNode.dispose();
     super.dispose();
   }
 
@@ -160,7 +236,7 @@ class _HomePageState extends State<HomePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Fotoğraflarınızı paylaşılan\nonay kodu/QR ile görüntüleyin',
+                              'Etkinlik Kodunu Girin veya QR Tarayın',
                               style: AppTheme.labelSmall,
                             ),
                             const SizedBox(height: 12),
@@ -173,31 +249,78 @@ class _HomePageState extends State<HomePage> {
                                 children: [
                                   Expanded(
                                     child: TextField(
+                                      controller: _eventCodeController,
+                                      focusNode: _eventCodeFocusNode,
+                                      textCapitalization: TextCapitalization.characters,
+                                      maxLength: 6,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 1.2,
+                                      ),
                                       decoration: InputDecoration(
-                                        hintText: 'Olay kodunu girin veya tarayın',
+                                        hintText: _eventCodeFocusNode.hasFocus || _eventCodeController.text.isNotEmpty
+                                            ? null
+                                            : 'PX-XXXXXX',
                                         hintStyle: TextStyle(
-                                          fontSize: 11,
+                                          fontSize: 14,
                                           color: Colors.grey[400],
+                                          fontWeight: FontWeight.w600,
+                                          letterSpacing: 1.2,
                                         ),
+                                        prefixText: _eventCodeFocusNode.hasFocus || _eventCodeController.text.isNotEmpty
+                                            ? 'PX-'
+                                            : null,
+                                        prefixStyle: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey[400],
+                                          fontWeight: FontWeight.w600,
+                                          letterSpacing: 1.2,
+                                        ),
+                                        counterText: '',
                                         border: InputBorder.none,
                                         contentPadding: const EdgeInsets.symmetric(
                                           horizontal: 12,
-                                          vertical: 10,
+                                          vertical: 12,
                                         ),
                                       ),
+                                      onSubmitted: (value) {
+                                        if (value.length == 6) {
+                                          _searchEventCode('PX-$value');
+                                        }
+                                      },
                                     ),
                                   ),
-                                  Container(
-                                    margin: const EdgeInsets.all(4),
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: const BoxDecoration(
-                                      color: AppTheme.primary,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.qr_code_scanner,
-                                      color: Colors.white,
-                                      size: 20,
+                                  GestureDetector(
+                                    onTap: () {
+                                      if (_isSearching && _eventCodeController.text.length == 6) {
+                                        _searchEventCode('PX-${_eventCodeController.text}');
+                                      } else if (!_isSearching) {
+                                        _scanQRCode();
+                                      }
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.all(4),
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: (_isSearching && _eventCodeController.text.length == 6)
+                                            ? AppTheme.primary
+                                            : !_isSearching
+                                                ? AppTheme.primary
+                                                : Colors.grey[300],
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        _isSearching && _eventCodeController.text.isNotEmpty
+                                            ? Icons.search
+                                            : Icons.qr_code_scanner,
+                                        color: (_isSearching && _eventCodeController.text.length == 6)
+                                            ? Colors.white
+                                            : !_isSearching
+                                                ? Colors.white
+                                                : Colors.grey[500],
+                                        size: 20,
+                                      ),
                                     ),
                                   ),
                                 ],

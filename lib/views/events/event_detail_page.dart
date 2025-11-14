@@ -1061,17 +1061,10 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _PhotoActionIconButton(
-                        icon: Icons.download_rounded,
-                        label: 'İndir',
+                        icon: Icons.visibility_off_rounded,
+                        label: 'Gizle',
                         onTap: () {
-                          _downloadPhoto();
-                        },
-                      ),
-                      _PhotoActionIconButton(
-                        icon: Icons.share_rounded,
-                        label: 'Paylaş',
-                        onTap: () {
-                          _sharePhoto();
+                          // Gizle fonksiyonu
                         },
                       ),
                       _PhotoActionIconButton(
@@ -1082,12 +1075,24 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
                         },
                       ),
                       _PhotoActionIconButton(
-                        icon: Icons.delete_outline_rounded,
-                        label: 'Sil',
-                        color: AppTheme.error,
+                        icon: Icons.favorite_border_rounded,
+                        label: 'Favori',
                         onTap: () {
-                          widget.onDelete(_currentIndex);
-                          Navigator.pop(context);
+                          // Favori fonksiyonu
+                        },
+                      ),
+                      _PhotoActionIconButton(
+                        icon: Icons.share_rounded,
+                        label: 'Paylaş',
+                        onTap: () {
+                          _sharePhoto();
+                        },
+                      ),
+                      _PhotoActionIconButton(
+                        icon: Icons.download_rounded,
+                        label: 'İndir',
+                        onTap: () {
+                          _downloadPhoto();
                         },
                       ),
                     ],
