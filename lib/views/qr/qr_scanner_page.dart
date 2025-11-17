@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:pixlomi/theme/app_theme.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 
 class QRScannerPage extends StatefulWidget {
   const QRScannerPage({Key? key}) : super(key: key);
@@ -69,6 +71,91 @@ class _QRScannerPageState extends State<QRScannerPage> {
     }
   }
 
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      
+      if (image != null) {
+        // Kamerayı durdur
+        controller?.pauseCamera();
+        
+        // Kullanıcıya bilgi ver
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('QR kodu aranıyor...'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        
+        // QR kodu oku
+        try {
+          final inputImage = InputImage.fromFilePath(image.path);
+          final barcodeScanner = BarcodeScanner();
+          final barcodes = await barcodeScanner.processImage(inputImage);
+          
+          await barcodeScanner.close();
+          
+          if (barcodes.isNotEmpty) {
+            // İlk QR kodu al
+            final qrCode = barcodes.first.rawValue;
+            
+            if (qrCode != null && qrCode.isNotEmpty) {
+              // QR kod bulundu
+              _handleScannedCode(qrCode);
+            } else {
+              // QR kod boş
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('QR kodu okunamadı'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                controller?.resumeCamera();
+              }
+            }
+          } else {
+            // QR kod bulunamadı
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Resimde QR kodu bulunamadı'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              controller?.resumeCamera();
+            }
+          }
+        } catch (e) {
+          debugPrint('❌ QR decode error: $e');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('QR kodu okunamadı. Lütfen net bir QR kodu resmi seçin.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            controller?.resumeCamera();
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Gallery picker error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Galeri açılırken hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        controller?.resumeCamera();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -133,7 +220,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
             ),
           ),
 
-          // Alt bilgi
+          // Alt bilgi ve galeri butonu
           Positioned(
             bottom: 0,
             left: 0,
@@ -154,6 +241,47 @@ class _QRScannerPageState extends State<QRScannerPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Galeri butonu
+                    GestureDetector(
+                      onTap: _pickImageFromGallery,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primary.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(
+                              Icons.photo_library,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'Galeriden QR Seç',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                     const Icon(
                       Icons.qr_code_scanner,
                       color: Colors.white,

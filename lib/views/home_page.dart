@@ -139,7 +139,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void _searchEventCode(String eventCode) {
+  Future<void> _searchEventCode(String eventCode) async {
     // Event kodu ile arama yap
     debugPrint('🔍 Searching for event code: $eventCode');
 
@@ -147,15 +147,79 @@ class _HomePageState extends State<HomePage> {
     _eventCodeController.clear();
     _eventCodeFocusNode.unfocus();
 
-    // TODO: API çağrısı ile event kodunu ara
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$eventCode kodu aranıyor...'),
-        backgroundColor: AppTheme.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
+    try {
+      // Loading göster
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$eventCode aranıyor...'),
+            backgroundColor: AppTheme.primary,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+
+      final userToken = await StorageHelper.getUserToken();
+
+      if (userToken == null || userToken.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Lütfen giriş yapın'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Event kodunu ara
+      final response = await EventService.getEventDetailByCode(
+        eventCode,
+        userToken,
+      );
+
+      if (response != null && response.success) {
+        // Event bulundu, detay sayfasına git
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EventDetailPage(
+                eventID: response.data.event.eventID,
+              ),
+            ),
+          );
+        }
+      } else {
+        // Event bulunamadı veya kullanıcı dahil değil
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Bu etkinliğe dahil değilsiniz veya etkinlik bulunamadı'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error searching event: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Etkinlik aranırken hata oluştu: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+      }
+    }
   }
 
   void _scanQRCode() async {
@@ -173,8 +237,34 @@ class _HomePageState extends State<HomePage> {
       if (result != null && result is String) {
         debugPrint('✅ QR Code result: $result');
 
-        // Event kodunu ara
-        _searchEventCode(result);
+        // URL'den event kodunu çıkart
+        // Format: https://www.pixlomi.com/qr-read.php?code=PX-Z91UDZ
+        String? eventCode;
+
+        if (result.contains('code=')) {
+          // URL formatında ise code parametresini al
+          final uri = Uri.parse(result);
+          eventCode = uri.queryParameters['code'];
+        } else if (result.startsWith('PX-')) {
+          // Direkt kod formatında ise
+          eventCode = result;
+        }
+
+        if (eventCode != null && eventCode.startsWith('PX-')) {
+          // Event kodunu ara
+          _searchEventCode(eventCode);
+        } else {
+          // Geçersiz QR kodu
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Geçersiz QR kodu formatı'),
+                backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        }
       }
     } catch (e) {
       debugPrint('❌ QR Scanner error: $e');

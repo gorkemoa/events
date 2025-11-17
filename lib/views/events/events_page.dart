@@ -332,21 +332,25 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
       body: RefreshIndicator(
         onRefresh: _loadEvents,
         color: AppTheme.primary,
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              HomeHeader(
-                locationText: _selectedCityName,
-                onMenuPressed: widget.onMenuPressed,
-                onNotificationPressed: () {
-                  Navigator.pushNamed(context, '/notifications');
-                },
-                onLocationPressed: _showCityPicker,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverSafeArea(
+              sliver: SliverToBoxAdapter(
+                child: HomeHeader(
+                  locationText: _selectedCityName,
+                  onMenuPressed: widget.onMenuPressed,
+                  onNotificationPressed: () {
+                    Navigator.pushNamed(context, '/notifications');
+                  },
+                  onLocationPressed: _showCityPicker,
+                ),
               ),
+            ),
 
-              // Search Bar
-              Padding(
+            // Search Bar
+            SliverToBoxAdapter(
+              child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingL),
                 child: TextField(
                   controller: _searchController,
@@ -392,10 +396,13 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                   },
                 ),
               ),
+            ),
 
-    const SizedBox(height: 20),
-              // Tabs
-              Container(
+            const SliverToBoxAdapter(child: SizedBox(height: 20)),
+            
+            // Tabs
+            SliverToBoxAdapter(
+              child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
@@ -406,7 +413,6 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                   indicator: BoxDecoration(
                     color: AppTheme.primary,
                     borderRadius: BorderRadius.circular(5),
-                    
                   ),
                   labelColor: Colors.white,
                   unselectedLabelColor: Colors.black54,
@@ -420,78 +426,80 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                   ],
                 ),
               ),
+            ),
 
-             const SizedBox(height: 10),
+            const SliverToBoxAdapter(child: SizedBox(height: 10)),
 
-              // Events List
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    // Upcoming Events Tab
-                    _isLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : _errorMessage != null
-                            ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      _errorMessage!,
-                                      style: AppTheme.bodyMedium,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    ElevatedButton(
-                                      onPressed: _loadEvents,
-                                      child: const Text('Tekrar Dene'),
-                                    ),
-                                  ],
+            // Events List Content
+            if (_isLoading)
+              const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (_errorMessage != null)
+              SliverFillRemaining(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _errorMessage!,
+                        style: AppTheme.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadEvents,
+                        child: const Text('Tekrar Dene'),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else if (_events.isEmpty)
+              const SliverFillRemaining(
+                child: Center(
+                  child: Text('Etkinlik bulunamadı'),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(AppTheme.spacingL, 0, AppTheme.spacingL, 20),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final event = _events[index];
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          bottom: index < _events.length - 1 ? AppTheme.spacingM : 0,
+                        ),
+                        child: _EventCard(
+                          image: event.eventImage,
+                          date: _formatDate(event.eventStartDate),
+                          time: _formatTime(event.eventStartDate),
+                          title: event.eventTitle,
+                          location: '${event.eventCity} - ${event.eventDistrict}',
+                          eventStatus: event.eventStatus,
+                          eventEndDate: _formatDate(event.eventEndDate),
+                          eventStartDate: event.eventStartDate,
+                          eventEndDateFull: event.eventEndDate,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EventDetailPage(
+                                  eventID: event.eventID,
                                 ),
-                              )
-                            : _events.isEmpty
-                                ? const Center(
-                                    child: Text('Etkinlik bulunamadı'),
-                                  )
-                                : ListView.separated(
-                                    physics: const AlwaysScrollableScrollPhysics(),
-                                    padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingL),
-                                    itemCount: _events.length,
-                                    separatorBuilder: (context, index) => const SizedBox(height: AppTheme.spacingM),
-                                    itemBuilder: (context, index) {
-                                      final event = _events[index];
-                                      return _EventCard(
-                                        image: event.eventImage,
-                                        date: _formatDate(event.eventStartDate),
-                                        time: _formatTime(event.eventStartDate),
-                                        title: event.eventTitle,
-                                        location: '${event.eventCity} - ${event.eventDistrict}',
-                                        eventStatus: event.eventStatus,
-                                        eventEndDate: _formatDate(event.eventEndDate),
-                                        eventStartDate: event.eventStartDate,
-                                        eventEndDateFull: event.eventEndDate,
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => EventDetailPage(
-                                                eventID: event.eventID,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                    // Post Events Tab
-                    const Center(
-                      child: Text('Katıldığım Etkinlikler'),
-                    ),
-                  ],
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    childCount: _events.length,
+                  ),
                 ),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     );
