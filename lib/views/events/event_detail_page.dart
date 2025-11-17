@@ -181,7 +181,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
           }
 
           final event = _viewModel.eventDetail!;
-          final photos = _viewModel.photoUrls;
+          final thumbPhotos = _viewModel.thumbPhotoUrls;
 
           return Column(
             children: [
@@ -293,7 +293,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                     Text(
                       _viewModel.isSelectionMode
                           ? '${_viewModel.selectedPhotos.length} seçildi'
-                          : 'Etkinlik Fotoğrafları (${photos.length})',
+                          : 'Etkinlik Fotoğrafları (${thumbPhotos.length})',
                       style: AppTheme.labelLarge,
                     ),
                     Row(
@@ -336,7 +336,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
 
               // Fotoğraf Grid'i
               Expanded(
-                child: photos.isEmpty
+                child: thumbPhotos.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -368,7 +368,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           mainAxisSpacing: AppTheme.spacingS,
                           childAspectRatio: 1,
                         ),
-                        itemCount: photos.length,
+                        itemCount: thumbPhotos.length,
                         itemBuilder: (context, index) {
                           final isSelected = _viewModel.selectedPhotos.contains(index);
                           return GestureDetector(
@@ -389,7 +389,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                 fit: StackFit.expand,
                                 children: [
                                   Image.network(
-                                    photos[index],
+                                    thumbPhotos[index],
                                     fit: BoxFit.cover,
                                     loadingBuilder: (context, child, loadingProgress) {
                                       if (loadingProgress == null) return child;
@@ -546,7 +546,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                   padding: const EdgeInsets.symmetric(vertical: 14),
                                   child: Center(
                                     child: Text(
-                                      _viewModel.selectedPhotos.length == photos.length
+                                      _viewModel.selectedPhotos.length == _viewModel.eventDetail!.images.length
                                           ? 'Seçimi Kaldır'
                                           : 'Hepsini Seç',
                                       style: const TextStyle(
@@ -607,13 +607,15 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   void _showPhotoDetail(int index) {
-    final photos = _viewModel.mainPhotoUrls;
+    final middlePhotos = _viewModel.photoUrls;
+    final mainPhotos = _viewModel.mainPhotoUrls;
     
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => _PhotoDetailScreen(
-          photos: photos,
+          photos: middlePhotos,
+          mainPhotos: mainPhotos,
           initialIndex: index,
           onDelete: (photoIndex) {
             _confirmDelete(photoIndex);
@@ -792,7 +794,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
 
   void _downloadSelectedPhotos() {
     final selectedPhotos = _viewModel.selectedPhotos;
-    final photos = _viewModel.mainPhotoUrls;
+    final mainPhotos = _viewModel.mainPhotoUrls;
     
     if (selectedPhotos.isEmpty) return;
     
@@ -816,8 +818,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
               onPressed: () {
                 Navigator.pop(dialogContext);
                 
-                // Seçili fotoğrafların URL'lerini al
-                final selectedUrls = selectedPhotos.map((index) => photos[index]).toList();
+                // Seçili fotoğrafların URL'lerini al (MAIN kalite)
+                final selectedUrls = selectedPhotos.map((index) => mainPhotos[index]).toList();
                 
                 // Başlangıç bildirimi
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -924,12 +926,14 @@ class _EventDetailPageState extends State<EventDetailPage> {
 }
 
 class _PhotoDetailScreen extends StatefulWidget {
-  final List<String> photos;
+  final List<String> photos; // Middle quality for display
+  final List<String> mainPhotos; // Main quality for download
   final int initialIndex;
   final Function(int) onDelete;
 
   const _PhotoDetailScreen({
     required this.photos,
+    required this.mainPhotos,
     required this.initialIndex,
     required this.onDelete,
   });
@@ -1158,7 +1162,7 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(6),
                           child: Image.network(
-                            widget.photos[index],
+                            widget.photos[index], // Thumbnail'ler için middle yeterli
                             width: 60,
                             height: 60,
                             fit: BoxFit.cover,
@@ -1177,7 +1181,8 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
 
   void _downloadPhoto() async {
     try {
-      final currentPhotoUrl = widget.photos[_currentIndex];
+      // İndirme için MAIN kalite kullan
+      final currentPhotoUrl = widget.mainPhotos[_currentIndex];
       final success = await PhotoService.downloadPhoto(currentPhotoUrl);
 
       if (mounted) {
@@ -1211,7 +1216,8 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
 
   void _sharePhoto() async {
     try {
-      final currentPhotoUrl = widget.photos[_currentIndex];
+      // Paylaşım için MAIN kalite kullan
+      final currentPhotoUrl = widget.mainPhotos[_currentIndex];
       
       // iOS için share position
       final box = context.findRenderObject() as RenderBox?;

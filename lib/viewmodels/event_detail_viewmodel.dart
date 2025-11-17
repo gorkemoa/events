@@ -30,6 +30,10 @@ class EventDetailViewModel extends ChangeNotifier {
     return _eventDetail?.images.map((img) => img.middleImage).toList() ?? [];
   }
   
+  List<String> get thumbPhotoUrls {
+    return _eventDetail?.images.map((img) => img.thumbImage).toList() ?? [];
+  }
+  
   List<String> get mainPhotoUrls {
     return _eventDetail?.images.map((img) => img.mainImage).toList() ?? [];
   }
