@@ -4,6 +4,7 @@ import 'package:pixlomi/services/auth_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/face_photo_service.dart';
 import 'package:pixlomi/services/firebase_messaging_service.dart';
+import 'package:pixlomi/localizations/app_localizations.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -135,7 +136,7 @@ class _LoginPageState extends State<LoginPage> {
                   Navigator.pushNamed(context, '/signup');
                 },
                 child: Text(
-                  'Kayıt Ol',
+                  context.tr('login.signup'),
                   style: AppTheme.labelMedium.copyWith(
                     color: AppTheme.primary,
                   ),
@@ -158,19 +159,19 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 // Title
                 Text(
-                  'Etkinliğe Giriş Yap',
+                  context.tr('login.title'),
                   style: AppTheme.headingMedium,
                 ),
                 const SizedBox(height: AppTheme.spacingS),
                 Text(
-                  'Kullanıcı adı ve şifrenizi girin.',
+                  context.tr('login.subtitle'),
                   style: AppTheme.bodyMedium,
                 ),
                 const SizedBox(height: AppTheme.spacing3XL),
 
                 // Username Field
                 Text(
-                  'Kullanıcı Adı',
+                  context.tr('login.label_username'),
                   style: AppTheme.labelMedium,
                 ),
                 const SizedBox(height: AppTheme.spacingS),
@@ -182,7 +183,7 @@ class _LoginPageState extends State<LoginPage> {
                   },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Lütfen kullanıcı adınızı girin';
+                      return context.tr('login.placeholder_username');
                     }
                     return null;
                   },
@@ -191,7 +192,7 @@ class _LoginPageState extends State<LoginPage> {
 
                 // Password Field
                 Text(
-                  'Şifre',
+                  context.tr('login.label_password'),
                   style: AppTheme.labelMedium,
                 ),
                 const SizedBox(height: AppTheme.spacingS),
@@ -204,7 +205,7 @@ class _LoginPageState extends State<LoginPage> {
                   },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Lütfen şifrenizi girin';
+                      return context.tr('login.placeholder_password');
                     }
                     return null;
                   },
@@ -232,7 +233,7 @@ class _LoginPageState extends State<LoginPage> {
                       // Handle forgot password
                     },
                     child: Text(
-                      'Şifremi Unuttum',
+                      context.tr('login.forgot_password'),
                       style: AppTheme.labelMedium.copyWith(
                         color: AppTheme.primary,
                       ),
@@ -257,7 +258,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           )
                         : Text(
-                            'Giriş Yap',
+                            context.tr('login.button_login'),
                             style: AppTheme.buttonLarge,
                           ),
                   ),
@@ -277,7 +278,7 @@ class _LoginPageState extends State<LoginPage> {
                         horizontal: AppTheme.spacingM,
                       ),
                       child: Text(
-                        'veya',
+                        context.tr('login.or'),
                         style: AppTheme.captionLarge,
                       ),
                     ),
@@ -304,8 +305,8 @@ class _LoginPageState extends State<LoginPage> {
                       color: Color(0xFF1877F2),
                       size: 24,
                     ),
-                    label: const Text(
-                      'Facebook ile Giriş Yap',
+                    label: Text(
+                      context.tr('login.facebook_login'),
                       style: AppTheme.labelMedium,
                     ),
                   ),
@@ -329,8 +330,8 @@ class _LoginPageState extends State<LoginPage> {
                           child: Image.asset('assets/icon/google_icon.png'),
                         ),
                         const SizedBox(width: AppTheme.spacingM),
-                        const Text(
-                          'Google ile Giriş Yap',
+                        Text(
+                          context.tr('login.google_login'),
                           style: AppTheme.labelMedium,
                         ),
                       ],
@@ -352,8 +353,8 @@ class _LoginPageState extends State<LoginPage> {
                       color: AppTheme.textPrimary,
                       size: 24,
                     ),
-                    label: const Text(
-                      'Apple ile Giriş Yap',
+                    label: Text(
+                      context.tr('login.apple_login'),
                       style: AppTheme.labelMedium,
                     ),
                   ),

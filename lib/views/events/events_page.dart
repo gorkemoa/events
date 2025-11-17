@@ -9,6 +9,7 @@ import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/general_service.dart';
 import 'package:device_calendar/device_calendar.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:pixlomi/localizations/app_localizations.dart';
 
 class EventsPage extends StatefulWidget {
   final String locationText;
@@ -187,9 +188,9 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Şehir Seç',
-                      style: TextStyle(
+                    Text(
+                      context.tr('events.select_city'),
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -239,10 +240,10 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                       color: AppTheme.primary,
                     ),
                   ),
-                  subtitle: const Text(
-                    'Mevcut Konum',
-                    style: TextStyle(
-                      fontSize: 11,
+                  subtitle: Text(
+                    context.tr('events.current_location'),
+                    style: const TextStyle(
+                      fontSize: 12,
                       color: AppTheme.textTertiary,
                     ),
                   ),
@@ -355,7 +356,7 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Etkinlik ara...',
+                    hintText: context.tr('events.search_placeholder'),
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: _searchText.isNotEmpty
                         ? IconButton(
@@ -420,9 +421,9 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
-                  tabs: const [
-                    Tab(text: 'Tüm Etkinlikler'),
-                    Tab(text: 'Katıldığım Etkinlikler'),
+                  tabs: [
+                    Tab(text: context.tr('events.all_events')),
+                    Tab(text: context.tr('events.my_events')),
                   ],
                 ),
               ),
@@ -449,16 +450,16 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _loadEvents,
-                        child: const Text('Tekrar Dene'),
+                        child: Text(context.tr('events.button_retry')),
                       ),
                     ],
                   ),
                 ),
               )
             else if (_events.isEmpty)
-              const SliverFillRemaining(
+              SliverFillRemaining(
                 child: Center(
-                  child: Text('Etkinlik bulunamadı'),
+                  child: Text(context.tr('events.no_events')),
                 ),
               )
             else
@@ -555,16 +556,16 @@ class _EventCard extends StatelessWidget {
     final shouldAdd = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Takvime Ekle'),
-        content: Text('$title etkinliğini takviminize eklemek istiyor musunuz?'),
+        title: Text(context.tr('events.calendar_title')),
+        content: Text(context.tr('events.calendar_confirm', args: {'title': title})),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('İptal'),
+            child: Text(context.tr('common.cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Ekle'),
+            child: Text(context.tr('events.calendar_add')),
           ),
         ],
       ),
@@ -582,7 +583,7 @@ class _EventCard extends StatelessWidget {
         if (!permissionsGranted.isSuccess || permissionsGranted.data == null || !permissionsGranted.data!) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Takvim izni reddedildi')),
+              SnackBar(content: Text(context.tr('events.calendar_permission_denied'))),
             );
           }
           return;
@@ -594,7 +595,7 @@ class _EventCard extends StatelessWidget {
       if (!calendarsResult.isSuccess || calendarsResult.data == null || calendarsResult.data!.isEmpty) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Takvim bulunamadı')),
+            SnackBar(content: Text(context.tr('events.calendar_not_found'))),
           );
         }
         return;
@@ -625,8 +626,8 @@ class _EventCard extends StatelessWidget {
         if (isDuplicate) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Bu etkinlik zaten takviminizde mevcut'),
+              SnackBar(
+                content: Text(context.tr('events.calendar_duplicate')),
                 backgroundColor: Colors.orange,
               ),
             );
@@ -649,21 +650,21 @@ class _EventCard extends StatelessWidget {
       if (context.mounted) {
         if (createEventResult?.isSuccess == true) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Etkinlik takvime eklendi'),
+            SnackBar(
+              content: Text(context.tr('events.calendar_success')),
               backgroundColor: AppTheme.primary,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Etkinlik eklenemedi')),
+            SnackBar(content: Text(context.tr('events.calendar_failed'))),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hata: $e')),
+          SnackBar(content: Text(context.tr('common.error', args: {'error': e.toString()}))),
         );
       }
     }

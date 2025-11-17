@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/photo_service.dart';
 import 'package:pixlomi/viewmodels/event_detail_viewmodel.dart';
+import 'package:pixlomi/localizations/app_localizations.dart';
 
 class EventDetailPage extends StatefulWidget {
   final int? eventID;
@@ -630,23 +631,23 @@ class _EventDetailPageState extends State<EventDetailPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text('Fotoğrafı Sil'),
-          content: const Text('Bu fotoğrafı silmek istediğinizden emin misiniz?'),
+          title: Text(context.tr('event_detail.delete_photo_title')),
+          content: Text(context.tr('event_detail.delete_photo_confirm')),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('İptal'),
+              child: Text(context.tr('common.cancel')),
             ),
             TextButton(
               onPressed: () {
                 // TODO: Implement delete API
                 Navigator.pop(context);
-                _showSnackBar('Fotoğraf silindi');
+                _showSnackBar(context.tr('event_detail.photo_deleted'));
               },
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.error,
               ),
-              child: const Text('Sil'),
+              child: Text(context.tr('common.delete')),
             ),
           ],
         );
@@ -1314,6 +1315,7 @@ class _PhotoActionIconButton extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    // ignore: unused_element_parameter
     this.color,
   });
 

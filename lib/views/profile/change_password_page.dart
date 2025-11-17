@@ -3,6 +3,7 @@ import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/user_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/models/user_models.dart';
+import 'package:pixlomi/localizations/app_localizations.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   final VoidCallback? onMenuPressed;
@@ -167,20 +168,20 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   Column(
                     children: [
                       Text(
-                        'Hesap Güvenliği',
+                        context.tr('change_password.subtitle'),
                         style: TextStyle(
                           fontSize: 11,
                           color: Colors.grey[600],
                         ),
                       ),
                       Text(
-                        'Şifre Değiştir',
+                        context.tr('change_password.title'),
                         style: AppTheme.labelMedium,
                       ),
                     ],
                   ),
                   // Empty space for alignment
-                  SizedBox(width: 40),
+                  const SizedBox(width: 40),
                 ],
               ),
             ),
@@ -200,7 +201,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
                       // Current Password Field
                       Text(
-                        'Mevcut Şifre',
+                        context.tr('change_password.label_current'),
                         style: TextStyle(
                           fontSize: 13,
                           color: Colors.grey[700],
@@ -257,7 +258,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
                       // New Password Field
                       Text(
-                        'Yeni Şifre',
+                        context.tr('change_password.label_new'),
                         style: TextStyle(
                           fontSize: 13,
                           color: Colors.grey[700],
@@ -323,7 +324,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Şifre Gereksinimleri:',
+                              context.tr('change_password.requirements'),
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -332,15 +333,15 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                             ),
                             const SizedBox(height: 8),
                             _buildRequirementItem(
-                              'En az 8 karakter',
+                              context.tr('change_password.requirement_length'),
                               _hasMinLength(_newPasswordController.text),
                             ),
                             _buildRequirementItem(
-                              'En az 1 sayı (0-9)',
+                              context.tr('change_password.requirement_number'),
                               _hasNumber(_newPasswordController.text),
                             ),
                             _buildRequirementItem(
-                              'En az 1 harf (a-z, A-Z)',
+                              context.tr('change_password.requirement_letter'),
                               _hasLetter(_newPasswordController.text),
                             ),
                           ],
@@ -351,7 +352,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
                       // Confirm Password Field
                       Text(
-                        'Şifreyi Onayla',
+                        context.tr('change_password.label_confirm'),
                         style: TextStyle(
                           fontSize: 13,
                           color: Colors.grey[700],
@@ -462,9 +463,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                                             Colors.white),
                                   ),
                                 )
-                              : const Text(
-                                  'Şifreyi Değiştir',
-                                  style: TextStyle(
+                              : Text(
+                                  context.tr('change_password.button_change'),
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -486,9 +487,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text(
-                            'İptal',
-                            style: TextStyle(
+                          child: Text(
+                            context.tr('common.cancel'),
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.grey,

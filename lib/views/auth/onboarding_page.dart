@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/storage_helper.dart';
+import 'package:pixlomi/localizations/app_localizations.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -13,41 +14,47 @@ class _OnboardingPageState extends State<OnboardingPage> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final List<OnboardingData> _pages = [
-    OnboardingData(
-      title: 'Şehrin en unutulmaz anlarındasın 🎉',
-      description: 'O gecede yüzlerce kare çekildi… belki sen de o karelerdesin.',
-      images: [
-        'assets/onboarding/foto.jpeg',
-        'assets/onboarding/foto2.jpeg',
-        'assets/onboarding/foto3.jpeg',
-        'assets/onboarding/foto4.jpeg',
-        'assets/onboarding/foto5.jpeg',
-      ],
-    ),
-    OnboardingData(
-      title: 'Seni o anlarda bulalım 🔍',
-      description: 'Yüzünü tanıyan yapay zekâ, etkinlikteki fotoğraflarını senin için bulsun.',
-      images: [
-        'assets/onboarding/foto6.jpeg',
-        'assets/onboarding/foto7.jpeg',
-        'assets/onboarding/foto8.jpeg',
-        'assets/onboarding/foto9.jpeg',
-        'assets/onboarding/foto10.jpeg',
-      ],
-    ),
-    OnboardingData(
-      title: 'Fotoğrafların seni bekliyor 📸',
-      description: 'Etkinlikteki anılarını keşfet, ister indir ister paylaş.',
-      images: [
-        'assets/onboarding/foto11.jpeg',
-        'assets/onboarding/foto12.jpeg',
-        'assets/onboarding/foto13.jpeg',
-        'assets/onboarding/foto8.jpeg',
-        'assets/onboarding/foto9.jpeg',
-      ],
-    ),
-  ];
+  late List<OnboardingData> _pages;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _pages = [
+      OnboardingData(
+        title: context.tr('onboarding.page1_title'),
+        description: context.tr('onboarding.page1_description'),
+        images: [
+          'assets/onboarding/foto.jpeg',
+          'assets/onboarding/foto2.jpeg',
+          'assets/onboarding/foto3.jpeg',
+          'assets/onboarding/foto4.jpeg',
+          'assets/onboarding/foto5.jpeg',
+        ],
+      ),
+      OnboardingData(
+        title: context.tr('onboarding.page2_title'),
+        description: context.tr('onboarding.page2_description'),
+        images: [
+          'assets/onboarding/foto6.jpeg',
+          'assets/onboarding/foto7.jpeg',
+          'assets/onboarding/foto8.jpeg',
+          'assets/onboarding/foto9.jpeg',
+          'assets/onboarding/foto10.jpeg',
+        ],
+      ),
+      OnboardingData(
+        title: context.tr('onboarding.page3_title'),
+        description: context.tr('onboarding.page3_description'),
+        images: [
+          'assets/onboarding/foto11.jpeg',
+          'assets/onboarding/foto12.jpeg',
+          'assets/onboarding/foto13.jpeg',
+          'assets/onboarding/foto8.jpeg',
+          'assets/onboarding/foto9.jpeg',
+        ],
+      ),
+    ];
+  }
 
   @override
   void dispose() {
@@ -120,7 +127,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     child: ElevatedButton(
                       onPressed: _nextPage,
                       child: Text(
-                        _currentPage == _pages.length - 1 ? 'Başla' : 'İleri',
+                        _currentPage == _pages.length - 1 
+                            ? context.tr('onboarding.button_start') 
+                            : context.tr('onboarding.button_next'),
                         style: AppTheme.buttonLarge,
                       ),
                     ),

@@ -5,6 +5,7 @@ import 'package:pixlomi/services/user_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/models/user_models.dart';
 import 'dart:convert';
+import 'package:pixlomi/localizations/app_localizations.dart';
 
 class ProfilePage extends StatefulWidget {
   final VoidCallback? onMenuPressed;
@@ -103,8 +104,8 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             children: [
               HomeHeader(
-                locationText: 'Profil',
-                subtitle: 'Hesap Bilgileri',
+                locationText: context.tr('profile.title'),
+                subtitle: context.tr('profile.subtitle'),
                 onMenuPressed: widget.onMenuPressed,
                 onNotificationPressed: () {
                   Navigator.pushNamed(context, '/settings');
@@ -242,27 +243,27 @@ class _ProfilePageState extends State<ProfilePage> {
                                 child: Column(
                                   children: [
                                     _buildInfoRow(
-                                      'Kullanıcı Adı',
+                                      context.tr('profile.label_username'),
                                       _currentUser?.userName ?? '-',
                                     ),
                                     const SizedBox(height: AppTheme.spacingL),
                                     _buildInfoRow(
-                                      'Telefon',
+                                      context.tr('profile.label_phone'),
                                       _currentUser?.userPhone ?? '-',
                                     ),
                                     const SizedBox(height: AppTheme.spacingL),
                                     _buildInfoRow(
-                                      'Doğum Tarihi',
+                                      context.tr('profile.label_birthday'),
                                       _currentUser?.userBirthday ?? '-',
                                     ),
                                     const SizedBox(height: AppTheme.spacingL),
                                     _buildInfoRow(
-                                      'Cinsiyet',
+                                      context.tr('profile.label_gender'),
                                       _getGenderText(_currentUser?.userGender ?? ''),
                                     ),        
                                     const SizedBox(height: AppTheme.spacingL),
                                     _buildInfoRow(
-                                      'Katılınan Etkinlik',
+                                      context.tr('profile.label_events'),
                                       _currentUser?.userRank ?? '0',
                                     ),
                                   ],
@@ -271,7 +272,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                               const SizedBox(height: AppTheme.spacingL),
                               Text( 
-                                'Uygulama Versiyonu ${_currentUser?.userVersion ?? '-'}',
+                                context.tr('profile.app_version', args: {'version': _currentUser?.userVersion ?? '-'}),
                                 textAlign: TextAlign.center,
                                 style: AppTheme.bodySmall.copyWith(
                                   color: AppTheme.textSecondary,
@@ -324,10 +325,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
   String _getGenderText(String gender) {
     if (gender.toLowerCase() == 'erkek' || gender == '1') {
-      return 'Erkek';
+      return context.tr('profile.gender_male');
     } else if (gender.toLowerCase() == 'kadın' || gender == '2') {
-      return 'Kadın';
+      return context.tr('profile.gender_female');
     }
-    return 'Belirtilmemiş';
+    return context.tr('profile.gender_unspecified');
   }
 }

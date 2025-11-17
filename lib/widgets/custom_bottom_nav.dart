@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:pixlomi/theme/app_theme.dart';
+import 'package:pixlomi/localizations/app_localizations.dart';
 
 class CustomBottomNav extends StatelessWidget {
   final int selectedIndex;
@@ -33,7 +34,7 @@ class CustomBottomNav extends StatelessWidget {
       onTap: onTap,
       items: [
         TabItem(
-          title: 'Anasayfa',
+          title: context.tr('navigation.home'),
           icon: Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Icon(
@@ -44,7 +45,7 @@ class CustomBottomNav extends StatelessWidget {
           ),
         ),
         TabItem(
-          title: 'Etkinlikler',
+          title: context.tr('navigation.events'),
           icon: Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Icon(
@@ -55,7 +56,7 @@ class CustomBottomNav extends StatelessWidget {
           ),
         ),
         TabItem(
-          title: 'Fotoğraflar',
+          title: context.tr('navigation.gallery'),
           icon: Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Icon(
@@ -66,7 +67,7 @@ class CustomBottomNav extends StatelessWidget {
           ),
         ),
         TabItem(
-          title: 'Profil',
+          title: context.tr('navigation.profile'),
           icon: Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Icon(

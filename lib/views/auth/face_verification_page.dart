@@ -9,6 +9,7 @@ import 'package:pixlomi/services/face_detection_service.dart';
 import 'package:pixlomi/services/face_photo_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/models/user_models.dart';
+import 'package:pixlomi/localizations/app_localizations.dart';
 
 class FaceVerificationPage extends StatefulWidget {
   final bool isUpdateMode;
@@ -167,7 +168,7 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> with Single
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
+            child: Text(context.tr('common.cancel')),
           ),
           ElevatedButton(
             onPressed: () {
@@ -345,13 +346,13 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> with Single
                 ),
                 const SizedBox(height: AppTheme.spacingL),
                 Text(
-                  widget.isUpdateMode ? 'Güncelleme Başarılı!' : 'Doğrulama Başarılı!',
+                  widget.isUpdateMode ? context.tr('face_verification.completion_title_update') : context.tr('face_verification.completion_title'),
                   style: AppTheme.headingSmall,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppTheme.spacingS),
                 Text(
-                  widget.isUpdateMode ? 'Fotoğraflarınız güncellendi!' : 'Yüz taraması tamamlandı!',
+                  widget.isUpdateMode ? context.tr('face_verification.completion_subtitle_update') : context.tr('face_verification.completion_subtitle'),
                   style: AppTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -371,7 +372,7 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> with Single
                       }
                     },
                     child: Text(
-                      'Devam Et',
+                      context.tr('face_verification.button_continue'),
                       style: AppTheme.buttonMedium,
                     ),
                   ),
@@ -544,7 +545,7 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> with Single
                       Navigator.of(context).pushReplacementNamed('/home');
                     },
                     child: Text(
-                      'Daha Sonra',
+                      context.tr('face_verification.skip'),
                       style: AppTheme.labelMedium.copyWith(
                         color: AppTheme.primary,
                         fontWeight: FontWeight.w600,
@@ -579,7 +580,7 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> with Single
                     
                     // Title
                     Text(
-                      'Kamera İzni Gerekli',
+                      context.tr('face_verification.permission_title'),
                       style: AppTheme.headingMedium.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -618,7 +619,7 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> with Single
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
-                                  'Yüz doğrulaması için kamera iznine ihtiyacımız var. Bu işlem güvenliğiniz için gereklidir.',
+                                  context.tr('face_verification.permission_description'),
                                   style: AppTheme.bodyMedium.copyWith(
                                     color: AppTheme.textSecondary,
                                     height: 1.5,
@@ -647,17 +648,17 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> with Single
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'İzin vermek için:',
+                            context.tr('face_verification.permission_step1'),
                             style: AppTheme.labelMedium.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           const SizedBox(height: 12),
-                          _buildPermissionStep('1', 'Ayarlar uygulamasını açın'),
+                          _buildPermissionStep('1', context.tr('face_verification.permission_step1')),
                           const SizedBox(height: 8),
-                          _buildPermissionStep('2', 'Pixlomi uygulamasını bulun'),
+                          _buildPermissionStep('2', context.tr('face_verification.permission_step2')),
                           const SizedBox(height: 8),
-                          _buildPermissionStep('3', 'Kamera iznini aktif edin'),
+                          _buildPermissionStep('3', context.tr('face_verification.permission_step3')),
                         ],
                       ),
                     ),
@@ -670,9 +671,9 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> with Single
                       child: ElevatedButton.icon(
                         onPressed: _checkAndRequestPermissions,
                         icon: const Icon(Icons.settings, color: Colors.white),
-                        label: const Text(
-                          'Ayarları Aç',
-                          style: TextStyle(
+                        label: Text(
+                          context.tr('face_verification.permission_button'),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,

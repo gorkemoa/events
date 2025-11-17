@@ -3,9 +3,12 @@ import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/face_photo_service.dart';
 import 'package:pixlomi/services/firebase_messaging_service.dart';
+import 'package:pixlomi/services/language_service.dart';
 import 'package:pixlomi/views/profile/edit_profile_page.dart';
 import 'package:pixlomi/views/policies/membership_agreement_page.dart';
 import 'package:pixlomi/views/policies/privacy_policy_page.dart';
+import 'package:pixlomi/localizations/app_localizations.dart';
+import 'package:pixlomi/main.dart';
 
 class SettingsPage extends StatefulWidget {
   final VoidCallback? onMenuPressed;
@@ -23,11 +26,20 @@ class _SettingsPageState extends State<SettingsPage> {
   final FacePhotoService _facePhotoService = FacePhotoService();
   bool _hasFacePhotos = false;
   bool _isCheckingPhotos = true;
+  String _currentLanguage = 'tr';
 
   @override
   void initState() {
     super.initState();
     _checkFacePhotos();
+    _loadCurrentLanguage();
+  }
+
+  Future<void> _loadCurrentLanguage() async {
+    final language = await LanguageService.getSavedLanguage();
+    setState(() {
+      _currentLanguage = language;
+    });
   }
 
   Future<void> _checkFacePhotos() async {
@@ -66,9 +78,9 @@ class _SettingsPageState extends State<SettingsPage> {
           icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Ayarlar',
-          style: TextStyle(
+        title: Text(
+          context.tr('settings.title'),
+          style: const TextStyle(
             color: AppTheme.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -88,8 +100,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 // Settings Section Title
                 Text(
-                  'Hesap Ayarları',
-                  style: TextStyle(
+                  context.tr('settings.section_account'),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
@@ -101,7 +113,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 // Settings Menu Items
                 _buildSettingsTile(
                   icon: Icons.edit,
-                  title: 'Profili Düzenle',
+                  title: context.tr('settings.menu_edit_profile'),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -116,7 +128,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 _buildSettingsTile(
                   icon: Icons.lock,
-                  title: 'Şifre Değiştir',
+                  title: context.tr('settings.menu_change_password'),
                   onTap: () {
                     // Navigate to change password page
                     Navigator.pushNamed(context, '/change-password');
@@ -127,9 +139,26 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 _buildSettingsTile(
                   icon: Icons.notifications,
-                  title: 'Bildirim Ayarları',
+                  title: context.tr('settings.menu_notifications'),
                   onTap: () {
                     // Navigate to notification settings
+                  },
+                ),
+
+                const SizedBox(height: 12),
+
+                _buildSettingsTile(
+                  icon: Icons.language,
+                  title: context.tr('settings.menu_language'),
+                  trailing: Text(
+                    LanguageService.languageNames[_currentLanguage] ?? 'Türkçe',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  onTap: () {
+                    _showLanguageDialog();
                   },
                 ),
 
@@ -137,8 +166,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 // Security Section Title
                 Text(
-                  'Güvenlik',
-                  style: TextStyle(
+                  context.tr('settings.section_security'),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
@@ -151,7 +180,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 if (!_isCheckingPhotos && !_hasFacePhotos) ...[
                   _buildSettingsTile(
                     icon: Icons.face,
-                    title: 'Yüz Doğrulama',
+                    title: context.tr('settings.menu_face_verification'),
                     onTap: () {
                       Navigator.pushNamed(context, '/faceVerification');
                     },
@@ -163,7 +192,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 if (!_isCheckingPhotos && _hasFacePhotos) ...[
                   _buildSettingsTile(
                     icon: Icons.photo_library,
-                    title: 'Doğrulama Fotoğraflarım',
+                    title: context.tr('settings.menu_face_photos'),
                     onTap: () {
                       Navigator.pushNamed(context, '/facePhotos');
                     },
@@ -186,8 +215,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 // Information Section Title
                 Text(
-                  'Bilgi',
-                  style: TextStyle(
+                  context.tr('settings.section_information'),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
@@ -198,7 +227,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 _buildSettingsTile(
                   icon: Icons.info,
-                  title: 'Hakkında',
+                  title: context.tr('settings.menu_about'),
                   onTap: () {
                     // Show about dialog
                     _showAboutDialog();
@@ -209,7 +238,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 _buildSettingsTile(
                   icon: Icons.description,
-                  title: 'Üyelik Sözleşmesi',
+                  title: context.tr('settings.menu_membership_agreement'),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -224,7 +253,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 _buildSettingsTile(
                   icon: Icons.privacy_tip,
-                  title: 'Gizlilik Politikası',
+                  title: context.tr('settings.menu_privacy_policy'),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -239,7 +268,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 _buildSettingsTile(
                   icon: Icons.delete_forever,
-                  title: 'Hesabı Sil',
+                  title: context.tr('settings.menu_delete_account'),
                   titleColor: Colors.red,
                   iconColor: Colors.red,
                   onTap: () async {
@@ -247,21 +276,20 @@ class _SettingsPageState extends State<SettingsPage> {
                     final firstConfirm = await showDialog<bool>(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: const Text('Hesap Sil'),
-                        content: const Text(
-                          'Bu işlem geri alınamaz. Hesabınız ve tüm verileriniz silinecektir. '
-                          'Devam etmek istediğinizden emin misiniz?',
+                        title: Text(context.tr('settings.delete_title')),
+                        content: Text(
+                          context.tr('settings.delete_confirm'),
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context, false),
-                            child: const Text('İptal'),
+                            child: Text(context.tr('common.cancel')),
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(context, true),
-                            child: const Text(
-                              'Sil',
-                              style: TextStyle(color: Colors.red),
+                            child: Text(
+                              context.tr('common.delete'),
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ),
                         ],
@@ -273,20 +301,20 @@ class _SettingsPageState extends State<SettingsPage> {
                       final secondConfirm = await showDialog<bool>(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: const Text('Son Onay'),
-                          content: const Text(
-                            'Hesabınızı kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!',
+                          title: Text(context.tr('settings.delete_final_title')),
+                          content: Text(
+                            context.tr('settings.delete_final_confirm'),
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context, false),
-                              child: const Text('İptal'),
+                              child: Text(context.tr('common.cancel')),
                             ),
                             TextButton(
                               onPressed: () => Navigator.pop(context, true),
-                              child: const Text(
-                                'Evet, Sil',
-                                style: TextStyle(color: Colors.red),
+                              child: Text(
+                                context.tr('settings.delete_final_button'),
+                                style: const TextStyle(color: Colors.red),
                               ),
                             ),
                           ],
@@ -339,16 +367,16 @@ class _SettingsPageState extends State<SettingsPage> {
                       final shouldLogout = await showDialog<bool>(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: const Text('Çıkış Yap'),
-                          content: const Text('Çıkış yapmak istediğinizden emin misiniz?'),
+                          title: Text(context.tr('settings.logout_title')),
+                          content: Text(context.tr('settings.logout_confirm')),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context, false),
-                              child: const Text('İptal'),
+                              child: Text(context.tr('common.cancel')),
                             ),
                             TextButton(
                               onPressed: () => Navigator.pop(context, true),
-                              child: const Text('Çıkış Yap'),
+                              child: Text(context.tr('settings.button_logout')),
                             ),
                           ],
                         ),
@@ -378,9 +406,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       Icons.logout,
                       color: Colors.red,
                     ),
-                    label: const Text(
-                      'Çıkış Yap',
-                      style: TextStyle(
+                    label: Text(
+                      context.tr('settings.button_logout'),
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.red,
@@ -409,6 +437,7 @@ class _SettingsPageState extends State<SettingsPage> {
     required VoidCallback onTap,
     Color? titleColor,
     Color? iconColor,
+    Widget? trailing,
   }) {
     final effectiveIconColor = iconColor ?? AppTheme.primary;
     final effectiveTitleColor = titleColor ?? Colors.black87;
@@ -446,7 +475,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ],
             ),
-            const Icon(
+            trailing ?? const Icon(
               Icons.arrow_forward_ios,
               size: 16,
               color: Colors.grey,
@@ -461,34 +490,34 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Hakkında'),
+        title: Text(context.tr('settings.about_title')),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Etkinlikler Uygulaması',
+              Text(
+                context.tr('settings.about_app_name'),
                 
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 12),
-              const Text(
-                'Versiyon: 1.0.0',
-                style: TextStyle(fontSize: 14),
+              Text(
+                context.tr('settings.about_version'),
+                style: const TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'En yakın etkinlikleri keşfedin, etkinliklere katılın ve diğer katılımcılarla bağlantı kurun.',
-                style: TextStyle(fontSize: 13),
+              Text(
+                context.tr('settings.about_description'),
+                style: const TextStyle(fontSize: 13),
               ),
               const SizedBox(height: 12),
-              const Text(
-                '© 2025 Etkinlikler. Tüm hakları saklıdır.',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+              Text(
+                context.tr('settings.about_copyright'),
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),
@@ -496,9 +525,52 @@ class _SettingsPageState extends State<SettingsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Kapat'),
+            child: Text(context.tr('common.close')),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showLanguageDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(context.tr('settings.language_title')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: LanguageService.supportedLocales.map((locale) {
+            final languageCode = locale.languageCode;
+            final languageName = LanguageService.languageNames[languageCode] ?? languageCode;
+            final isSelected = _currentLanguage == languageCode;
+            
+            return RadioListTile<String>(
+              title: Text(languageName),
+              value: languageCode,
+              groupValue: _currentLanguage,
+              activeColor: AppTheme.primary,
+              selected: isSelected,
+              onChanged: (value) async {
+                if (value != null) {
+                  await LanguageService.saveLanguage(value);
+                  setState(() {
+                    _currentLanguage = value;
+                  });
+                  
+                  // Dili değiştir
+                  final appState = context.findRootAncestorStateOfType<State<MyApp>>();
+                  if (appState is MyAppState) {
+                    appState.setLocale(Locale(value, ''));
+                  }
+                  
+                  if (mounted) {
+                    Navigator.pop(context);
+                  }
+                }
+              },
+            );
+          }).toList(),
+        ),
       ),
     );
   }

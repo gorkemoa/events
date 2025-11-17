@@ -9,6 +9,7 @@ import 'package:pixlomi/views/qr/qr_scanner_page.dart';
 import 'package:pixlomi/services/event_service.dart';
 import 'package:pixlomi/models/event_models.dart';
 import 'package:pixlomi/views/events/event_detail_page.dart';
+import 'package:pixlomi/localizations/app_localizations.dart';
 
 class HomePage extends StatefulWidget {
   final String locationText;
@@ -307,7 +308,7 @@ class _HomePageState extends State<HomePage> {
                 HomeHeader(
                   locationText: widget.locationText,
                   subtitle: _currentUser != null
-                      ? 'Hoş geldin, ${_currentUser!.userFirstname}'
+                      ? context.tr('home.welcome', args: {'name': _currentUser!.userFirstname})
                       : null,
                   onMenuPressed: widget.onMenuPressed,
                   onNotificationPressed: () {
@@ -327,7 +328,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: 'Ne arıyorsunuz?',
+                        hintText: context.tr('home.search'),
                         hintStyle: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[500],
@@ -373,8 +374,8 @@ class _HomePageState extends State<HomePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Etkinlik Kodunu Girin veya QR Tarayın',
+                              Text(
+                                context.tr('home.event_code'),
                                 style: AppTheme.labelSmall,
                               ),
                               const SizedBox(height: 12),
@@ -507,8 +508,8 @@ class _HomePageState extends State<HomePage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Hizmetlerimizi Keşfedin',
+                      Text(
+                        context.tr('home.services'),
                         style: AppTheme.labelLarge,
                       ),
                     ],
@@ -569,14 +570,14 @@ class _HomePageState extends State<HomePage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Katıldığım Etkinlikler',
+                      Text(
+                        context.tr('home.recent_events'),
                         style: AppTheme.labelLarge,
                       ),
                       GestureDetector(
                         onTap: () {},
-                        child: const Text(
-                          'Tümünü Gör >',
+                        child: Text(
+                          context.tr('home.button_view_all'),
                           style: AppTheme.bodySmall,
                         ),
                       ),
@@ -611,7 +612,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                'Henüz katıldığınız etkinlik yok',
+                                context.tr('home.no_events'),
                                 style: TextStyle(
                                   color: Colors.grey[600],
                                   fontSize: 14,

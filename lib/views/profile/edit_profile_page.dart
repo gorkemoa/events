@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'package:pixlomi/localizations/app_localizations.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -251,13 +252,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Fotoğraf Seç'),
+        title: Text(context.tr('edit_profile.select_photo')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: const Icon(Icons.photo_library, color: AppTheme.primary),
-              title: const Text('Galeriden Seç'),
+              title: Text(context.tr('edit_profile.from_gallery')),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
@@ -265,7 +266,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt, color: AppTheme.primary),
-              title: const Text('Kamera'),
+              title: Text(context.tr('edit_profile.from_camera')),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera);
@@ -288,8 +289,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Profili Düzenle',
+        title: Text(
+          context.tr('edit_profile.title'),
           style: AppTheme.headingSmall,
         ),
         centerTitle: true,

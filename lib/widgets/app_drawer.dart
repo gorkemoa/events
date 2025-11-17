@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/firebase_messaging_service.dart';
+import 'package:pixlomi/localizations/app_localizations.dart';
 
 class AppDrawer extends StatefulWidget {
   final String? userFullname;
@@ -79,7 +80,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 children: [
                   _buildMenuItemCustom(
                     icon: Icons.headset_mic_outlined,
-                    title: 'Destek',
+                    title: context.tr('drawer.menu_support'),
                     onTap: () {
                       Navigator.pop(context);
                       _showSupportDialog();
@@ -87,7 +88,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   ),
                   _buildMenuItemCustom(
                     icon: Icons.email_outlined,
-                    title: 'İletişim',
+                    title: context.tr('drawer.menu_contact'),
                     onTap: () {
                       Navigator.pop(context);
                       _showContactDialog();
@@ -95,7 +96,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   ),
                   _buildMenuItemCustom(
                     icon: Icons.info_outline,
-                    title: 'Hakkında',
+                    title: context.tr('drawer.menu_about'),
                     onTap: () {
                       Navigator.pop(context);
                       _showAboutDialog();
@@ -113,7 +114,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 crossAxisAlignment: CrossAxisAlignment.start, // ilk satır solda
                 children: [
                   Text(
-                    '© Office701 Bilgi Teknolojileri | Tüm Hakları Saklıdır. (v$_appVersion)',
+                    context.tr('drawer.footer', args: {'version': _appVersion ?? '1.0.0'}),
                     style: const TextStyle(fontSize: 9.7, color: Colors.grey),
                   ),
 
@@ -144,18 +145,18 @@ class _AppDrawerState extends State<AppDrawer> {
                     final shouldLogout = await showDialog<bool>(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: const Text('Çıkış Yap'),
-                        content: const Text(
-                          'Çıkış yapmak istediğinizden emin misiniz?',
+                        title: Text(context.tr('drawer.logout_title')),
+                        content: Text(
+                          context.tr('drawer.logout_confirm'),
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context, false),
-                            child: const Text('İptal'),
+                            child: Text(context.tr('common.cancel')),
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(context, true),
-                            child: const Text('Çıkış Yap'),
+                            child: Text(context.tr('drawer.button_logout')),
                           ),
                         ],
                       ),
@@ -183,9 +184,9 @@ class _AppDrawerState extends State<AppDrawer> {
                     }
                   },
                   icon: const Icon(Icons.logout, color: Colors.red),
-                  label: const Text(
-                    'Çıkış Yap',
-                    style: TextStyle(
+                  label: Text(
+                    context.tr('drawer.button_logout'),
+                    style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                       color: Colors.red,
@@ -243,7 +244,7 @@ class _AppDrawerState extends State<AppDrawer> {
           children: [
             Icon(Icons.info_outline, color: AppTheme.primary),
             const SizedBox(width: 8),
-            const Text('Hakkında'),
+            Text(context.tr('drawer.about_title')),
           ],
         ),
         content: SingleChildScrollView(
@@ -251,24 +252,24 @@ class _AppDrawerState extends State<AppDrawer> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Office701',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Text(
+                context.tr('drawer.company_name'),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Creative Agency & Information Technology',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+              Text(
+                context.tr('drawer.company_tagline'),
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Etkinlikler Uygulaması',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              Text(
+                context.tr('drawer.app_name'),
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'En yakın etkinlikleri keşfedin, etkinliklere katılın ve diğer katılımcılarla bağlantı kurun.',
-                style: TextStyle(fontSize: 13),
+              Text(
+                context.tr('drawer.app_description'),
+                style: const TextStyle(fontSize: 13),
               ),
               const SizedBox(height: 16),
               Row(
@@ -276,7 +277,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   Icon(Icons.verified, size: 16, color: AppTheme.primary),
                   const SizedBox(width: 6),
                   Text(
-                    'Versiyon ${_appVersion ?? '1.0.0'}',
+                    context.tr('drawer.version', args: {'version': _appVersion ?? '1.0.0'}),
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -285,9 +286,9 @@ class _AppDrawerState extends State<AppDrawer> {
                 ],
               ),
               const SizedBox(height: 12),
-              const Text(
-                '© 2025 Office701. Tüm hakları saklıdır.',
-                style: TextStyle(fontSize: 11, color: Colors.grey),
+              Text(
+                context.tr('drawer.copyright'),
+                style: const TextStyle(fontSize: 11, color: Colors.grey),
               ),
             ],
           ),
@@ -295,7 +296,7 @@ class _AppDrawerState extends State<AppDrawer> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Kapat'),
+            child: Text(context.tr('common.close')),
           ),
         ],
       ),
@@ -310,7 +311,7 @@ class _AppDrawerState extends State<AppDrawer> {
           children: [
             Icon(Icons.headset_mic_outlined, color: AppTheme.primary),
             const SizedBox(width: 8),
-            const Text('Destek'),
+            Text(context.tr('drawer.support_title')),
           ],
         ),
         content: SingleChildScrollView(
@@ -318,9 +319,9 @@ class _AppDrawerState extends State<AppDrawer> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Size nasıl yardımcı olabiliriz?',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              Text(
+                context.tr('drawer.support_question'),
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 16),
               _buildInfoRow(Icons.email_outlined, 'destek@office701.com'),
@@ -329,7 +330,7 @@ class _AppDrawerState extends State<AppDrawer> {
               const SizedBox(height: 12),
               _buildInfoRow(
                 Icons.access_time,
-                'Pazartesi - Cuma, 09:00 - 18:30',
+                context.tr('drawer.support_hours'),
               ),
               const SizedBox(height: 16),
               Container(
@@ -348,7 +349,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Sıkça sorulan sorular için yardım merkezimizi ziyaret edebilirsiniz.',
+                        context.tr('drawer.support_faq'),
                         style: TextStyle(fontSize: 11, color: AppTheme.primary),
                       ),
                     ),
@@ -361,7 +362,7 @@ class _AppDrawerState extends State<AppDrawer> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Kapat'),
+            child: Text(context.tr('common.close')),
           ),
         ],
       ),
@@ -376,7 +377,7 @@ class _AppDrawerState extends State<AppDrawer> {
           children: [
             Icon(Icons.email_outlined, color: AppTheme.primary),
             const SizedBox(width: 8),
-            const Text('İletişim'),
+            Text(context.tr('drawer.contact_title')),
           ],
         ),
         content: SingleChildScrollView(
@@ -384,17 +385,17 @@ class _AppDrawerState extends State<AppDrawer> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Office701',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              Text(
+                context.tr('drawer.company_name'),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Creative Agency & Information Technology',
-                style: TextStyle(fontSize: 11, color: Colors.grey),
+              Text(
+                context.tr('drawer.company_tagline'),
+                style: const TextStyle(fontSize: 11, color: Colors.grey),
               ),
               const SizedBox(height: 16),
-              _buildInfoRow(Icons.location_on_outlined, 'İzmir, Türkiye'),
+              _buildInfoRow(Icons.location_on_outlined, context.tr('drawer.location')),
               const SizedBox(height: 12),
               _buildInfoRow(Icons.email_outlined, 'destek@office701.com'),
               const SizedBox(height: 12),
@@ -407,7 +408,7 @@ class _AppDrawerState extends State<AppDrawer> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Kapat'),
+            child: Text(context.tr('common.close')),
           ),
         ],
       ),

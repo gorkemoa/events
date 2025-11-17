@@ -3,6 +3,7 @@ import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/views/gallery/photo_detail_page.dart';
 import 'package:pixlomi/widgets/home_header.dart';
 import 'package:pixlomi/services/photo_service.dart';
+import 'package:pixlomi/localizations/app_localizations.dart';
 
 class GalleryPage extends StatefulWidget {
   final VoidCallback? onMenuPressed;
@@ -14,7 +15,7 @@ class GalleryPage extends StatefulWidget {
 }
 
 class _GalleryPageState extends State<GalleryPage> {
-  String _selectedFilter = 'Tümü';
+  String _selectedFilter = 'all';
   final Set<String> _favorites = {};
   final Set<String> _hiddenPhotos = {};
   bool _isSelectionMode = false;
@@ -22,11 +23,11 @@ class _GalleryPageState extends State<GalleryPage> {
   List<Map<String, dynamic>> photos = [];
 
   List<Map<String, dynamic>> get filteredPhotos {
-    if (_selectedFilter == 'Tümü') {
+    if (_selectedFilter == 'all') {
       return photos.where((photo) => !_hiddenPhotos.contains(photo['id'])).toList();
-    } else if (_selectedFilter == 'Favoriler') {
+    } else if (_selectedFilter == 'favorites') {
       return photos.where((photo) => _favorites.contains(photo['id']) && !_hiddenPhotos.contains(photo['id'])).toList();
-    } else if (_selectedFilter == 'Gizlediklerim') {
+    } else if (_selectedFilter == 'hidden') {
       return photos.where((photo) => _hiddenPhotos.contains(photo['id'])).toList();
     }
     return photos.where((photo) => photo['event'] == _selectedFilter && !_hiddenPhotos.contains(photo['id'])).toList();
@@ -34,7 +35,7 @@ class _GalleryPageState extends State<GalleryPage> {
 
   List<String> get filterOptions {
     final events = photos.map((p) => p['event'] as String).toSet().toList();
-    return ['Tümü', 'Favoriler', 'Gizlediklerim', ...events];
+    return ['all', 'favorites', 'hidden', ...events];
   }
 
   void _toggleSelectionMode() {
@@ -82,10 +83,10 @@ class _GalleryPageState extends State<GalleryPage> {
                 Expanded(
                   child: Text(
                     successCount == photoUrls.length
-                        ? '$successCount fotoğraf galeriye kaydedildi'
+                        ? context.tr('gallery.download_success', args: {'count': successCount.toString()})
                         : successCount > 0
-                            ? '$successCount/${photoUrls.length} fotoğraf kaydedildi'
-                            : 'Fotoğraflar kaydedilemedi',
+                            ? context.tr('gallery.download_partial', args: {'success': successCount.toString(), 'total': photoUrls.length.toString()})
+                            : context.tr('gallery.download_failed'),
                   ),
                 ),
               ],
@@ -150,7 +151,7 @@ class _GalleryPageState extends State<GalleryPage> {
               ),
             ),
             const SizedBox(width: 12),
-            Text('$photoCount fotoğraf indiriliyor...'),
+            Text(context.tr('gallery.downloading', args: {'count': photoCount.toString()})),
           ],
         ),
         backgroundColor: AppTheme.primary,
@@ -176,14 +177,14 @@ class _GalleryPageState extends State<GalleryPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Fotoğrafları Sil'),
+        title: Text(context.tr('gallery.delete_title')),
         content: Text(
-          '${_selectedPhotos.length} fotoğrafı silmek istediğinize emin misiniz?',
+          context.tr('gallery.delete_confirm', args: {'count': _selectedPhotos.length.toString()}),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
+            child: Text(context.tr('common.cancel')),
           ),
           TextButton(
             onPressed: () {
@@ -196,13 +197,13 @@ class _GalleryPageState extends State<GalleryPage> {
               });
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Fotoğraflar silindi'),
+                SnackBar(
+                  content: Text(context.tr('gallery.delete_success')),
                   backgroundColor: Colors.red,
                 ),
               );
             },
-            child: const Text('Sil', style: TextStyle(color: Colors.red)),
+            child: Text(context.tr('common.delete'), style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -250,7 +251,7 @@ class _GalleryPageState extends State<GalleryPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Paylaşım hatası: ${e.toString()}'),
+            content: Text(context.tr('gallery.share_error', args: {'error': e.toString()})),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
@@ -294,8 +295,8 @@ class _GalleryPageState extends State<GalleryPage> {
                           filteredPhotos.isNotEmpty,
                     )
                   : HomeHeader(
-                      subtitle: 'Fotoğraflar',
-                      locationText: '${photos.length} fotoğraf',
+                      subtitle: context.tr('gallery.title'),
+                      locationText: context.tr('gallery.photo_count', args: {'count': photos.length.toString()}),
                       onMenuPressed: widget.onMenuPressed,
                       onNotificationPressed: () {
                         Navigator.pushNamed(context, '/notifications');
@@ -313,11 +314,11 @@ class _GalleryPageState extends State<GalleryPage> {
                     final isSelected = _selectedFilter == filter;
                     int count = 0;
 
-                    if (filter == 'Tümü') {
+                    if (filter == 'all') {
                       count = photos.where((p) => !_hiddenPhotos.contains(p['id'])).length;
-                    } else if (filter == 'Favoriler') {
+                    } else if (filter == 'favorites') {
                       count = _favorites.length;
-                    } else if (filter == 'Gizlediklerim') {
+                    } else if (filter == 'hidden') {
                       count = _hiddenPhotos.length;
                     } else {
                       count = photos.where((p) => p['event'] == filter && !_hiddenPhotos.contains(p['id'])).length;
@@ -347,24 +348,24 @@ class _GalleryPageState extends State<GalleryPage> {
                           ),
                           child: Row(
                             children: [
-                              if (filter == 'Favoriler')
+                              if (filter == 'favorites')
                                 const Icon(
                                   Icons.star,
                                   size: 16,
                                   color: Color(0xFFFFB800),
                                 ),
-                              if (filter == 'Favoriler')
+                              if (filter == 'favorites')
                                 const SizedBox(width: 6),
-                              if (filter == 'Gizlediklerim')
+                              if (filter == 'hidden')
                                 Icon(
                                   Icons.visibility_off,
                                   size: 16,
                                   color: isSelected ? Colors.white : AppTheme.textSecondary,
                                 ),
-                              if (filter == 'Gizlediklerim')
+                              if (filter == 'hidden')
                                 const SizedBox(width: 6),
                               Text(
-                                '$filter ($count)',
+                                '${context.tr('gallery.$filter')} ($count)',
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -398,7 +399,7 @@ class _GalleryPageState extends State<GalleryPage> {
                             ),
                             const SizedBox(height: AppTheme.spacingL),
                             Text(
-                              'Bu etkinlikten fotoğraf yok',
+                              context.tr('gallery.no_photos'),
                               style: AppTheme.labelMedium.copyWith(
                                 color: AppTheme.textTertiary,
                               ),
@@ -492,17 +493,17 @@ class _GalleryPageState extends State<GalleryPage> {
                     children: [
                       _ActionButton(
                         icon: Icons.ios_share,
-                        label: 'Paylaş',
+                        label: context.tr('gallery.share'),
                         onTap: _shareSelectedPhotos,
                       ),
                       _ActionButton(
                         icon: Icons.cloud_download_outlined,
-                        label: 'İndir',
+                        label: context.tr('gallery.download'),
                         onTap: _downloadSelectedPhotos,
                       ),
                       _ActionButton(
                         icon: Icons.delete_outline,
-                        label: 'Sil',
+                        label: context.tr('common.delete'),
                         onTap: _deleteSelectedPhotos,
                         color: Colors.red,
                       ),
@@ -648,9 +649,9 @@ class _SelectionHeader extends StatelessWidget {
         children: [
           GestureDetector(
             onTap: onCancel,
-            child: const Text(
-              'İptal',
-              style: TextStyle(
+            child: Text(
+              context.tr('common.cancel'),
+              style: const TextStyle(
                 color: AppTheme.primary,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -659,7 +660,7 @@ class _SelectionHeader extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            '$selectedCount Seçildi',
+            context.tr('gallery.selected_count', args: {'count': selectedCount.toString()}),
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -670,7 +671,7 @@ class _SelectionHeader extends StatelessWidget {
           GestureDetector(
             onTap: onSelectAll,
             child: Text(
-              isAllSelected ? 'Temizle' : 'Tümü',
+              isAllSelected ? context.tr('gallery.clear_selection') : context.tr('gallery.select_all'),
               style: const TextStyle(
                 color: AppTheme.primary,
                 fontSize: 16,

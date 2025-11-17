@@ -5,6 +5,7 @@ import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/views/policies/membership_agreement_page.dart';
 import 'package:pixlomi/views/policies/privacy_policy_page.dart';
 import 'dart:io' show Platform;
+import 'package:pixlomi/localizations/app_localizations.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -149,7 +150,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   Navigator.pushNamed(context, '/login');
                 },
                 child: Text(
-                  'Giriş Yap',
+                  context.tr('signup.login'),
                   style: AppTheme.labelMedium.copyWith(
                     color: AppTheme.primary,
                   ),
@@ -172,19 +173,19 @@ class _SignUpPageState extends State<SignUpPage> {
               children: [
                 // Title
                 Text(
-                  'Etkinliğe Kaydol',
+                  context.tr('signup.title'),
                   style: AppTheme.headingMedium,
                 ),
                 const SizedBox(height: AppTheme.spacingS),
                 Text(
-                  'E-postanızı girin, size bir doğrulama kodu göndereceğiz',
+                  context.tr('signup.subtitle'),
                   style: AppTheme.bodyMedium,
                 ),
                 const SizedBox(height: AppTheme.spacing3XL),
 
                 // Full Name Field
                 Text(
-                  'Ad',
+                  context.tr('signup.label_firstname'),
                   style: AppTheme.labelMedium,
                 ),
                 const SizedBox(height: AppTheme.spacingS),
@@ -203,7 +204,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 const SizedBox(height: AppTheme.spacingXL),
                 
                 Text(
-                  'Soyad',
+                  context.tr('signup.label_lastname'),
                   style: AppTheme.labelMedium,
                 ),
                 const SizedBox(height: AppTheme.spacingS),
@@ -223,7 +224,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
                 // Username Field
                 Text(
-                  'Kullanıcı Adı',
+                  context.tr('signup.label_username'),
                   style: AppTheme.labelMedium,
                 ),
                 const SizedBox(height: AppTheme.spacingS),
@@ -246,7 +247,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
                 // Email Field
                 Text(
-                  'E-posta',
+                  context.tr('signup.label_email'),
                   style: AppTheme.labelMedium,
                 ),
                 const SizedBox(height: AppTheme.spacingS),
@@ -270,7 +271,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
                 // Password Field
                 Text(
-                  'Şifre',
+                  context.tr('signup.label_password'),
                   style: AppTheme.labelMedium,
                 ),
                 const SizedBox(height: AppTheme.spacingS),
@@ -332,7 +333,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                   );
                                 },
                                 child: Text(
-                                  'Üyelik Sözleşmesi',
+                                  context.tr('signup.membership_agreement'),
                                   style: AppTheme.captionLarge.copyWith(
                                     color: AppTheme.primary,
                                     fontWeight: FontWeight.w600,
@@ -354,7 +355,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                   );
                                 },
                                 child: Text(
-                                  'Gizlilik Politikası',
+                                  context.tr('signup.privacy_policy'),
                                   style: AppTheme.captionLarge.copyWith(
                                     color: AppTheme.primary,
                                     fontWeight: FontWeight.w600,
@@ -363,7 +364,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                 ),
                               ),
                               Text(
-                                ' ve Kullanım Koşullarını okudum, anladım ve kabul ediyorum.',
+                                context.tr('signup.terms_accept'),
                                 style: AppTheme.captionLarge,
                               ),
                             ],
@@ -391,7 +392,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             ),
                           )
                         : Text(
-                            'Devam Et',
+                            context.tr('signup.button_continue'),
                             style: AppTheme.buttonLarge,
                           ),
                   ),

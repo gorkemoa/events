@@ -5,6 +5,7 @@ import 'package:pixlomi/services/auth_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/face_photo_service.dart';
 import 'package:pixlomi/services/firebase_messaging_service.dart';
+import 'package:pixlomi/localizations/app_localizations.dart';
 
 class CodeVerificationPage extends StatefulWidget {
   const CodeVerificationPage({Key? key}) : super(key: key);
@@ -367,12 +368,12 @@ class _CodeVerificationPageState extends State<CodeVerificationPage> {
             children: [
               // Title
               Text(
-                'Kodu Doğrula',
+                context.tr('code_verification.title'),
                 style: AppTheme.headingMedium,
               ),
               const SizedBox(height: AppTheme.spacingS),
               Text(
-                'E-postanıza gönderilen 6 haneli kodu girin',
+                context.tr('code_verification.subtitle'),
                 style: AppTheme.bodyMedium,
               ),
               const SizedBox(height: AppTheme.spacing3XL),
@@ -483,9 +484,9 @@ class _CodeVerificationPageState extends State<CodeVerificationPage> {
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
-                        )
+                          )
                       : Text(
-                          'Doğrula',
+                          context.tr('code_verification.button_verify'),
                           style: AppTheme.buttonLarge,
                         ),
                 ),
@@ -498,7 +499,7 @@ class _CodeVerificationPageState extends State<CodeVerificationPage> {
                 child: Column(
                   children: [
                     Text(
-                      'Kodu almadınız mı?',
+                      context.tr('code_verification.code_not_received'),
                       style: AppTheme.bodyMedium,
                     ),
                     const SizedBox(height: AppTheme.spacingS),
@@ -515,8 +516,8 @@ class _CodeVerificationPageState extends State<CodeVerificationPage> {
                             )
                           : Text(
                               _resendCounter > 0 
-                                  ? 'Yeniden gönder (${_resendCounter}s)' 
-                                  : 'Yeniden gönder',
+                                  ? context.tr('code_verification.resend_code_timer', args: {'seconds': _resendCounter.toString()}) 
+                                  : context.tr('code_verification.resend_code'),
                               style: AppTheme.labelMedium.copyWith(
                                 color: _resendCounter > 0
                                     ? AppTheme.textTertiary

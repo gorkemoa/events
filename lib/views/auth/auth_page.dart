@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
+import 'package:pixlomi/localizations/app_localizations.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({Key? key}) : super(key: key);
@@ -61,18 +62,18 @@ class _AuthPageState extends State<AuthPage> {
                     children: [
                       // Title
                       Text(
-                        'Hoş Geldiniz',
+                        context.tr('auth.welcome'),
                         style: AppTheme.headingLarge,           
                       ),
                       const SizedBox(height: AppTheme.spacingXL),
 
                       // Subtitle
-                      const Padding(
-                        padding: EdgeInsets.symmetric(
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: AppTheme.spacing2XL,
                         ),
                         child: Text(
-                          'Bize katılarak hesap oluşturun ve\nsorunsuz etkinlik planlaması deneyimi yaşayın.',
+                          context.tr('auth.subtitle'),
                           textAlign: TextAlign.center,
                           style: AppTheme.bodyLarge,
                         ),
@@ -97,8 +98,8 @@ class _AuthPageState extends State<AuthPage> {
                           onPressed: () {
                             Navigator.of(context).pushNamed('/signup');
                           },
-                          child: const Text(
-                            'Hesap Oluştur',
+                          child: Text(
+                            context.tr('auth.button_signup'),
                             style: AppTheme.buttonLarge,
                           ),
                         ),
@@ -113,8 +114,8 @@ class _AuthPageState extends State<AuthPage> {
                           onPressed: () {
                             Navigator.of(context).pushNamed('/login');
                           },
-                          child: const Text(
-                            'Giriş Yap',
+                          child: Text(
+                            context.tr('auth.button_login'),
                             style: AppTheme.labelLarge,
                           ),
                         ),
