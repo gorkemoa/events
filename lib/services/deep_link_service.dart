@@ -6,6 +6,7 @@ import 'package:pixlomi/views/events/event_detail_page.dart';
 
 class DeepLinkService {
   static StreamSubscription? _linkSubscription;
+  static String? _pendingEventCode;
 
   static void initialize() {
     // Handle initial link (when app is closed)
@@ -15,11 +16,22 @@ class DeepLinkService {
     _handleIncomingLinks();
   }
 
+  /// Check if there's a pending deep link to process
+  static bool hasPendingLink() => _pendingEventCode != null;
+
+  /// Get and clear pending event code
+  static String? getPendingEventCode() {
+    final code = _pendingEventCode;
+    _pendingEventCode = null;
+    return code;
+  }
+
   static Future<void> _handleInitialLink() async {
     try {
       final initialLink = await getInitialLink();
       if (initialLink != null) {
-        _processLink(initialLink);
+        print('🔗 Initial Deep Link detected: $initialLink');
+        _processLink(initialLink, isInitialLink: true);
       }
     } catch (e) {
       print('Error handling initial link: $e');
@@ -29,14 +41,14 @@ class DeepLinkService {
   static void _handleIncomingLinks() {
     _linkSubscription = linkStream.listen((String? link) {
       if (link != null) {
-        _processLink(link);
+        _processLink(link, isInitialLink: false);
       }
     }, onError: (err) {
       print('Error listening to link stream: $err');
     });
   }
 
-  static void _processLink(String link) {
+  static void _processLink(String link, {required bool isInitialLink}) {
     print('🔗 Deep Link received: $link');
     final uri = Uri.parse(link);
     print('🔍 Scheme: ${uri.scheme}, Host: ${uri.host}, Path: ${uri.path}');
@@ -46,7 +58,13 @@ class DeepLinkService {
       final eventCode = _extractEventCodeFromCustomScheme(uri);
       print('✅ Event code extracted (custom): $eventCode');
       if (eventCode != null) {
-        _navigateToEventDetail(eventCode);
+        if (isInitialLink) {
+          // Store for later processing after splash
+          _pendingEventCode = eventCode;
+          print('💾 Stored pending event code: $eventCode (will navigate after splash)');
+        } else {
+          _navigateToEventDetail(eventCode);
+        }
       }
     }
     // HTTP/HTTPS: http://pixlomi.com/etkinlik-detay/PX-6UZASX
@@ -54,7 +72,13 @@ class DeepLinkService {
       final eventCode = _extractEventCodeFromWeb(uri);
       print('✅ Event code extracted (web): $eventCode');
       if (eventCode != null) {
-        _navigateToEventDetail(eventCode);
+        if (isInitialLink) {
+          // Store for later processing after splash
+          _pendingEventCode = eventCode;
+          print('💾 Stored pending event code: $eventCode (will navigate after splash)');
+        } else {
+          _navigateToEventDetail(eventCode);
+        }
       }
     } else {
       print('❌ Link format not recognized');

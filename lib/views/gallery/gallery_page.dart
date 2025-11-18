@@ -266,8 +266,7 @@ class _GalleryPageState extends State<GalleryPage> {
       backgroundColor: Colors.white,
       body: RefreshIndicator(
         onRefresh: () async {
-          // Refresh gallery logic can be added here
-          await Future.delayed(const Duration(seconds: 1));
+          // Sayfayı yenile
           setState(() {});
         },
         color: AppTheme.primary,

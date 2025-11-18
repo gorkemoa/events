@@ -4,6 +4,8 @@ import 'package:video_player/video_player.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/face_photo_service.dart';
 import 'package:pixlomi/services/firebase_messaging_service.dart';
+import 'package:pixlomi/services/deep_link_service.dart';
+import 'package:pixlomi/views/events/event_detail_page.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({Key? key}) : super(key: key);
@@ -61,6 +63,34 @@ class _SplashPageState extends State<SplashPage> {
       SystemUiMode.manual,
       overlays: SystemUiOverlay.values,
     );
+
+    // Check if there's a pending deep link
+    if (DeepLinkService.hasPendingLink()) {
+      final eventCode = DeepLinkService.getPendingEventCode();
+      if (eventCode != null && mounted) {
+        print('🔗 Processing pending deep link: $eventCode');
+        
+        // Check if user is logged in first
+        final isLoggedIn = await StorageHelper.isLoggedIn();
+        final userToken = await StorageHelper.getUserToken();
+        
+        if (isLoggedIn && userToken != null) {
+          // User is logged in, navigate to event detail
+          print('✅ User logged in, navigating to EventDetailPage with code: $eventCode');
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => EventDetailPage(eventCode: eventCode),
+            ),
+          );
+          return;
+        } else {
+          // User not logged in, store the code and navigate to auth
+          print('⚠️ User not logged in, will redirect to auth first');
+          // The code is already cleared, we could store it again if needed
+          // For now, just proceed with normal auth flow
+        }
+      }
+    }
 
     // Oturum kontrolü yap
     final isLoggedIn = await StorageHelper.isLoggedIn();

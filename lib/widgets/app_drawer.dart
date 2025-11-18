@@ -23,7 +23,6 @@ class AppDrawer extends StatefulWidget {
 }
 
 class _AppDrawerState extends State<AppDrawer> {
- 
   String? _appVersion;
 
   @override
@@ -32,11 +31,7 @@ class _AppDrawerState extends State<AppDrawer> {
     _loadUserEmail();
   }
 
-  Future<void> _loadUserEmail() async {
- 
-
-
-  }
+  Future<void> _loadUserEmail() async {}
 
   @override
   Widget build(BuildContext context) {
@@ -66,8 +61,8 @@ class _AppDrawerState extends State<AppDrawer> {
                     fit: BoxFit.contain,
                     color: Colors.white,
                   ),
-                  // User Profile
 
+                  // User Profile
                   Row(),
                 ],
               ),
@@ -114,23 +109,39 @@ class _AppDrawerState extends State<AppDrawer> {
                 crossAxisAlignment: CrossAxisAlignment.start, // ilk satır solda
                 children: [
                   Text(
-                    context.tr('drawer.footer', args: {'version': _appVersion ?? '1.0.0'}),
+                    context.tr(
+                      'drawer.footer',
+                      args: {'version': _appVersion ?? '1.0.0'},
+                    ),
                     style: const TextStyle(fontSize: 9.7, color: Colors.grey),
                   ),
 
                   const SizedBox(height: 10),
-                   Center(
-              child: Image.asset(
-                'assets/logo/office701.png',
-                height: 16,
-                fit: BoxFit.contain,
-              ),
-            ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Center(
+                        child: Image.asset(
+                          'assets/logo/office701.png',
+                          height: 16,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                       const SizedBox(width: 10),
 
+                      Center(
+                        child: Image.asset(
+                          'assets/logo/dwork-logo2.png',
+                          height: 16,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
-         
+
             const SizedBox(height: 10),
             // Logout Button
             Padding(
@@ -146,9 +157,7 @@ class _AppDrawerState extends State<AppDrawer> {
                       context: context,
                       builder: (context) => AlertDialog(
                         title: Text(context.tr('drawer.logout_title')),
-                        content: Text(
-                          context.tr('drawer.logout_confirm'),
-                        ),
+                        content: Text(context.tr('drawer.logout_confirm')),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context, false),
@@ -254,7 +263,10 @@ class _AppDrawerState extends State<AppDrawer> {
             children: [
               Text(
                 context.tr('drawer.company_name'),
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -264,7 +276,10 @@ class _AppDrawerState extends State<AppDrawer> {
               const SizedBox(height: 16),
               Text(
                 context.tr('drawer.app_name'),
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -277,7 +292,10 @@ class _AppDrawerState extends State<AppDrawer> {
                   Icon(Icons.verified, size: 16, color: AppTheme.primary),
                   const SizedBox(width: 6),
                   Text(
-                    context.tr('drawer.version', args: {'version': _appVersion ?? '1.0.0'}),
+                    context.tr(
+                      'drawer.version',
+                      args: {'version': _appVersion ?? '1.0.0'},
+                    ),
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -321,7 +339,10 @@ class _AppDrawerState extends State<AppDrawer> {
             children: [
               Text(
                 context.tr('drawer.support_question'),
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 16),
               _buildInfoRow(Icons.email_outlined, 'destek@office701.com'),
@@ -387,7 +408,10 @@ class _AppDrawerState extends State<AppDrawer> {
             children: [
               Text(
                 context.tr('drawer.company_name'),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -395,7 +419,10 @@ class _AppDrawerState extends State<AppDrawer> {
                 style: const TextStyle(fontSize: 11, color: Colors.grey),
               ),
               const SizedBox(height: 16),
-              _buildInfoRow(Icons.location_on_outlined, context.tr('drawer.location')),
+              _buildInfoRow(
+                Icons.location_on_outlined,
+                context.tr('drawer.location'),
+              ),
               const SizedBox(height: 12),
               _buildInfoRow(Icons.email_outlined, 'destek@office701.com'),
               const SizedBox(height: 12),

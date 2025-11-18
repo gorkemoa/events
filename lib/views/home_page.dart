@@ -107,9 +107,9 @@ class _HomePageState extends State<HomePage> {
       final response = await EventService.getAllEvents(userToken);
 
       if (response != null && response.success) {
-        // Sadece eşleşen fotoğrafı olan etkinlikleri filtrele (imageCount > 0)
+        // Sadece katıldığım etkinlikleri filtrele (isJoined = true)
         final attendedEvents = response.data.events
-            .where((event) => event.imageCount > 0)
+            .where((event) => event.isJoined)
             .toList();
 
         setState(() {
@@ -293,12 +293,19 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  Future<void> _refreshData() async {
+    await Future.wait([
+      _loadUserData(),
+      _loadAttendedEvents(),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: RefreshIndicator(
-        onRefresh: _loadUserData,
+        onRefresh: _refreshData,
         color: AppTheme.primary,
         child: SafeArea(
           child: SingleChildScrollView(
@@ -317,9 +324,7 @@ class _HomePageState extends State<HomePage> {
                     Navigator.pushNamed(context, '/notifications');
                   },
                 ),
-
-                // Search Bar
-                Padding(
+ Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 10,
@@ -345,8 +350,8 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
+              
                 // View pictures with QR Code section
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),

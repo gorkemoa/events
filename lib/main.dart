@@ -17,10 +17,12 @@ import 'package:pixlomi/views/profile/change_password_page.dart';
 import 'package:pixlomi/views/profile/settings_page.dart';
 import 'package:pixlomi/views/profile/face_photos_page.dart';
 import 'package:pixlomi/views/profile/edit_profile_page.dart';
+import 'package:pixlomi/views/events/event_detail_page.dart';
 import 'package:pixlomi/services/navigation_service.dart';
 import 'package:pixlomi/services/firebase_messaging_service.dart';
 import 'package:pixlomi/services/language_service.dart';
 import 'package:pixlomi/services/deep_link_service.dart';
+import 'package:pixlomi/services/storage_helper.dart';
 import 'firebase_options.dart';
 
 
@@ -41,10 +43,10 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Initialize Deep Link Service
+  // Initialize Deep Link Service (but don't process initial link yet)
   DeepLinkService.initialize();
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -59,11 +61,44 @@ class MyApp extends StatefulWidget {
 
 class MyAppState extends State<MyApp> {
   Locale _locale = const Locale('tr', '');
+  Widget? _initialPage;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _loadSavedLanguage();
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    await _loadSavedLanguage();
+    await _determineInitialPage();
+  }
+
+  Future<void> _determineInitialPage() async {
+    // Check for pending deep link first
+    if (DeepLinkService.hasPendingLink()) {
+      final eventCode = DeepLinkService.getPendingEventCode();
+      
+      // Check if user is logged in
+      final isLoggedIn = await StorageHelper.isLoggedIn();
+      final userToken = await StorageHelper.getUserToken();
+      
+      if (eventCode != null && isLoggedIn && userToken != null) {
+        print('🚀 Cold start with deep link - navigating directly to EventDetailPage: $eventCode');
+        setState(() {
+          _initialPage = EventDetailPage(eventCode: eventCode);
+          _isInitialized = true;
+        });
+        return;
+      }
+    }
+    
+    // Default to splash page
+    setState(() {
+      _initialPage = const SplashPage();
+      _isInitialized = true;
+    });
   }
 
   Future<void> _loadSavedLanguage() async {
@@ -81,6 +116,20 @@ class MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      // Show loading while initializing
+      return MaterialApp(
+        home: Scaffold(
+          backgroundColor: Colors.black,
+          body: Center(
+            child: CircularProgressIndicator(
+              color: Colors.white,
+            ),
+          ),
+        ),
+      );
+    }
+    
     return MaterialApp(
       navigatorKey: NavigationService.navigatorKey,
       debugShowCheckedModeBanner: false,
@@ -97,7 +146,7 @@ class MyAppState extends State<MyApp> {
       supportedLocales: LanguageService.supportedLocales,
       locale: _locale,
       
-      home: const SplashPage(),
+      home: _initialPage,
       builder: (context, child) {
         return GestureDetector(
           onTap: () {
