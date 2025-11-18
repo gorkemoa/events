@@ -11,14 +11,21 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 
 class MainNavigation extends StatefulWidget {
-  const MainNavigation({Key? key}) : super(key: key);
+  final int initialIndex;
+  final int initialTabIndex;
+  
+  const MainNavigation({
+    Key? key,
+    this.initialIndex = 0,
+    this.initialTabIndex = 0,
+  }) : super(key: key);
 
   @override
   State<MainNavigation> createState() => _MainNavigationState();
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
   String _locationText = 'Konum yükleniyor...';
   String? _userFullname;
   String? _userEmail;
@@ -29,6 +36,7 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   void initState() {
     super.initState();
+    _selectedIndex = widget.initialIndex;
     _getCurrentLocation();
     _loadUserData();
   }
@@ -98,7 +106,11 @@ class _MainNavigationState extends State<MainNavigation> {
 
   List<Widget> get _pages => [
     HomePage(locationText: _locationText, onMenuPressed: _openDrawer),
-    EventsPage(locationText: _locationText, onMenuPressed: _openDrawer),
+    EventsPage(
+      locationText: _locationText,
+      onMenuPressed: _openDrawer,
+      initialTabIndex: widget.initialTabIndex,
+    ),
     GalleryPage(onMenuPressed: _openDrawer),
     ProfilePage(onMenuPressed: _openDrawer),
   ];

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/widgets/home_header.dart';
@@ -9,6 +10,7 @@ import 'package:pixlomi/views/qr/qr_scanner_page.dart';
 import 'package:pixlomi/services/event_service.dart';
 import 'package:pixlomi/models/event_models.dart';
 import 'package:pixlomi/views/events/event_detail_page.dart';
+import 'package:pixlomi/views/main_navigation.dart';
 import 'package:pixlomi/localizations/app_localizations.dart';
 
 class HomePage extends StatefulWidget {
@@ -575,7 +577,17 @@ class _HomePageState extends State<HomePage> {
                         style: AppTheme.labelLarge,
                       ),
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MainNavigation(
+                                initialIndex: 1,
+                                initialTabIndex: 1,
+                              ),
+                            ),
+                          );
+                        },
                         child: Text(
                           context.tr('home.button_view_all'),
                           style: AppTheme.bodySmall,
@@ -779,12 +791,12 @@ class _EventCard extends StatelessWidget {
     final day = _formatDate(event.eventStartDate);
     final month = _formatMonth(event.eventStartDate);
     final color = _getEventColor(event.eventID);
+    final hasImage = event.eventImage.isNotEmpty;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 150,
-        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(16),
@@ -796,36 +808,111 @@ class _EventCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      day,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black,
-                        height: 1,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            children: [
+              // Blur background image
+              if (hasImage)
+                Positioned.fill(
+                  child: ImageFiltered(
+                    imageFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: ColorFiltered(
+                      colorFilter: ColorFilter.mode(
+                        const Color.fromARGB(255, 48, 47, 47).withOpacity(0.3),
+                        BlendMode.darken,
+                      ),
+                      child: Image.network(
+                        event.eventImage,
+                        fit: BoxFit.cover,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(month, style: AppTheme.captionSmall),
+                  ),
+                ),
+              
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              day,
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                                color: hasImage ? Colors.white : Colors.black,
+                                height: 1,
+                                shadows: hasImage
+                                    ? [
+                                        Shadow(
+                                          color: Colors.black.withOpacity(0.5),
+                                          blurRadius: 4,
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              month,
+                              style: AppTheme.captionSmall.copyWith(
+                                color: hasImage ? Colors.white : null,
+                                shadows: hasImage
+                                    ? [
+                                        Shadow(
+                                          color: Colors.black.withOpacity(0.5),
+                                          blurRadius: 4,
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      event.eventTitle,
+                      style: AppTheme.labelSmall.copyWith(
+                        color: hasImage ? Colors.white : null,
+                        shadows: hasImage
+                            ? [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.5),
+                                  blurRadius: 4,
+                                ),
+                              ]
+                            : null,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
-                Container(
-                  padding: const EdgeInsets.all(6),
+              ),
+              
+              // Photo count badge - top right corner
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         Icons.photo_library,
@@ -844,16 +931,9 @@ class _EventCard extends StatelessWidget {
                     ],
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              event.eventTitle,
-              style: AppTheme.labelSmall,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -14,11 +14,13 @@ import 'package:pixlomi/localizations/app_localizations.dart';
 class EventsPage extends StatefulWidget {
   final String locationText;
   final VoidCallback? onMenuPressed;
+  final int initialTabIndex;
   
   const EventsPage({
     Key? key,
     required this.locationText,
     this.onMenuPressed,
+    this.initialTabIndex = 0,
   }) : super(key: key);
 
   @override
@@ -28,6 +30,7 @@ class EventsPage extends StatefulWidget {
 class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<models.Event> _events = [];
+  List<models.Event> _filteredEvents = [];
   List<City> _cities = [];
   bool _isLoading = false;
   String? _errorMessage;
@@ -40,9 +43,31 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialTabIndex,
+    );
+    _tabController.addListener(_onTabChanged);
     _selectedCityName = widget.locationText;
     _loadCities();
+  }
+
+  void _onTabChanged() {
+    if (_tabController.indexIsChanging) return;
+    _filterEvents();
+  }
+
+  void _filterEvents() {
+    setState(() {
+      if (_tabController.index == 0) {
+        // Tüm Etkinlikler
+        _filteredEvents = _events;
+      } else {
+        // Katıldığım Etkinlikler
+        _filteredEvents = _events.where((event) => event.isJoined).toList();
+      }
+    });
   }
 
   @override
@@ -116,6 +141,7 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
           _events = response.data.events;
           _isLoading = false;
         });
+        _filterEvents();
       } else {
         setState(() {
           _errorMessage = 'Etkinlikler yüklenemedi';
@@ -321,6 +347,7 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -456,7 +483,7 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                   ),
                 ),
               )
-            else if (_events.isEmpty)
+            else if (_filteredEvents.isEmpty)
               SliverFillRemaining(
                 child: Center(
                   child: Text(context.tr('events.no_events')),
@@ -468,10 +495,10 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                      final event = _events[index];
+                      final event = _filteredEvents[index];
                       return Padding(
                         padding: EdgeInsets.only(
-                          bottom: index < _events.length - 1 ? AppTheme.spacingM : 0,
+                          bottom: index < _filteredEvents.length - 1 ? AppTheme.spacingM : 0,
                         ),
                         child: _EventCard(
                           image: event.eventImage,
@@ -496,7 +523,7 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
                         ),
                       );
                     },
-                    childCount: _events.length,
+                    childCount: _filteredEvents.length,
                   ),
                 ),
               ),

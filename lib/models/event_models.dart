@@ -12,6 +12,7 @@ class Event {
   final String eventStatus;
   final int imageCount;
   final bool isPrivate;
+  final bool isJoined;
 
   Event({
     required this.eventID,
@@ -26,6 +27,7 @@ class Event {
     required this.eventStatus,
     required this.imageCount,
     required this.isPrivate,
+    required this.isJoined,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
@@ -42,6 +44,7 @@ class Event {
       eventStatus: json['eventStatus'] as String,
       imageCount: json['imageCount'] as int,
       isPrivate: json['isPrivate'] as bool,
+      isJoined: json['isJoined'] as bool? ?? false,
     );
   }
 
@@ -59,6 +62,7 @@ class Event {
       'eventStatus': eventStatus,
       'imageCount': imageCount,
       'isPrivate': isPrivate,
+      'isJoined': isJoined,
     };
   }
 }
