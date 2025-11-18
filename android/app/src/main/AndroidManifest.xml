@@ -44,6 +44,31 @@
                 <action android:name="FLUTTER_NOTIFICATION_CLICK" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            
+            <!-- Deep Link Intent Filter - Custom Scheme -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="pixlomi"
+                    android:host="etkinlik-detay" />
+            </intent-filter>
+            
+            <!-- Deep Link Intent Filter - HTTP/HTTPS -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="http"
+                    android:host="pixlomi.com"
+                    android:pathPrefix="/etkinlik-detay" />
+                <data
+                    android:scheme="https"
+                    android:host="pixlomi.com"
+                    android:pathPrefix="/etkinlik-detay" />
+            </intent-filter>
         </activity>
         
         <!-- Firebase Cloud Messaging Service -->

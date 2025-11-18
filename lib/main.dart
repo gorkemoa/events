@@ -20,6 +20,7 @@ import 'package:pixlomi/views/profile/edit_profile_page.dart';
 import 'package:pixlomi/services/navigation_service.dart';
 import 'package:pixlomi/services/firebase_messaging_service.dart';
 import 'package:pixlomi/services/language_service.dart';
+import 'package:pixlomi/services/deep_link_service.dart';
 import 'firebase_options.dart';
 
 
@@ -39,6 +40,9 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
+  // Initialize Deep Link Service
+  DeepLinkService.initialize();
 
   runApp(MyApp());
 }

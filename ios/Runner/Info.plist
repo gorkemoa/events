@@ -26,6 +26,7 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+
 	<key>NSCameraUsageDescription</key>
 	<string>Yüz doğrulaması için kameranıza erişmemiz gerekiyor</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
@@ -40,16 +41,30 @@
 	<string>Fotoğrafları galerinize kaydetmek için erişim gerekiyor</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>Etkinlikleri takviminize ekleyebilmek için takvim erişimine ihtiyacımız var</string>
+
+	<!-- 🔥 EKLENMESİ GEREKENLER (HATAYI ÇÖZEN) -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Uygulamanın yerel ağdaki cihazlarla iletişim kurabilmesi için erişim gerekiyor.</string>
+
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_http._tcp</string>
+	</array>
+	<!-- 🔥 Burası çok önemli: array boş olamaz, yoksa yine hata verir -->
+
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
 	</array>
+
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -63,5 +78,28 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>pixlomi</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>com.pixlomi.app</string>
+		</dict>
+	</array>
+
+	<key>FlutterDeepLinkingEnabled</key>
+	<true/>
+
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:pixlomi.com</string>
+	</array>
+
 </dict>
 </plist>

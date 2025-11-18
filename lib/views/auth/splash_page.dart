@@ -92,6 +92,14 @@ class _SplashPageState extends State<SplashPage> {
         
         if (!mounted) return;
         
+        // 403 hatası sonrası session temizlenmiş olabilir, kontrol et
+        final stillLoggedIn = await StorageHelper.isLoggedIn();
+        if (!stillLoggedIn) {
+          // Session temizlenmiş (403), ApiHelper zaten login'e yönlendirdi
+          print('🔒 Session cleared by 403, navigation already handled by ApiHelper');
+          return;
+        }
+        
         if (!photosResponse.isSuccess || photosResponse.data == null) {
           // Yüz fotoğrafları yok - face verification'a yönlendir
           print('⚠️ Face photos not found, navigating to /faceVerification');
@@ -111,7 +119,7 @@ class _SplashPageState extends State<SplashPage> {
         
         if (!stillLoggedIn) {
           // Session temizlenmiş (403 hatası), ApiHelper zaten login'e yönlendirdi
-          print('🔒 Session was cleared (403), user redirected to login');
+          print('🔒 Session was cleared (403), navigation already handled by ApiHelper');
           return;
         }
         
