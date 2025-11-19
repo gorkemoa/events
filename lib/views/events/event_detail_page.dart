@@ -61,7 +61,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-           'Etkinlik Detayı',
+          context.tr('event_detail.title'),
           style: AppTheme.labelLarge,
         ),
         centerTitle: true,
@@ -92,7 +92,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text('3\'lü'),
+                    Text(context.tr('event_detail.grid_3')),
                   ],
                 ),
               ),
@@ -113,7 +113,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text('4\'lü'),
+                    Text(context.tr('event_detail.grid_4')),
                   ],
                 ),
               ),
@@ -134,7 +134,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text('5\'li'),
+                    Text(context.tr('event_detail.grid_5')),
                   ],
                 ),
               ),
@@ -166,7 +166,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   ),
                   const SizedBox(height: AppTheme.spacingM),
                   Text(
-                    _viewModel.errorMessage ?? 'Etkinlik bulunamadı',
+                    _viewModel.errorMessage ?? context.tr('events.no_events'),
                     style: TextStyle(
                       color: Colors.grey[400],
                       fontSize: 14,
@@ -175,7 +175,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   const SizedBox(height: AppTheme.spacingL),  
                   ElevatedButton(
                     onPressed: _loadEventDetail,
-                    child: const Text('Tekrar Dene'),
+                    child: Text(context.tr('common.retry')),
                   ),
                 ],
               ),
@@ -244,9 +244,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                 children: [
                                   const Divider(height: 1),
                                   const SizedBox(height: AppTheme.spacingM),
-                                  const Text(
-                                    'Etkinlik Kodu',
-                                    style: TextStyle(
+                                  Text(
+                                    context.tr('event_detail.event_code'),
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey,
                                       fontWeight: FontWeight.w500,
@@ -264,9 +264,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            const Text(
-                                              'Başlangıç',
-                                              style: TextStyle(
+                                            Text(
+                                              context.tr('event_detail.start_date'),
+                                              style: const TextStyle(
                                                 fontSize: 12,
                                                 color: Colors.grey,
                                                 fontWeight: FontWeight.w500,
@@ -284,9 +284,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            const Text(
-                                              'Bitiş',
-                                              style: TextStyle(
+                                            Text(
+                                              context.tr('event_detail.end_date'),
+                                              style: const TextStyle(
                                                 fontSize: 12,
                                                 color: Colors.grey,
                                                 fontWeight: FontWeight.w500,
@@ -303,9 +303,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                     ],
                                   ),
                                   const SizedBox(height: AppTheme.spacingM),
-                                  const Text(
-                                    'Konum',
-                                    style: TextStyle(
+                                  Text(
+                                    context.tr('event_detail.location'),
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey,
                                       fontWeight: FontWeight.w500,
@@ -345,8 +345,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   children: [
                     Text(
                       _viewModel.isSelectionMode
-                          ? '${_viewModel.selectedPhotos.length} seçildi'
-                          : 'Etkinlik Fotoğrafları (${thumbPhotos.length})',
+                          ? context.tr('event_detail.selected_count', args: {'count': _viewModel.selectedPhotos.length.toString()})
+                          : context.tr('event_detail.photos_title', args: {'count': thumbPhotos.length.toString()}),
                       style: AppTheme.labelLarge,
                     ),
                     Row(
@@ -356,9 +356,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
                             onTap: () {
                               _viewModel.enableSelectionMode();
                             },
-                            child: const Text(
-                              'Seç',
-                              style: TextStyle(
+                            child: Text(
+                              context.tr('event_detail.button_select'),
+                              style: const TextStyle(
                                 color: AppTheme.primary,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -370,9 +370,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
                             onTap: () {
                               _viewModel.disableSelectionMode();
                             },
-                            child: const Text(
-                              'İptal',
-                              style: TextStyle(
+                            child: Text(
+                              context.tr('event_detail.button_cancel'),
+                              style: const TextStyle(
                                 color: AppTheme.primary,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -401,7 +401,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                             ),
                             const SizedBox(height: AppTheme.spacingM),
                             Text(
-                              'Henüz fotoğraf yüklenmedi',
+                              context.tr('event_detail.no_photos'),
                               style: TextStyle(
                                 color: Colors.grey[400],
                                 fontSize: 14,
@@ -598,9 +598,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          'Telefon Galerisine İndir',
-                          style: TextStyle(
+                        child: Text(
+                          context.tr('event_detail.button_download_all'),
+                          style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -644,8 +644,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                   child: Center(
                                     child: Text(
                                       _viewModel.selectedPhotos.length == _viewModel.eventDetail!.images.length
-                                          ? 'Seçimi Kaldır'
-                                          : 'Hepsini Seç',
+                                          ? context.tr('event_detail.button_deselect_all')
+                                          : context.tr('event_detail.button_select_all'),
                                       style: const TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
@@ -664,7 +664,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           child: ElevatedButton.icon(
                             onPressed: _downloadSelectedPhotos,
                             icon: const Icon(Icons.download_rounded, size: 18),
-                            label: const Text('İndir', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                            label: Text(context.tr('event_detail.button_download'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.primary,
                               foregroundColor: Colors.white,
@@ -679,7 +679,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           child: ElevatedButton.icon(
                             onPressed: _shareSelectedPhotos,
                             icon: const Icon(Icons.share_rounded, size: 18),
-                            label: const Text('Paylaş', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                            label: Text(context.tr('event_detail.button_share'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.primary,
                               foregroundColor: Colors.white,
@@ -694,9 +694,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           child: ElevatedButton.icon(
                             onPressed: _deleteSelectedPhotos,
                             icon: const Icon(Icons.delete_rounded, size: 18),
-                            label: const Text('Sil', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                            label: Text(context.tr('event_detail.action_hide'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.error,
+                              backgroundColor: AppTheme.primary,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -788,10 +788,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
                 Expanded(
                   child: Text(
                     successCount == photoUrls.length
-                        ? '$successCount fotoğraf galeriye kaydedildi'
+                        ? context.tr('event_detail.download_success', args: {'count': successCount.toString()})
                         : successCount > 0
-                            ? '$successCount/${photoUrls.length} fotoğraf kaydedildi'
-                            : 'Fotoğraflar kaydedilemedi',
+                            ? context.tr('event_detail.download_partial_success', args: {'success': successCount.toString(), 'total': photoUrls.length.toString()})
+                            : context.tr('event_detail.download_error'),
                   ),
                 ),
               ],
@@ -842,9 +842,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text('Tüm Fotoğrafları İndir'),
+          title: Text(context.tr('event_detail.download_confirm_title')),
           content: Text(
-            '${photos.length} fotoğrafı galeriye kaydetmek istediğinizden emin misiniz?',
+            context.tr('event_detail.download_confirm_message', args: {'count': photos.length.toString()}),
           ),
           actions: [
             TextButton(
@@ -871,7 +871,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Text('${photos.length} fotoğraf indiriliyor...'),
+                        Text(context.tr('event_detail.downloading', args: {'count': photos.length.toString()})),
                       ],
                     ),
                     backgroundColor: AppTheme.primary,
@@ -892,7 +892,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text('İndir' , style: TextStyle(color: Colors.white),),
+              child: Text(context.tr('event_detail.button_download'), style: const TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -913,9 +913,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text('Fotoğrafları İndir'),
+          title: Text(context.tr('event_detail.download_selected_title')),
           content: Text(
-            '${selectedPhotos.length} fotoğraf telefon galerisine indirilecektir.',
+            context.tr('event_detail.download_selected_message', args: {'count': selectedPhotos.length.toString()}),
           ),
           actions: [
             TextButton(
@@ -943,7 +943,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Text('${selectedPhotos.length} fotoğraf indiriliyor...'),
+                        Text(context.tr('event_detail.downloading', args: {'count': selectedPhotos.length.toString()})),
                       ],
                     ),
                     backgroundColor: AppTheme.primary,
@@ -967,7 +967,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text('İndir', style: TextStyle(color: Colors.white)),
+              child: Text(context.tr('event_detail.button_download'), style: const TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -978,7 +978,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
   void _shareSelectedPhotos() {
     if (_viewModel.selectedPhotos.isEmpty) return;
     
-    _showSnackBar('${_viewModel.selectedPhotos.length} fotoğraf paylaşılıyor...');
+    _showSnackBar(context.tr('event_detail.downloading', args: {'count': _viewModel.selectedPhotos.length.toString()}));
   }
 
   void _deleteSelectedPhotos() {
@@ -991,20 +991,20 @@ class _EventDetailPageState extends State<EventDetailPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text('Fotoğrafları Sil'),
+          title: Text(context.tr('event_detail.delete_confirm_title')),
           content: Text(
-            '${_viewModel.selectedPhotos.length} fotoğrafı silmek istediğinizden emin misiniz?',
+            context.tr('event_detail.delete_confirm_message', args: {'count': _viewModel.selectedPhotos.length.toString()}),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('İptal'),
+              child: Text(context.tr('common.cancel')),
             ),
             TextButton(
               onPressed: () async {
                 await _viewModel.deleteSelectedPhotos();
                 Navigator.pop(context);
-                _showSnackBar('Fotoğraflar silindi');
+                _showSnackBar(context.tr('event_detail.delete_success'));
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.error,
@@ -1012,7 +1012,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text('Sil', style: TextStyle(color: Colors.white)),
+              child: Text(context.tr('common.delete'), style: const TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -1194,35 +1194,35 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
                     children: [
                       _PhotoActionIconButton(
                         icon: Icons.visibility_off_rounded,
-                        label: 'Gizle',
+                        label: context.tr('event_detail.action_hide'),
                         onTap: () {
                           // Gizle fonksiyonu
                         },
                       ),
                       _PhotoActionIconButton(
                         icon: Icons.info_outline_rounded,
-                        label: 'Bilgi',
+                        label: context.tr('event_detail.action_info'),
                         onTap: () {
                           _showPhotoInfo();
                         },
                       ),
                       _PhotoActionIconButton(
                         icon: Icons.favorite_border_rounded,
-                        label: 'Favori',
+                        label: context.tr('event_detail.action_favorite'),
                         onTap: () {
                           // Favori fonksiyonu
                         },
                       ),
                       _PhotoActionIconButton(
                         icon: Icons.share_rounded,
-                        label: 'Paylaş',
+                        label: context.tr('event_detail.action_share'),
                         onTap: () {
                           _sharePhoto();
                         },
                       ),
                       _PhotoActionIconButton(
                         icon: Icons.download_rounded,
-                        label: 'İndir',
+                        label: context.tr('event_detail.action_download'),
                         onTap: () {
                           _downloadPhoto();
                         },
@@ -1296,7 +1296,7 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(success ? 'Fotoğraf galeriye kaydedildi' : 'İndirme başarısız'),
+            content: Text(success ? context.tr('event_detail.photo_saved') : context.tr('event_detail.photo_save_error')),
             behavior: SnackBarBehavior.floating,
             backgroundColor: success ? AppTheme.primary : Colors.red,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1341,7 +1341,7 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Paylaşım hatası: $e'),
+            content: Text(context.tr('event_detail.share_error', args: {'error': e.toString()})),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Colors.red,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1379,9 +1379,9 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Fotoğraf Bilgisi',
-                style: TextStyle(
+              Text(
+                context.tr('event_detail.photo_info_title'),
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -1389,8 +1389,8 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
               const SizedBox(height: 20),
               _InfoRow(
                 icon: Icons.image_outlined,
-                label: 'Fotoğraf',
-                value: '${_currentIndex + 1} / ${widget.photos.length}',
+                label: context.tr('event_detail.photo_info_photo'),
+                value: context.tr('event_detail.photo_count_format', args: {'current': (_currentIndex + 1).toString(), 'total': widget.photos.length.toString()}),
               ),
               const SizedBox(height: 24),
             ],
