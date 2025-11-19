@@ -8,6 +8,7 @@ import 'package:pixlomi/views/auth/splash_page.dart';
 import 'package:pixlomi/views/auth/auth_page.dart';
 import 'package:pixlomi/views/auth/signup_page.dart';
 import 'package:pixlomi/views/auth/login_page.dart';
+import 'package:pixlomi/views/auth/email_login_page.dart';
 import 'package:pixlomi/views/auth/code_verification_page.dart';
 import 'package:pixlomi/views/auth/face_verification_page.dart';
 import 'package:pixlomi/views/auth/onboarding_page.dart';
@@ -161,6 +162,7 @@ class MyAppState extends State<MyApp> {
         '/auth': (context) => const AuthPage(),
         '/signup': (context) => const SignUpPage(),
         '/login': (context) => const LoginPage(),
+        '/emailLogin': (context) => const EmailLoginPage(),
         '/codeVerification': (context) => const CodeVerificationPage(),
         '/faceVerification': (context) => const FaceVerificationPage(),
         '/facePhotos': (context) => const FacePhotosPage(),

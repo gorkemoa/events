@@ -21,6 +21,8 @@ class EventDetailPage extends StatefulWidget {
 
 class _EventDetailPageState extends State<EventDetailPage> {
   late final EventDetailViewModel _viewModel;
+  bool _isInfoExpanded = false;
+  bool _isDragSelecting = false;
 
   @override
   void initState() {
@@ -59,10 +61,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          _viewModel.eventDetail?.eventTitle ?? 'Etkinlik Detayı',
+           'Etkinlik Detayı',
           style: AppTheme.labelLarge,
         ),
-        centerTitle: false,
+        centerTitle: true,
         actions: [
           PopupMenuButton<int>(
             icon: const Icon(Icons.grid_view_rounded, color: Colors.black),
@@ -170,7 +172,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       fontSize: 14,
                     ),
                   ),
-                  const SizedBox(height: AppTheme.spacingL),
+                  const SizedBox(height: AppTheme.spacingL),  
                   ElevatedButton(
                     onPressed: _loadEventDetail,
                     child: const Text('Tekrar Dene'),
@@ -185,100 +187,151 @@ class _EventDetailPageState extends State<EventDetailPage> {
 
           return Column(
             children: [
-              // Etkinlik Bilgileri
+              // Etkinlik Bilgileri - Accordion
               Container(
                 margin: const EdgeInsets.all(AppTheme.spacingL),
-                padding: const EdgeInsets.all(AppTheme.spacingL),
                 decoration: BoxDecoration(
                   color: Colors.grey[100],
                   borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Etkinlik Bilgisi',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w500,
+                    // Accordion Header
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          _isInfoExpanded = !_isInfoExpanded;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppTheme.spacingL),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                event.eventTitle,
+                                style: AppTheme.labelLarge.copyWith(
+                                  fontSize: 16,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Icon(
+                              _isInfoExpanded
+                                  ? Icons.keyboard_arrow_up
+                                  : Icons.keyboard_arrow_down,
+                              color: AppTheme.primary,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      event.eventCode,
-                      style: AppTheme.labelMedium,
-                    ),
-                    const SizedBox(height: AppTheme.spacingM),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Başlangıç',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                    // Accordion Content
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      child: _isInfoExpanded
+                          ? Padding(
+                              padding: const EdgeInsets.only(
+                                left: AppTheme.spacingL,
+                                right: AppTheme.spacingL,
+                                bottom: AppTheme.spacingL,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                event.eventStartDate,
-                                style: AppTheme.bodySmall,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Divider(height: 1),
+                                  const SizedBox(height: AppTheme.spacingM),
+                                  const Text(
+                                    'Etkinlik Kodu',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    event.eventCode,
+                                    style: AppTheme.bodySmall,
+                                  ),
+                                  const SizedBox(height: AppTheme.spacingM),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Başlangıç',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              event.eventStartDate,
+                                              style: AppTheme.bodySmall,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Bitiş',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              event.eventEndDate,
+                                              style: AppTheme.bodySmall,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: AppTheme.spacingM),
+                                  const Text(
+                                    'Konum',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.location_on,
+                                        size: 16,
+                                        color: AppTheme.primary,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          event.eventLocation,
+                                          style: AppTheme.bodySmall,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Bitiş',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                event.eventEndDate,
-                                style: AppTheme.bodySmall,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppTheme.spacingM),
-                    const Text(
-                      'Konum',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          size: 16,
-                          color: AppTheme.primary,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            event.eventLocation,
-                            style: AppTheme.bodySmall,
-                          ),
-                        ),
-                      ],
+                            )
+                          : const SizedBox.shrink(),
                     ),
                   ],
                 ),
@@ -371,19 +424,61 @@ class _EventDetailPageState extends State<EventDetailPage> {
                         itemCount: thumbPhotos.length,
                         itemBuilder: (context, index) {
                           final isSelected = _viewModel.selectedPhotos.contains(index);
-                          return GestureDetector(
-                            onTap: () {
-                              if (_viewModel.isSelectionMode) {
-                                _viewModel.togglePhotoSelection(index);
-                              } else {
-                                _showPhotoDetail(index);
-                              }
-                            },
-                            onLongPress: () {
-                              _viewModel.enableSelectionMode();
-                              _viewModel.togglePhotoSelection(index);
-                            },
-                            child: ClipRRect(
+                          return Builder(
+                            builder: (itemContext) {
+                              return GestureDetector(
+                                onTap: () {
+                                  if (_viewModel.isSelectionMode) {
+                                    _viewModel.togglePhotoSelection(index);
+                                  } else {
+                                    _showPhotoDetail(index);
+                                  }
+                                },
+                                onLongPress: () {
+                                  setState(() {
+                                    _isDragSelecting = true;
+                                  });
+                                  _viewModel.enableSelectionMode();
+                                  _viewModel.togglePhotoSelection(index);
+                                },
+                                onLongPressMoveUpdate: (details) {
+                                  if (_viewModel.isSelectionMode && _isDragSelecting) {
+                                    // Scaffold'un RenderBox'ını al
+                                    final RenderBox? scaffoldBox = Scaffold.of(context).context.findRenderObject() as RenderBox?;
+                                    if (scaffoldBox == null) return;
+                                    
+                                    // Global pozisyonu scaffold koordinatlarına çevir
+                                    final localPosition = scaffoldBox.globalToLocal(details.globalPosition);
+                                    
+                                    // Grid içindeki pozisyonu hesapla
+                                    final screenWidth = MediaQuery.of(context).size.width;
+                                    final itemWidth = (screenWidth - (AppTheme.spacingL * 2) - (AppTheme.spacingS * (_viewModel.gridColumnCount - 1))) / _viewModel.gridColumnCount;
+                                    final itemHeight = itemWidth;
+                                    
+                                    // Grid'in başlangıç pozisyonunu hesaba kat (AppBar + Info Card + Header)
+                                    final gridStartY = AppBar().preferredSize.height + 
+                                                      MediaQuery.of(context).padding.top + 
+                                                      100; // Yaklaşık info card + header yüksekliği
+                                    
+                                    final adjustedY = localPosition.dy - gridStartY;
+                                    
+                                    final col = ((localPosition.dx - AppTheme.spacingL) / (itemWidth + AppTheme.spacingS)).floor().clamp(0, _viewModel.gridColumnCount - 1);
+                                    final row = ((adjustedY - AppTheme.spacingL) / (itemHeight + AppTheme.spacingS)).floor();
+                                    final hoveredIndex = (row * _viewModel.gridColumnCount + col).clamp(0, thumbPhotos.length - 1);
+                                    
+                                    if (hoveredIndex >= 0 && hoveredIndex < thumbPhotos.length) {
+                                      if (!_viewModel.selectedPhotos.contains(hoveredIndex)) {
+                                        _viewModel.togglePhotoSelection(hoveredIndex);
+                                      }
+                                    }
+                                  }
+                                },
+                                onLongPressEnd: (_) {
+                                  setState(() {
+                                    _isDragSelecting = false;
+                                  });
+                                },
+                                child: ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: Stack(
                                 fit: StackFit.expand,
@@ -429,11 +524,11 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                   // Seçim checkbox'ı
                                   if (_viewModel.isSelectionMode)
                                     Positioned(
-                                      top: 8,
-                                      right: 8,
+                                      top: 4,
+                                      right: 4,
                                       child: Container(
-                                        width: 28,
-                                        height: 28,
+                                        width: 20,
+                                        height: 20,
                                         decoration: BoxDecoration(
                                           color: isSelected
                                               ? AppTheme.primary
@@ -443,20 +538,20 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                             color: isSelected
                                                 ? AppTheme.primary
                                                 : Colors.grey[400]!,
-                                            width: 2,
+                                            width: 1.5,
                                           ),
                                           boxShadow: [
                                             BoxShadow(
                                               color: Colors.black.withOpacity(0.2),
-                                              blurRadius: 4,
-                                              offset: const Offset(0, 2),
+                                              blurRadius: 3,
+                                              offset: const Offset(0, 1),
                                             ),
                                           ],
                                         ),
                                         child: isSelected
                                             ? const Icon(
                                                 Icons.check,
-                                                size: 16,
+                                                size: 12,
                                                 color: Colors.white,
                                               )
                                             : null,
@@ -465,6 +560,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                 ],
                               ),
                             ),
+                              );
+                            },
                           );
                         },
                       ),
@@ -564,35 +661,46 @@ class _EventDetailPageState extends State<EventDetailPage> {
                         const SizedBox(width: AppTheme.spacingM),
                         // İndir butonu
                         Expanded(
-                          child: _SelectionActionButton(
-                            icon: Icons.download_rounded,
-                            label: 'İndir',
-                            onTap: () {
-                              _downloadSelectedPhotos();
-                            },
+                          child: ElevatedButton.icon(
+                            onPressed: _downloadSelectedPhotos,
+                            icon: const Icon(Icons.download_rounded, size: 18),
+                            label: const Text('İndir', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
                           ),
                         ),
                         const SizedBox(width: AppTheme.spacingS),
                         // Paylaş butonu
                         Expanded(
-                          child: _SelectionActionButton(
-                            icon: Icons.share_rounded,
-                            label: 'Paylaş',
-                            onTap: () {
-                              _shareSelectedPhotos();
-                            },
+                          child: ElevatedButton.icon(
+                            onPressed: _shareSelectedPhotos,
+                            icon: const Icon(Icons.share_rounded, size: 18),
+                            label: const Text('Paylaş', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
                           ),
                         ),
                         const SizedBox(width: AppTheme.spacingS),
                         // Sil butonu
                         Expanded(
-                          child: _SelectionActionButton(
-                            icon: Icons.delete_rounded,
-                            label: 'Sil',
-                            color: AppTheme.error,
-                            onTap: () {
-                              _deleteSelectedPhotos();
-                            },
+                          child: ElevatedButton.icon(
+                            onPressed: _deleteSelectedPhotos,
+                            icon: const Icon(Icons.delete_rounded, size: 18),
+                            label: const Text('Sil', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.error,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
                           ),
                         ),
                       ],
@@ -1272,7 +1380,7 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
               ),
               const SizedBox(height: 20),
               const Text(
-                'Fotoğraf Bilgileri',
+                'Fotoğraf Bilgisi',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -1283,24 +1391,6 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
                 icon: Icons.image_outlined,
                 label: 'Fotoğraf',
                 value: '${_currentIndex + 1} / ${widget.photos.length}',
-              ),
-              const SizedBox(height: 12),
-              _InfoRow(
-                icon: Icons.calendar_today_outlined,
-                label: 'Tarih',
-                value: '6 Kasım 2025',
-              ),
-              const SizedBox(height: 12),
-              _InfoRow(
-                icon: Icons.access_time_outlined,
-                label: 'Saat',
-                value: '14:30',
-              ),
-              const SizedBox(height: 12),
-              _InfoRow(
-                icon: Icons.photo_size_select_actual_outlined,
-                label: 'Boyut',
-                value: '1920 x 1080',
               ),
               const SizedBox(height: 24),
             ],
@@ -1460,71 +1550,6 @@ class _DismissiblePhotoViewState extends State<_DismissiblePhotoView> {
         child: Opacity(
           opacity: opacity,
           child: widget.child,
-        ),
-      ),
-    );
-  }
-}
-
-class _SelectionActionButton extends StatefulWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final Color? color;
-
-  const _SelectionActionButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.color,
-  });
-
-  @override
-  State<_SelectionActionButton> createState() => _SelectionActionButtonState();
-}
-
-class _SelectionActionButtonState extends State<_SelectionActionButton> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) {
-        setState(() => _isPressed = true);
-      },
-      onTapUp: (_) {
-        setState(() => _isPressed = false);
-        widget.onTap();
-      },
-      onTapCancel: () {
-        setState(() => _isPressed = false);
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: _isPressed
-              ? (widget.color ?? AppTheme.primary).withOpacity(0.9)
-              : (widget.color ?? AppTheme.primary),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              widget.icon,
-              size: 20,
-              color: Colors.white,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              widget.label,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
         ),
       ),
     );

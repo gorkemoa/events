@@ -31,9 +31,15 @@ class _HomePageState extends State<HomePage> {
   User? _currentUser;
   final TextEditingController _eventCodeController = TextEditingController();
   final FocusNode _eventCodeFocusNode = FocusNode();
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  Timer? _searchDebounce;
   bool _isSearching = false;
+  bool _isSearchActive = false;
   List<Event> _attendedEvents = [];
+  List<Event> _searchResults = [];
   bool _isLoadingEvents = false;
+  bool _isLoadingSearch = false;
 
   @override
   void initState() {
@@ -64,6 +70,79 @@ class _HomePageState extends State<HomePage> {
             _eventCodeController.text.isNotEmpty;
       });
     });
+
+    // Search focus listener
+    _searchFocusNode.addListener(() {
+      setState(() {
+        _isSearchActive = _searchFocusNode.hasFocus || _searchController.text.isNotEmpty;
+      });
+    });
+
+    // Search text değişikliği listener - debouncing ile
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    // Debouncing: 500ms bekle, kullanıcı yazmayı bitirsin
+    if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
+    
+    setState(() {
+      _isSearchActive = _searchFocusNode.hasFocus || _searchController.text.isNotEmpty;
+    });
+
+    if (_searchController.text.isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _isLoadingSearch = false;
+      });
+      return;
+    }
+
+    _searchDebounce = Timer(const Duration(milliseconds: 500), () {
+      _performSearch(_searchController.text);
+    });
+  }
+
+  Future<void> _performSearch(String query) async {
+    if (query.isEmpty) return;
+
+    setState(() {
+      _isLoadingSearch = true;
+    });
+
+    try {
+      final userToken = await StorageHelper.getUserToken();
+
+      if (userToken == null || userToken.isEmpty) {
+        setState(() {
+          _isLoadingSearch = false;
+        });
+        return;
+      }
+
+      final response = await EventService.getAllEvents(
+        userToken,
+        searchText: query,
+      );
+
+      if (response != null && response.success) {
+        setState(() {
+          _searchResults = response.data.events;
+          _isLoadingSearch = false;
+        });
+      } else {
+        setState(() {
+          _searchResults = [];
+          _isLoadingSearch = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error searching events: $e');
+      setState(() {
+        _searchResults = [];
+        _isLoadingSearch = false;
+      });
+    }
   }
 
   Future<void> _loadUserData() async {
@@ -287,9 +366,12 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     _autoScrollTimer?.cancel();
+    _searchDebounce?.cancel();
     _pageController.dispose();
     _eventCodeController.dispose();
     _eventCodeFocusNode.dispose();
+    _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -324,32 +406,226 @@ class _HomePageState extends State<HomePage> {
                     Navigator.pushNamed(context, '/notifications');
                   },
                 ),
- Padding(
+                // Search Bar - Modern & Estetik
+                Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 10,
                   ),
-                  child: Container(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: _isSearchActive 
+                          ? AppTheme.primary.withOpacity(0.5)
+                          : Colors.grey.shade200,
+                        width: _isSearchActive ? 2 : 1,
+                      ),
+                      boxShadow: _isSearchActive
+                        ? [
+                            BoxShadow(
+                              color: AppTheme.primary.withOpacity(0.1),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                     ),
                     child: TextField(
+                      controller: _searchController,
+                      focusNode: _searchFocusNode,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
                       decoration: InputDecoration(
                         hintText: context.tr('home.search'),
                         hintStyle: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[500],
+                          fontSize: 15,
+                          color: Colors.grey[400],
+                          fontWeight: FontWeight.w400,
                         ),
-                        prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
+                        prefixIcon: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          child: Icon(
+                            Icons.search_rounded,
+                            color: _isSearchActive 
+                              ? AppTheme.primary 
+                              : Colors.grey[400],
+                            size: 24,
+                          ),
+                        ),
+                        suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(
+                                Icons.close_rounded,
+                                color: Colors.grey[400],
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                _searchController.clear();
+                                _searchFocusNode.unfocus();
+                              },
+                            )
+                          : _isLoadingSearch
+                            ? Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppTheme.primary,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : null,
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
-                          vertical: 14,
+                          vertical: 16,
                         ),
                       ),
                     ),
                   ),
                 ),
+
+                // Search Results Overlay
+                if (_isSearchActive && _searchController.text.isNotEmpty)
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    constraints: const BoxConstraints(maxHeight: 300),
+                    child: _isLoadingSearch
+                      ? const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(32),
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      : _searchResults.isEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.search_off_rounded,
+                                  size: 48,
+                                  color: Colors.grey[300],
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Sonuç bulunamadı',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.separated(
+                            shrinkWrap: true,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            itemCount: _searchResults.length,
+                            separatorBuilder: (context, index) => Divider(
+                              height: 1,
+                              color: Colors.grey.shade100,
+                            ),
+                            itemBuilder: (context, index) {
+                              final event = _searchResults[index];
+                              return ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                leading: Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: AppTheme.primary.withOpacity(0.1),
+                                  ),
+                                  child: event.eventImage.isNotEmpty
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Image.network(
+                                          event.eventImage,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return Icon(
+                                              Icons.event_rounded,
+                                              color: AppTheme.primary,
+                                            );
+                                          },
+                                        ),
+                                      )
+                                    : Icon(
+                                        Icons.event_rounded,
+                                        color: AppTheme.primary,
+                                      ),
+                                ),
+                                title: Text(
+                                  event.eventTitle,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                subtitle: Text(
+                                  event.eventStartDate,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                trailing: Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 16,
+                                  color: Colors.grey[400],
+                                ),
+                                onTap: () {
+                                  _searchController.clear();
+                                  _searchFocusNode.unfocus();
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EventDetailPage(
+                                        eventID: event.eventID,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                  ),
+
                 const SizedBox(height: 20),
               
                 // View pictures with QR Code section
@@ -817,20 +1093,38 @@ class _EventCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           child: Stack(
             children: [
-              // Blur background image
+              // Cinematic background with fade-in and zoom
               if (hasImage)
                 Positioned.fill(
-                  child: ImageFiltered(
-                    imageFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: ColorFiltered(
-                      colorFilter: ColorFilter.mode(
-                        const Color.fromARGB(255, 48, 47, 47).withOpacity(0.3),
-                        BlendMode.darken,
-                      ),
-                      child: Image.network(
-                        event.eventImage,
-                        fit: BoxFit.cover,
-                      ),
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    duration: const Duration(milliseconds: 1200),
+                    curve: Curves.easeOut,
+                    builder: (context, opacity, child) {
+                      return Opacity(
+                        opacity: opacity,
+                        child: child,
+                      );
+                    },
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 1.15, end: 1.0),
+                      duration: const Duration(milliseconds: 1500),
+                      curve: Curves.easeOut,
+                      builder: (context, scale, child) {
+                        return Transform.scale(
+                          scale: scale,
+                          child: ColorFiltered(
+                            colorFilter: ColorFilter.mode(
+                              Colors.black.withOpacity(0.7),
+                              BlendMode.darken,
+                            ),
+                            child: Image.network(
+                              event.eventImage,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),

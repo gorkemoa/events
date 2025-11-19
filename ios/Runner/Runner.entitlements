@@ -8,5 +8,10 @@
 	<array>
 		<string>applinks:pixlomi.com</string>
 	</array>
+	<!-- Apple Sign In Capability -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
 </dict>
 </plist>

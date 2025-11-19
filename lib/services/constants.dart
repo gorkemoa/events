@@ -9,6 +9,7 @@ class ApiConstants {
 
   /// Authentication endpoints
   static const String login = '${baseUrl}service/auth/login';
+  static const String loginSocial = '${baseUrl}service/auth/loginSocial';
   static const String register = '${baseUrl}service/auth/register';
   static const String checkCode = '${baseUrl}service/auth/code/checkCode';
   static const String resendCode = '${baseUrl}service/auth/code/authSendCode';
@@ -38,6 +39,11 @@ class ApiConstants {
   
   static String getEventDetailByCode(String eventCode, String userToken) {
     return '${baseUrl}service/events/event/detail/$eventCode?userToken=$userToken';
+  }
+  
+  /// Photo endpoints
+  static String getUserPhotos(String userToken) {
+    return '${baseUrl}service/user/account/photo/eventAll?userToken=$userToken';
   }
   
   /// General endpoints

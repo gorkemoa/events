@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
-import 'package:pixlomi/services/auth_service.dart';
+import 'package:pixlomi/services/social_auth_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
-import 'package:pixlomi/services/face_photo_service.dart';
 import 'package:pixlomi/services/firebase_messaging_service.dart';
-import 'package:pixlomi/localizations/app_localizations.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -14,356 +12,342 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'ridvan');
-  final _passwordController = TextEditingController(text: '123');
-  final _authService = AuthService();
-  final _facePhotoService = FacePhotoService();
-  bool _obscurePassword = true;
+  final _socialAuthService = SocialAuthService();
   bool _isLoading = false;
 
-  bool _isFormComplete() {
-    return _emailController.text.isNotEmpty && _passwordController.text.isNotEmpty;
-  }
+  /// Google ile giriş yap
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isLoading = true;
+    });
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+    try {
+      // Google Sign In ve Backend'e gönder
+      final response = await _socialAuthService.signInWithGoogle();
 
-  Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+      if (!mounted) return;
 
-      try {
-        final response = await _authService.login(
-          userName: _emailController.text.trim(),
-          password: _passwordController.text,
+      if (response.isSuccess && response.data != null) {
+        // Login başarılı - session kaydet
+        await StorageHelper.saveUserSession(
+          userId: response.data!.userId,
+          userToken: response.data!.token,
+        );
+        
+        print('💾 Session saved: userId=${response.data!.userId}');
+        
+        // FCM topic subscribe
+        await FirebaseMessagingService.subscribeToUserTopic(
+          response.data!.userId.toString(),
         );
 
         if (!mounted) return;
 
-        if (response.isSuccess) {
-          // Login successful - save user session
-          final saved = await StorageHelper.saveUserSession(
-            userId: response.data!.userId,
-            userToken: response.data!.token,
-          );
-          
-          print('💾 Session saved: $saved');
-          print('  - userId: ${response.data!.userId}');
-          print('  - token: ${response.data!.token.substring(0, 10)}...');
-          
-          // Subscribe to Firebase topic with userId
-          await FirebaseMessagingService.subscribeToUserTopic(response.data!.userId.toString());
-          
-          if (!mounted) return;
-          
-          // Yüz fotoğraflarını kontrol et
-          try {
-            final photosResponse = await _facePhotoService.getFacePhotos(
-              userToken: response.data!.token,
-            );
-            
-            if (!mounted) return;
-            
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(response.data?.message ?? 'Giriş başarılı!'),
-                backgroundColor: Colors.green,
-              ),
-            );
-            
-            // Yüz fotoğrafları yoksa face_verification'a yönlendir
-            if (!photosResponse.isSuccess || photosResponse.data == null) {
-              print('⚠️ Yüz fotoğrafları yok, face_verification\'a yönlendiriliyor');
-              Navigator.of(context).pushReplacementNamed('/faceVerification');
-            } else {
-              print('✅ Yüz fotoğrafları mevcut, home\'a yönlendiriliyor');
-              // Navigate to home page and remove all previous routes
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                '/home',
-                (route) => false,
-              );
-            }
-          } catch (e) {
-            print('❌ Error checking face photos: $e');
-            // 403 hatası durumunda ApiHelper zaten login'e yönlendirdi
-            return;
-          }
-        } else {
-          // Login failed - show error message from server
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(response.errorMessage ?? 'Giriş başarısız!'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      } catch (e) {
-        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Bir hata oluştu: $e'),
+            content: Text(response.data!.message),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Home'a yönlendir
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/home',
+          (route) => false,
+        );
+      } else {
+        // Login başarısız
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.errorMessage ?? 'Google ile giriş başarısız!'),
             backgroundColor: Colors.red,
           ),
         );
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Hata: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
 
+  /// Apple ile giriş yap
+  Future<void> _handleAppleSignIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Apple Sign In ve Backend'e gönder
+      final response = await _socialAuthService.signInWithApple();
+
+      if (!mounted) return;
+
+      if (response.isSuccess && response.data != null) {
+        // Login başarılı - session kaydet
+        await StorageHelper.saveUserSession(
+          userId: response.data!.userId,
+          userToken: response.data!.token,
+        );
+        
+        print('💾 Session saved: userId=${response.data!.userId}');
+        
+        // FCM topic subscribe
+        await FirebaseMessagingService.subscribeToUserTopic(
+          response.data!.userId.toString(),
+        );
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.data!.message),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Home'a yönlendir
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/home',
+          (route) => false,
+        );
+      } else {
+        // Login başarısız
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.errorMessage ?? 'Apple ile giriş başarısız!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Hata: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(AppTheme.spacingM),
-            child: Center(
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, '/signup');
-                },
-                child: Text(
-                  context.tr('login.signup'),
-                  style: AppTheme.labelMedium.copyWith(
-                    color: AppTheme.primary,
-                  ),
+      body: Stack(
+        children: [
+          // Background Image
+          Positioned.fill(
+            child: Image.asset(
+              'assets/login/login.png',
+              fit: BoxFit.cover,
+            ),
+          ),
+          
+          // Dark Overlay
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.black.withOpacity(1),
+                    Colors.transparent,
+                  ],
                 ),
               ),
             ),
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.spacing2XL,
-            vertical: AppTheme.spacingXL,
-          ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title
-                Text(
-                  context.tr('login.title'),
-                  style: AppTheme.headingMedium,
-                ),
-                const SizedBox(height: AppTheme.spacingS),
-                Text(
-                  context.tr('login.subtitle'),
-                  style: AppTheme.bodyMedium,
-                ),
-                const SizedBox(height: AppTheme.spacing3XL),
-
-                // Username Field
-                Text(
-                  context.tr('login.label_username'),
-                  style: AppTheme.labelMedium,
-                ),
-                const SizedBox(height: AppTheme.spacingS),
-                TextFormField(
-                  controller: _emailController,
-                  enabled: !_isLoading,
-                  onChanged: (value) {
-                    setState(() {});
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return context.tr('login.placeholder_username');
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: AppTheme.spacingXL),
-
-                // Password Field
-                Text(
-                  context.tr('login.label_password'),
-                  style: AppTheme.labelMedium,
-                ),
-                const SizedBox(height: AppTheme.spacingS),
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  enabled: !_isLoading,
-                  onChanged: (value) {
-                    setState(() {});
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return context.tr('login.placeholder_password');
-                    }
-                    return null;
-                  },
-                  decoration: InputDecoration(
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                        color: AppTheme.textSecondary,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
+          
+          // Content
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 30.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const Spacer(),
+                  
+                  // Title
+                  const Text(
+                    'Giriş Yap',
+                    style: TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
-                ),
-                const SizedBox(height: AppTheme.spacingM),
-
-                // Forgot Password Link
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap: () {
-                      // Handle forgot password
-                    },
-                    child: Text(
-                      context.tr('login.forgot_password'),
-                      style: AppTheme.labelMedium.copyWith(
-                        color: AppTheme.primary,
+                  
+                  const SizedBox(height: 10),
+                  
+                  // Google Login Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 60,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _handleGoogleSignIn,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.textPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        elevation: 0,
                       ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppTheme.spacing3XL),
-
-                // Login Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: (_isFormComplete() && !_isLoading) ? _login : null,
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  'assets/icon/google_icon.png',
+                                  width: 24,
+                                  height: 24,
+                                ),
+                                const SizedBox(width: 12),
+                                const Text(
+                                  'Google ile Giriş Yap',
+                                  style: AppTheme.buttonLarge,
+                                ),
+                              ],
                             ),
-                          )
-                        : Text(
-                            context.tr('login.button_login'),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Apple Login Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 60,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _handleAppleSignIn,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.textPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.apple,
+                                  color: Colors.white,
+                                  size: 28,
+                                ),
+                                SizedBox(width: 12),
+                                Text(
+                                  'Apple ile Giriş Yap',
+                                  style: AppTheme.buttonLarge,
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Email Login Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 60,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/emailLogin');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.textPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.email_outlined,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            'Email ile Giriş Yap',
                             style: AppTheme.buttonLarge,
                           ),
-                  ),
-                ),
-                const SizedBox(height: AppTheme.spacing2XL),
-
-                // Divider with text
-                Row(
-                  children: [
-                    Expanded(
-                      child: Divider(
-                        color: AppTheme.dividerColor,
+                        ],
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacingM,
-                      ),
-                      child: Text(
-                        context.tr('login.or'),
-                        style: AppTheme.captionLarge,
-                      ),
-                    ),
-                    Expanded(
-                      child: Divider(
-                        color: AppTheme.dividerColor,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppTheme.spacing2XL),
-
-                // Social Login Buttons
-                // Facebook
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      // Handle Facebook login
-                    },
-                    icon: const Icon(
-                      Icons.facebook,
-                      color: Color(0xFF1877F2),
-                      size: 24,
-                    ),
-                    label: Text(
-                      context.tr('login.facebook_login'),
-                      style: AppTheme.labelMedium,
                     ),
                   ),
-                ),
-                const SizedBox(height: AppTheme.spacingM),
-
-                // Google
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      // Handle Google login
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: Image.asset('assets/icon/google_icon.png'),
+                  
+                  const SizedBox(height: 80),
+                  
+                  // Sign up link
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Üye değil misiniz? ',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white70,
                         ),
-                        const SizedBox(width: AppTheme.spacingM),
-                        Text(
-                          context.tr('login.google_login'),
-                          style: AppTheme.labelMedium,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(context, '/signup');
+                        },
+                        child: const Text(
+                          'Kayıt Ol',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: AppTheme.spacingM),
-
-                // Apple
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      // Handle Apple login
-                    },
-                    icon: const Icon(
-                      Icons.apple,
-                      color: AppTheme.textPrimary,
-                      size: 24,
-                    ),
-                    label: Text(
-                      context.tr('login.apple_login'),
-                      style: AppTheme.labelMedium,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppTheme.spacingXL),
-              ],
+                  
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

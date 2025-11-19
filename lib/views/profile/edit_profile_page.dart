@@ -20,7 +20,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _userService = UserService();
   final _imagePicker = ImagePicker();
   final _formKey = GlobalKey<FormState>();
-  
+
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
@@ -28,7 +28,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _birthdayController = TextEditingController();
-  
+
   User? _currentUser;
   bool _isLoading = true;
   bool _isSaving = false;
@@ -72,15 +72,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
           _phoneController.text = _currentUser!.userPhone;
           _addressController.text = _currentUser!.userAddress;
           _birthdayController.text = _currentUser!.userBirthday;
-          
-          if (_currentUser!.userGender.toLowerCase() == 'erkek' || _currentUser!.userGender == '1') {
+
+          if (_currentUser!.userGender.toLowerCase() == 'erkek' ||
+              _currentUser!.userGender == '1') {
             _selectedGender = 1;
-          } else if (_currentUser!.userGender.toLowerCase() == 'kadın' || _currentUser!.userGender == '2') {
+          } else if (_currentUser!.userGender.toLowerCase() == 'kadın' ||
+              _currentUser!.userGender == '2') {
             _selectedGender = 2;
           } else {
             _selectedGender = 3;
           }
-          
+
           _isLoading = false;
         });
       } else {
@@ -139,7 +141,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
         userFirstname: _firstNameController.text,
         userLastname: _lastNameController.text,
         userEmail: _emailController.text,
-        userBirthday: _birthdayController.text.isNotEmpty ? _birthdayController.text : '01.01.1990',
+        userBirthday: _birthdayController.text.isNotEmpty
+            ? _birthdayController.text
+            : '01.01.1990',
         userPhone: _phoneController.text,
         userAddress: _addressController.text,
         userGender: _selectedGender,
@@ -207,20 +211,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
               toolbarColor: AppTheme.primary,
               toolbarWidgetColor: Colors.white,
             ),
-            IOSUiSettings(
-              title: 'Fotoğrafı Düzenle',
-            ),
+            IOSUiSettings(title: 'Fotoğrafı Düzenle'),
           ],
         );
 
         if (croppedFile != null) {
           final bytes = await File(croppedFile.path).readAsBytes();
           final base64String = base64Encode(bytes);
-          
-          final mimeType = croppedFile.path.toLowerCase().endsWith('.png') 
-              ? 'image/png' 
+
+          final mimeType = croppedFile.path.toLowerCase().endsWith('.png')
+              ? 'image/png'
               : 'image/jpeg';
-          
+
           setState(() {
             _base64ProfilePhoto = 'data:$mimeType;base64,$base64String';
           });
@@ -306,14 +308,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         height: 24,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppTheme.primary,
+                          ),
                         ),
                       )
-                    : Icon(
-                        Icons.check,
-                        color: AppTheme.primary,
-                        size: 28,
-                      ),
+                    : Icon(Icons.check, color: AppTheme.primary, size: 28),
               ),
             ),
           ),
@@ -351,24 +351,32 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             child: ClipOval(
                               child: _base64ProfilePhoto != null
                                   ? Image.memory(
-                                      base64Decode(_base64ProfilePhoto!.split(',').last),
+                                      base64Decode(
+                                        _base64ProfilePhoto!.split(',').last,
+                                      ),
                                       fit: BoxFit.cover,
                                     )
-                                  : (_currentUser?.profilePhoto.isNotEmpty == true
-                                      ? (_currentUser!.profilePhoto.startsWith('data:image')
-                                          ? Image.memory(
-                                              base64Decode(_currentUser!.profilePhoto.split(',').last),
-                                              fit: BoxFit.cover,
-                                            )
-                                          : Image.network(
-                                              _currentUser!.profilePhoto,
-                                              fit: BoxFit.cover,
-                                            ))
-                                      : Icon(
-                                          Icons.person,
-                                          size: 50,
-                                          color: AppTheme.textTertiary,
-                                        )),
+                                  : (_currentUser?.profilePhoto.isNotEmpty ==
+                                            true
+                                        ? (_currentUser!.profilePhoto
+                                                  .startsWith('data:image')
+                                              ? Image.memory(
+                                                  base64Decode(
+                                                    _currentUser!.profilePhoto
+                                                        .split(',')
+                                                        .last,
+                                                  ),
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : Image.network(
+                                                  _currentUser!.profilePhoto,
+                                                  fit: BoxFit.cover,
+                                                ))
+                                        : Icon(
+                                            Icons.person,
+                                            size: 50,
+                                            color: AppTheme.textTertiary,
+                                          )),
                             ),
                           ),
                         ),
@@ -382,7 +390,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               decoration: BoxDecoration(
                                 color: AppTheme.primary,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
                               ),
                               child: const Icon(
                                 Icons.camera_alt,
@@ -403,11 +414,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     const SizedBox(height: AppTheme.spacingL),
                     _buildTextField('Kullanıcı Adı', _userNameController),
                     const SizedBox(height: AppTheme.spacingL),
-                    _buildTextField('E-posta', _emailController, keyboardType: TextInputType.emailAddress),
+                    _buildTextField(
+                      'E-posta',
+                      _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                    ),
                     const SizedBox(height: AppTheme.spacingL),
-                    _buildTextField('Telefon', _phoneController, keyboardType: TextInputType.phone),
+                    _buildTextField(
+                      'Telefon',
+                      _phoneController,
+                      keyboardType: TextInputType.phone,
+                    ),
                     const SizedBox(height: AppTheme.spacingL),
-                    _buildTextField('Doğum Tarihi (GG.AA.YYYY)', _birthdayController),
+                    _buildTextField(
+                      'Doğum Tarihi (GG.AA.YYYY)',
+                      _birthdayController,
+                    ),
                     const SizedBox(height: AppTheme.spacingL),
 
                     // Gender
@@ -424,10 +446,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         Container(
                           decoration: BoxDecoration(
                             color: AppTheme.surfaceColor,
-                            borderRadius: BorderRadius.circular(AppTheme.inputBorderRadius),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.inputBorderRadius,
+                            ),
                             border: Border.all(
                               color: AppTheme.dividerColor,
-                              width: 1,
+                              width: 0.4,
                             ),
                           ),
                           child: Row(
@@ -435,21 +459,57 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               Expanded(
                                 child: RadioListTile<int>(
                                   dense: true,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingM),
-                                  title: const Text('Erkek', style: AppTheme.bodyMedium),
+                                  controlAffinity:
+                                      ListTileControlAffinity.leading,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacingM,
+                                  ),
                                   value: 1,
                                   groupValue: _selectedGender,
-                                  onChanged: (value) => setState(() => _selectedGender = value!),
+                                  onChanged: (value) =>
+                                      setState(() => _selectedGender = value!),
+                                  title: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.male,
+                                        color: Colors.blue,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      const Text(
+                                        'Erkek',
+                                        style: AppTheme.bodyMedium,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                               Expanded(
                                 child: RadioListTile<int>(
                                   dense: true,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingM),
-                                  title: const Text('Kadın', style: AppTheme.bodyMedium),
+                                  controlAffinity:
+                                      ListTileControlAffinity.leading,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacingM,
+                                  ),
                                   value: 2,
                                   groupValue: _selectedGender,
-                                  onChanged: (value) => setState(() => _selectedGender = value!),
+                                  onChanged: (value) =>
+                                      setState(() => _selectedGender = value!),
+                                  title: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.female,
+                                        color: Colors.pink,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      const Text(
+                                        'Kadın',
+                                        style: AppTheme.bodyMedium,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],
@@ -477,18 +537,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
       children: [
         Text(
           label,
-          style: AppTheme.labelSmall.copyWith(
-            color: AppTheme.textSecondary,
-          ),
+          style: AppTheme.labelSmall.copyWith(color: AppTheme.textSecondary),
         ),
         const SizedBox(height: AppTheme.spacingS),
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
           maxLines: maxLines,
-          style: AppTheme.bodyMedium.copyWith(
-            color: AppTheme.textPrimary,
-          ),
+          style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
           decoration: InputDecoration(
             filled: true,
             fillColor: AppTheme.backgroundColor,
@@ -508,18 +564,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppTheme.inputBorderRadius),
-              borderSide: const BorderSide(
-                color: AppTheme.primary,
-                width: 2,
-              ),
+              borderSide: const BorderSide(color: AppTheme.primary, width: 2),
             ),
             contentPadding: EdgeInsets.symmetric(
               horizontal: AppTheme.spacingL,
               vertical: maxLines > 1 ? AppTheme.spacingM : AppTheme.spacingM,
             ),
-            hintStyle: AppTheme.bodyMedium.copyWith(
-              color: AppTheme.textHint,
-            ),
+            hintStyle: AppTheme.bodyMedium.copyWith(color: AppTheme.textHint),
           ),
         ),
       ],

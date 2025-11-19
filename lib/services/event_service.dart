@@ -141,4 +141,46 @@ class EventService {
       return null;
     }
   }
+  
+  /// Fetch all user photos from all events
+  static Future<GalleryPhotosResponse?> getUserPhotos(String userToken) async {
+    try {
+      developer.log('Fetching all user photos', name: 'EventService');
+      
+      final url = ApiConstants.getUserPhotos(userToken);
+      developer.log('URL: $url', name: 'EventService');
+      
+      final response = await ApiHelper.get(url);
+      
+      developer.log('Response status: ${response.statusCode}', name: 'EventService');
+      developer.log('Response body: ${response.body}', name: 'EventService');
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
+        final galleryPhotosResponse = GalleryPhotosResponse.fromJson(jsonResponse);
+        
+        developer.log(
+          'Successfully fetched ${galleryPhotosResponse.data.photos.length} photos',
+          name: 'EventService',
+        );
+        
+        return galleryPhotosResponse;
+      } else {
+        developer.log(
+          'Failed to fetch user photos: ${response.statusCode}',
+          name: 'EventService',
+          error: response.body,
+        );
+        return null;
+      }
+    } catch (e, stackTrace) {
+      developer.log(
+        'Error fetching user photos',
+        name: 'EventService',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
+  }
 }

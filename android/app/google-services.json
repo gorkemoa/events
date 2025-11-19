@@ -12,7 +12,12 @@
           "package_name": "com.office701.pixlomi"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1006195128429-u5rnha6kbruud0s2crrldqglr8rdeik9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB3EjzNDRMdHqJtfbYrQ65UhpiILjyP2k0"

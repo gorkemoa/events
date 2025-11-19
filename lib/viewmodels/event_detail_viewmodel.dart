@@ -16,7 +16,7 @@ class EventDetailViewModel extends ChangeNotifier {
   final Set<int> _selectedPhotos = {};
   
   // Grid column count
-  int _gridColumnCount = 3;
+  int _gridColumnCount = 5;
 
   // Getters
   EventDetail? get eventDetail => _eventDetail;

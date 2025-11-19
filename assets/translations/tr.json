@@ -100,7 +100,7 @@
   },
   "home": {
     "welcome": "Hoş geldin, {{name}}",
-    "search": "Ne Arıyorsunuz?",
+    "search": "Etkinlik Ara...",
     "event_code": "Etkinlik Kodunu Girin veya QR Tarayın",
     "button_enter_code": "Giriş Yap",
     "services": "Hizmetlerimizi Keşfedin",

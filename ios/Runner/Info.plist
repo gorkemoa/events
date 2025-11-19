@@ -91,7 +91,20 @@
 			<key>CFBundleURLName</key>
 			<string>com.pixlomi.app</string>
 		</dict>
+		<!-- Google Sign In URL Scheme -->
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.1006195128429-u5rnha6kbruud0s2crrldqglr8rdeik9</string>
+			</array>
+		</dict>
 	</array>
+
+	<!-- Google Sign In Client ID -->
+	<key>GIDClientID</key>
+	<string>1006195128429-u5rnha6kbruud0s2crrldqglr8rdeik9.apps.googleusercontent.com</string>
 
 	<key>FlutterDeepLinkingEnabled</key>
 	<true/>

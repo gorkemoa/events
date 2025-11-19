@@ -253,3 +253,86 @@ class EventDetailData {
     );
   }
 }
+
+/// Gallery Photo model for all user photos
+class GalleryPhoto {
+  final String eventID;
+  final String eventTitle;
+  final String mainImage;
+  final String middleImage;
+  final String thumbImage;
+
+  GalleryPhoto({
+    required this.eventID,
+    required this.eventTitle,
+    required this.mainImage,
+    required this.middleImage,
+    required this.thumbImage,
+  });
+
+  factory GalleryPhoto.fromJson(Map<String, dynamic> json) {
+    return GalleryPhoto(
+      eventID: json['eventID'] as String,
+      eventTitle: json['eventTitle'] as String,
+      mainImage: json['mainImage'] as String,
+      middleImage: json['middleImage'] as String,
+      thumbImage: json['thumbImage'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'eventID': eventID,
+      'eventTitle': eventTitle,
+      'mainImage': mainImage,
+      'middleImage': middleImage,
+      'thumbImage': thumbImage,
+    };
+  }
+}
+
+/// Gallery Photos Response model
+class GalleryPhotosResponse {
+  final bool error;
+  final bool success;
+  final GalleryPhotosData data;
+  final String statusCode;
+
+  GalleryPhotosResponse({
+    required this.error,
+    required this.success,
+    required this.data,
+    required this.statusCode,
+  });
+
+  factory GalleryPhotosResponse.fromJson(Map<String, dynamic> json) {
+    return GalleryPhotosResponse(
+      error: json['error'] as bool,
+      success: json['success'] as bool,
+      data: GalleryPhotosData.fromJson(json['data'] as Map<String, dynamic>),
+      statusCode: json['200'] as String? ?? 'OK',
+    );
+  }
+}
+
+/// Gallery Photos Data model
+class GalleryPhotosData {
+  final List<GalleryPhoto> photos;
+  final String message;
+
+  GalleryPhotosData({
+    required this.photos,
+    required this.message,
+  });
+
+  factory GalleryPhotosData.fromJson(Map<String, dynamic> json) {
+    final photosList = (json['photos'] as List? ?? [])
+        .map((e) => GalleryPhoto.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    return GalleryPhotosData(
+      photos: photosList,
+      message: json['message'] as String,
+    );
+  }
+}
