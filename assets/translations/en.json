@@ -313,6 +313,20 @@
     "delete_title": "Delete Photos",
     "delete_confirm": "Are you sure you want to delete {{count}} photos?",
     "delete_success": "Photos deleted",
-    "share_error": "Share error: {{error}}"
+    "share_error": "Share error: {{error}}",
+    "hide": "Hide",
+    "hide_title": "Hide Photos",
+    "hide_confirm": "Are you sure you want to hide {{count}} photos?",
+    "hide_success": "Photos hidden",
+    "info": "Info",
+    "favorite": "Favorite",
+    "photo_saved": "Photo saved to gallery",
+    "photo_save_error": "Download failed",
+    "photo_info_title": "Photo Information",
+    "photo_info_photo": "Photo",
+    "photo_count_format": "{{current}} / {{total}}",
+    "grid_3": "3 Columns",
+    "grid_4": "4 Columns",
+    "grid_5": "5 Columns"
   }
 }

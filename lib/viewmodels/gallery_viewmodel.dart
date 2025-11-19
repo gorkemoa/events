@@ -231,6 +231,21 @@ class GalleryViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Hide selected photos
+  Future<void> hideSelectedPhotos() async {
+    if (_selectedPhotos.isEmpty) return;
+    
+    developer.log('Hiding ${_selectedPhotos.length} photos', name: 'GalleryViewModel');
+    
+    // Add to hidden photos
+    _hiddenPhotos.addAll(_selectedPhotos);
+    
+    // Clear selection
+    _selectedPhotos.clear();
+    _isSelectionMode = false;
+    notifyListeners();
+  }
+
   // Private helpers
   String _getPhotoId(GalleryPhoto photo) {
     // Use combination of eventID and image URL as unique ID

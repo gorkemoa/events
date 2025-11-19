@@ -312,6 +312,20 @@
     "delete_title": "Fotoğrafları Sil",
     "delete_confirm": "{{count}} fotoğrafı silmek istediğinize emin misiniz?",
     "delete_success": "Fotoğraflar silindi",
-    "share_error": "Paylaşım hatası: {{error}}"
+    "share_error": "Paylaşım hatası: {{error}}",
+    "hide": "Gizle",
+    "hide_title": "Fotoğrafları Gizle",
+    "hide_confirm": "{{count}} fotoğrafı gizlemek istediğinize emin misiniz?",
+    "hide_success": "Fotoğraflar gizlendi",
+    "info": "Bilgi",
+    "favorite": "Favori",
+    "photo_saved": "Fotoğraf galeriye kaydedildi",
+    "photo_save_error": "İndirme başarısız",
+    "photo_info_title": "Fotoğraf Bilgileri",
+    "photo_info_photo": "Fotoğraf",
+    "photo_count_format": "{{current}} / {{total}}",
+    "grid_3": "3'lü",
+    "grid_4": "4'lü",
+    "grid_5": "5'li"
   }
 }
