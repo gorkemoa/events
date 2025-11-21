@@ -46,6 +46,8 @@ class ApiConstants {
     return '${baseUrl}service/user/account/photo/all?userToken=$userToken';
   }
   
+  static const String hidePhoto = '${baseUrl}service/user/account/photo/showHide';
+  
   /// General endpoints
   static const String getAllCities = '${baseUrl}service/general/general/cities/all';
 }

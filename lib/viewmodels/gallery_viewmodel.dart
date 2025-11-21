@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 import '../models/event_models.dart';
 import '../services/event_service.dart';
 import '../services/storage_helper.dart';
+import '../services/photo_service.dart';
 
 /// ViewModel for Gallery Page
 class GalleryViewModel extends ChangeNotifier {
@@ -94,8 +95,17 @@ class GalleryViewModel extends ChangeNotifier {
       
       if (response != null && response.success) {
         _allPhotos = response.data.photos;
+        
+        // API'den gelen isHide değerlerini yükle
+        _hiddenPhotos.clear();
+        for (final photo in _allPhotos) {
+          if (photo.isHide) {
+            _hiddenPhotos.add(_getPhotoId(photo));
+          }
+        }
+        
         developer.log(
-          'User photos loaded: ${_allPhotos.length} photos',
+          'User photos loaded: ${_allPhotos.length} photos, ${_hiddenPhotos.length} hidden',
           name: 'GalleryViewModel',
         );
       } else {
@@ -140,6 +150,11 @@ class GalleryViewModel extends ChangeNotifier {
       _hiddenPhotos.add(photoId);
     }
     notifyListeners();
+    
+    // Arka planda API çağrısı yap
+    PhotoService.hidePhoto(photo.photoID).catchError((error) {
+      developer.log('Error toggling hide status', name: 'GalleryViewModel', error: error);
+    });
   }
 
   /// Check if photo is favorite
@@ -237,6 +252,9 @@ class GalleryViewModel extends ChangeNotifier {
     
     developer.log('Hiding ${_selectedPhotos.length} photos', name: 'GalleryViewModel');
     
+    // Seçili fotoğrafları bul ve API'ye gönder
+    final photosToHide = _allPhotos.where((photo) => _selectedPhotos.contains(_getPhotoId(photo))).toList();
+    
     // Add to hidden photos
     _hiddenPhotos.addAll(_selectedPhotos);
     
@@ -244,12 +262,19 @@ class GalleryViewModel extends ChangeNotifier {
     _selectedPhotos.clear();
     _isSelectionMode = false;
     notifyListeners();
+    
+    // Arka planda API çağrıları yap
+    for (final photo in photosToHide) {
+      PhotoService.hidePhoto(photo.photoID).catchError((error) {
+        developer.log('Error hiding photo ${photo.photoID}', name: 'GalleryViewModel', error: error);
+      });
+    }
   }
 
   // Private helpers
   String _getPhotoId(GalleryPhoto photo) {
-    // Use combination of eventID and image URL as unique ID
-    return '${photo.eventID}_${photo.thumbImage}';
+    // photoID kullan (unique ve güvenilir)
+    return photo.photoID.toString();
   }
 
   void _setLoading(bool loading) {

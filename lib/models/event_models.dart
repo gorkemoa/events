@@ -112,29 +112,37 @@ class EventsData {
 
 /// Event Image model for event detail
 class EventImage {
+  final int photoID;
   final String mainImage;
   final String middleImage;
   final String thumbImage;
+  final bool isHide;
 
   EventImage({
+    required this.photoID,
     required this.mainImage,
     required this.middleImage,
     required this.thumbImage,
+    required this.isHide,
   });
 
   factory EventImage.fromJson(Map<String, dynamic> json) {
     return EventImage(
+      photoID: json['photoID'] as int,
       mainImage: json['mainImage'] as String? ?? '',
       middleImage: json['middleImage'] as String? ?? '',
       thumbImage: json['thumbImage'] as String? ?? '',
+      isHide: json['isHide'] as bool? ?? false,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'photoID': photoID,
       'mainImage': mainImage,
       'middleImage': middleImage,
       'thumbImage': thumbImage,
+      'isHide': isHide,
     };
   }
 }
@@ -256,37 +264,45 @@ class EventDetailData {
 
 /// Gallery Photo model for all user photos
 class GalleryPhoto {
-  final String eventID;
+  final int photoID;
+  final int eventID;
   final String eventTitle;
   final String mainImage;
   final String middleImage;
   final String thumbImage;
+  final bool isHide;
 
   GalleryPhoto({
+    required this.photoID,
     required this.eventID,
     required this.eventTitle,
     required this.mainImage,
     required this.middleImage,
     required this.thumbImage,
+    required this.isHide,
   });
 
   factory GalleryPhoto.fromJson(Map<String, dynamic> json) {
     return GalleryPhoto(
-      eventID: json['eventID'] as String,
-      eventTitle: json['eventTitle'] as String,
+      photoID: json['photoID'] as int,
+      eventID: json['eventID'] as int,
+      eventTitle: json['eventTitle'] as String? ?? '',
       mainImage: json['mainImage'] as String,
       middleImage: json['middleImage'] as String,
       thumbImage: json['thumbImage'] as String,
+      isHide: json['isHide'] as bool? ?? false,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'photoID': photoID,
       'eventID': eventID,
       'eventTitle': eventTitle,
       'mainImage': mainImage,
       'middleImage': middleImage,
       'thumbImage': thumbImage,
+      'isHide': isHide,
     };
   }
 }

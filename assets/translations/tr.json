@@ -314,6 +314,7 @@
     "delete_success": "Fotoğraflar silindi",
     "share_error": "Paylaşım hatası: {{error}}",
     "hide": "Gizle",
+    "unhide": "Gizleme İptal",
     "hide_title": "Fotoğrafları Gizle",
     "hide_confirm": "{{count}} fotoğrafı gizlemek istediğinize emin misiniz?",
     "hide_success": "Fotoğraflar gizlendi",

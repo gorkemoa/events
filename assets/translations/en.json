@@ -315,6 +315,7 @@
     "delete_success": "Photos deleted",
     "share_error": "Share error: {{error}}",
     "hide": "Hide",
+    "unhide": "Unhide",
     "hide_title": "Hide Photos",
     "hide_confirm": "Are you sure you want to hide {{count}} photos?",
     "hide_success": "Photos hidden",

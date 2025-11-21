@@ -26,6 +26,10 @@ class EventDetailViewModel extends ChangeNotifier {
   Set<int> get selectedPhotos => _selectedPhotos;
   int get gridColumnCount => _gridColumnCount;
   
+  List<EventImage> get images {
+    return _eventDetail?.images ?? [];
+  }
+  
   List<String> get photoUrls {
     return _eventDetail?.images.map((img) => img.middleImage).toList() ?? [];
   }

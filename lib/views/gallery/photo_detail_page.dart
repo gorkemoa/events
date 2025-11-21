@@ -76,6 +76,28 @@ class _PhotoDetailPageState extends State<PhotoDetailPage> {
     }
   }
 
+  void _hidePhoto() async {
+    try {
+      final currentPhoto = widget.allPhotos[_currentIndex];
+      
+      // photoID alanını al
+      final photoID = currentPhoto['photoID'];
+      
+      if (photoID == null) {
+        print('⚠️ Photo ID bulunamadı');
+        return;
+      }
+
+      // Optimistic update - fotoğraf ekranında kal
+      setState(() {}); // Label'ı güncellemek için
+      
+      // Arka planda API çağrısı yap
+      await PhotoService.hidePhoto(photoID);
+    } catch (e) {
+      print('❌ Hide photo error: $e');
+    }
+  }
+
   void _sharePhoto() async {
     try {
       final currentPhoto = widget.allPhotos[_currentIndex];
@@ -308,9 +330,7 @@ class _PhotoDetailPageState extends State<PhotoDetailPage> {
                         _PhotoActionIconButton(
                           icon: Icons.visibility_off_rounded,
                           label: 'Gizle',
-                          onTap: () {
-                            // Gizle fonksiyonu
-                          },
+                          onTap: _hidePhoto,
                         ),
                         _PhotoActionIconButton(
                           icon: Icons.info_outline_rounded,

@@ -3,6 +3,7 @@ import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/photo_service.dart';
 import 'package:pixlomi/viewmodels/event_detail_viewmodel.dart';
 import 'package:pixlomi/localizations/app_localizations.dart';
+import 'package:pixlomi/models/event_models.dart';
 
 class EventDetailPage extends StatefulWidget {
   final int? eventID;
@@ -715,15 +716,13 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   void _showPhotoDetail(int index) {
-    final middlePhotos = _viewModel.photoUrls;
-    final mainPhotos = _viewModel.mainPhotoUrls;
+    final images = _viewModel.images;
     
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => _PhotoDetailScreen(
-          photos: middlePhotos,
-          mainPhotos: mainPhotos,
+          photos: images,
           initialIndex: index,
           onDelete: (photoIndex) {
             _confirmDelete(photoIndex);
@@ -1034,14 +1033,12 @@ class _EventDetailPageState extends State<EventDetailPage> {
 }
 
 class _PhotoDetailScreen extends StatefulWidget {
-  final List<String> photos; // Middle quality for display
-  final List<String> mainPhotos; // Main quality for download
+  final List<EventImage> photos;
   final int initialIndex;
   final Function(int) onDelete;
 
   const _PhotoDetailScreen({
     required this.photos,
-    required this.mainPhotos,
     required this.initialIndex,
     required this.onDelete,
   });
@@ -1074,6 +1071,23 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
     });
   }
 
+  void _hidePhoto() async {
+    try {
+      final photoIndex = _currentIndex;
+      final currentPhoto = widget.photos[photoIndex];
+      final photoID = currentPhoto.photoID;
+      
+      // UI'yı güncelle (optimistic update) - fotoğraf ekranında kal
+      widget.onDelete(photoIndex);
+      setState(() {}); // Label'ı güncellemek için
+      
+      // Arka planda API çağrısı yap
+      await PhotoService.hidePhoto(photoID);
+    } catch (e) {
+      print('❌ Hide photo error: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1095,7 +1109,7 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
                 onTap: _toggleUI,
                 child: Center(
                   child: Image.network(
-                    widget.photos[index],
+                    widget.photos[index].middleImage,
                     fit: BoxFit.contain,
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
@@ -1195,9 +1209,7 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
                       _PhotoActionIconButton(
                         icon: Icons.visibility_off_rounded,
                         label: context.tr('event_detail.action_hide'),
-                        onTap: () {
-                          // Gizle fonksiyonu
-                        },
+                        onTap: _hidePhoto,
                       ),
                       _PhotoActionIconButton(
                         icon: Icons.info_outline_rounded,
@@ -1270,7 +1282,7 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(6),
                           child: Image.network(
-                            widget.photos[index], // Thumbnail'ler için middle yeterli
+                            widget.photos[index].thumbImage,
                             width: 60,
                             height: 60,
                             fit: BoxFit.cover,
@@ -1290,8 +1302,8 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
   void _downloadPhoto() async {
     try {
       // İndirme için MAIN kalite kullan
-      final currentPhotoUrl = widget.mainPhotos[_currentIndex];
-      final success = await PhotoService.downloadPhoto(currentPhotoUrl);
+      final currentPhoto = widget.photos[_currentIndex];
+      final success = await PhotoService.downloadPhoto(currentPhoto.mainImage);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1325,7 +1337,7 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
   void _sharePhoto() async {
     try {
       // Paylaşım için MAIN kalite kullan
-      final currentPhotoUrl = widget.mainPhotos[_currentIndex];
+      final currentPhoto = widget.photos[_currentIndex];
       
       // iOS için share position
       final box = context.findRenderObject() as RenderBox?;
@@ -1334,7 +1346,7 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
           : null;
       
       await PhotoService.sharePhoto(
-        currentPhotoUrl,
+        currentPhoto.mainImage,
         sharePositionOrigin: sharePositionOrigin,
       );
     } catch (e) {

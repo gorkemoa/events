@@ -3,6 +3,7 @@ import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/photo_service.dart';
 import 'package:pixlomi/localizations/app_localizations.dart';
 import 'package:pixlomi/viewmodels/gallery_viewmodel.dart';
+import 'package:pixlomi/models/event_models.dart';
 
 class HomeHeaderGallery extends StatelessWidget {
   final String locationText;
@@ -748,15 +749,12 @@ class _GalleryPageState extends State<GalleryPage> {
 
   void _showPhotoDetail(int index) {
     final filteredPhotos = _viewModel.filteredPhotos;
-    final middlePhotos = filteredPhotos.map((p) => p.middleImage).toList();
-    final mainPhotos = filteredPhotos.map((p) => p.mainImage).toList();
     
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => _PhotoDetailScreen(
-          photos: middlePhotos,
-          mainPhotos: mainPhotos,
+          photos: filteredPhotos,
           initialIndex: index,
           onFavoriteToggle: (photoIndex) {
             final photo = filteredPhotos[photoIndex];
@@ -770,6 +768,10 @@ class _GalleryPageState extends State<GalleryPage> {
             final photo = filteredPhotos[photoIndex];
             return _viewModel.isFavorite(photo);
           },
+          isHidden: (photoIndex) {
+            final photo = filteredPhotos[photoIndex];
+            return _viewModel.isHidden(photo);
+          },
         ),
       ),
     );
@@ -777,20 +779,20 @@ class _GalleryPageState extends State<GalleryPage> {
 }
 
 class _PhotoDetailScreen extends StatefulWidget {
-  final List<String> photos;
-  final List<String> mainPhotos;
+  final List<GalleryPhoto> photos;
   final int initialIndex;
   final Function(int) onFavoriteToggle;
   final Function(int) onHideToggle;
   final bool Function(int) isFavorite;
+  final bool Function(int) isHidden;
 
   const _PhotoDetailScreen({
     required this.photos,
-    required this.mainPhotos,
     required this.initialIndex,
     required this.onFavoriteToggle,
     required this.onHideToggle,
     required this.isFavorite,
+    required this.isHidden,
   });
 
   @override
@@ -821,6 +823,23 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
     });
   }
 
+  void _hidePhoto() async {
+    try {
+      final photoIndex = _currentIndex;
+      final currentPhoto = widget.photos[photoIndex];
+      final photoID = currentPhoto.photoID;
+      
+      // UI'yı güncelle (optimistic update) - fotoğraf ekranında kal
+      widget.onHideToggle(photoIndex);
+      setState(() {}); // Label'ı güncellemek için
+      
+      // Arka planda API çağrısı yap
+      await PhotoService.hidePhoto(photoID);
+    } catch (e) {
+      print('❌ Hide photo error: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -841,7 +860,7 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
                 onTap: _toggleUI,
                 child: Center(
                   child: Image.network(
-                    widget.photos[index],
+                    widget.photos[index].middleImage,
                     fit: BoxFit.contain,
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
@@ -937,12 +956,13 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _PhotoActionIconButton(
-                        icon: Icons.visibility_off_rounded,
-                        label: context.tr('gallery.hide'),
-                        onTap: () {
-                          widget.onHideToggle(_currentIndex);
-                          Navigator.pop(context);
-                        },
+                        icon: widget.isHidden(_currentIndex) 
+                            ? Icons.visibility_rounded 
+                            : Icons.visibility_off_rounded,
+                        label: widget.isHidden(_currentIndex)
+                            ? context.tr('gallery.unhide')
+                            : context.tr('gallery.hide'),
+                        onTap: _hidePhoto,
                       ),
                       _PhotoActionIconButton(
                         icon: Icons.info_outline_rounded,
@@ -1011,7 +1031,7 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(6),
                           child: Image.network(
-                            widget.photos[index],
+                            widget.photos[index].thumbImage,
                             width: 60,
                             height: 60,
                             fit: BoxFit.cover,
@@ -1030,8 +1050,8 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
 
   void _downloadPhoto() async {
     try {
-      final currentPhotoUrl = widget.mainPhotos[_currentIndex];
-      final success = await PhotoService.downloadPhoto(currentPhotoUrl);
+      final currentPhoto = widget.photos[_currentIndex];
+      final success = await PhotoService.downloadPhoto(currentPhoto.mainImage);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1064,7 +1084,7 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
 
   void _sharePhoto() async {
     try {
-      final currentPhotoUrl = widget.mainPhotos[_currentIndex];
+      final currentPhoto = widget.photos[_currentIndex];
       
       final box = context.findRenderObject() as RenderBox?;
       final sharePositionOrigin = box != null
@@ -1072,7 +1092,7 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
           : null;
       
       await PhotoService.sharePhoto(
-        currentPhotoUrl,
+        currentPhoto.mainImage,
         sharePositionOrigin: sharePositionOrigin,
       );
     } catch (e) {

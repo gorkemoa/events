@@ -4,6 +4,9 @@ import 'package:dio/dio.dart';
 import 'package:gal/gal.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:pixlomi/services/constants.dart';
+import 'package:pixlomi/services/api_helper.dart';
+import 'package:pixlomi/services/storage_helper.dart';
 
 class PhotoService {
   static final Dio _dio = Dio();
@@ -187,6 +190,34 @@ class PhotoService {
     } catch (e) {
       print('❌ Share multiple error: $e');
       rethrow;
+    }
+  }
+
+  /// Fotoğrafı gizle/göster (optimistic update için response beklenmez)
+  static Future<void> hidePhoto(int photoID) async {
+    try {
+      final userToken = await StorageHelper.getUserToken();
+      if (userToken == null) {
+        throw Exception('Kullanıcı oturumu bulunamadı');
+      }
+
+      print('🔄 Hiding photo ID: $photoID');
+
+      // Fire and forget - response beklenmez
+      ApiHelper.put(
+        ApiConstants.hidePhoto,
+        {
+          'userToken': userToken,
+          'photoID': photoID,
+        },
+      ).then((response) {
+        print('✅ Photo hidden successfully');
+      }).catchError((error) {
+        print('⚠️ Hide photo error (non-blocking): $error');
+      });
+    } catch (e) {
+      print('❌ Hide photo error: $e');
+      // Hata olsa bile throw etme, UI'da optimistic update çalışsın
     }
   }
 }
