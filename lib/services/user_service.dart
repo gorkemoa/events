@@ -25,7 +25,7 @@ class UserService {
       
       final request = GetUserRequest(
         userToken: userToken,
-        version: _versionService.fullVersion,
+        version: _versionService.version,
         platform: platform,
       );
 
