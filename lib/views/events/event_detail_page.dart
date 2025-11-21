@@ -727,6 +727,12 @@ class _EventDetailPageState extends State<EventDetailPage> {
           onDelete: (photoIndex) {
             _confirmDelete(photoIndex);
           },
+          onFavoriteToggle: (photoIndex) {
+            _viewModel.toggleFavorite(photoIndex);
+          },
+          isFavorite: (photoIndex) {
+            return _viewModel.isFavorite(photoIndex);
+          },
         ),
       ),
     );
@@ -1036,11 +1042,15 @@ class _PhotoDetailScreen extends StatefulWidget {
   final List<EventImage> photos;
   final int initialIndex;
   final Function(int) onDelete;
+  final Function(int) onFavoriteToggle;
+  final bool Function(int) isFavorite;
 
   const _PhotoDetailScreen({
     required this.photos,
     required this.initialIndex,
     required this.onDelete,
+    required this.onFavoriteToggle,
+    required this.isFavorite,
   });
 
   @override
@@ -1219,11 +1229,13 @@ class _PhotoDetailScreenState extends State<_PhotoDetailScreen> {
                         },
                       ),
                       _PhotoActionIconButton(
-                        icon: Icons.favorite_border_rounded,
+                        icon: widget.isFavorite(_currentIndex) ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                         label: context.tr('event_detail.action_favorite'),
                         onTap: () {
-                          // Favori fonksiyonu
+                          widget.onFavoriteToggle(_currentIndex);
+                          setState(() {});
                         },
+                        color: widget.isFavorite(_currentIndex) ? const Color(0xFFFFB800) : null,
                       ),
                       _PhotoActionIconButton(
                         icon: Icons.share_rounded,

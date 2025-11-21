@@ -220,4 +220,32 @@ class PhotoService {
       // Hata olsa bile throw etme, UI'da optimistic update çalışsın
     }
   }
+
+  /// Fotoğrafı favorilere ekle/çıkar (optimistic update için response beklenmez)
+  static Future<void> toggleFavorite(int photoID) async {
+    try {
+      final userToken = await StorageHelper.getUserToken();
+      if (userToken == null) {
+        throw Exception('Kullanıcı oturumu bulunamadı');
+      }
+
+      print('🔄 Toggling favorite for photo ID: $photoID');
+
+      // Fire and forget - response beklenmez
+      ApiHelper.put(
+        ApiConstants.toggleFavorite,
+        {
+          'userToken': userToken,
+          'photoID': photoID,
+        },
+      ).then((response) {
+        print('✅ Favorite toggled successfully');
+      }).catchError((error) {
+        print('⚠️ Toggle favorite error (non-blocking): $error');
+      });
+    } catch (e) {
+      print('❌ Toggle favorite error: $e');
+      // Hata olsa bile throw etme, UI'da optimistic update çalışsın
+    }
+  }
 }

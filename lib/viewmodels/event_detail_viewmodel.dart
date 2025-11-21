@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 import '../models/event_models.dart';
 import '../services/event_service.dart';
 import '../services/storage_helper.dart';
+import '../services/photo_service.dart';
 
 /// ViewModel for Event Detail Page
 class EventDetailViewModel extends ChangeNotifier {
@@ -17,6 +18,9 @@ class EventDetailViewModel extends ChangeNotifier {
   
   // Grid column count
   int _gridColumnCount = 5;
+  
+  // Favorites
+  final Set<int> _favoritePhotos = {};
 
   // Getters
   EventDetail? get eventDetail => _eventDetail;
@@ -41,6 +45,8 @@ class EventDetailViewModel extends ChangeNotifier {
   List<String> get mainPhotoUrls {
     return _eventDetail?.images.map((img) => img.mainImage).toList() ?? [];
   }
+  
+  Set<int> get favoritePhotos => _favoritePhotos;
 
   /// Fetch event detail by ID
   Future<void> fetchEventDetailById(int eventID) async {
@@ -175,6 +181,28 @@ class EventDetailViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Toggle favorite for a photo
+  void toggleFavorite(int photoIndex) {
+    if (_favoritePhotos.contains(photoIndex)) {
+      _favoritePhotos.remove(photoIndex);
+    } else {
+      _favoritePhotos.add(photoIndex);
+    }
+    
+    // Fire-and-forget API call
+    if (_eventDetail != null && photoIndex < _eventDetail!.images.length) {
+      final photo = _eventDetail!.images[photoIndex];
+      PhotoService.toggleFavorite(photo.photoID);
+    }
+    
+    notifyListeners();
+  }
+  
+  /// Check if photo is favorite
+  bool isFavorite(int photoIndex) {
+    return _favoritePhotos.contains(photoIndex);
+  }
+
   /// Delete selected photos (placeholder - implement with API)
   Future<void> deleteSelectedPhotos() async {
     if (_selectedPhotos.isEmpty) return;
@@ -209,6 +237,7 @@ class EventDetailViewModel extends ChangeNotifier {
   @override
   void dispose() {
     _selectedPhotos.clear();
+    _favoritePhotos.clear();
     super.dispose();
   }
 }

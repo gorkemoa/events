@@ -13,13 +13,13 @@ class HomeHeaderGallery extends StatelessWidget {
   final int gridColumnCount;
 
   const HomeHeaderGallery({
-    Key? key,
+    super.key,
     required this.locationText,
     this.onMenuPressed,
     this.onGridPressed,
     this.subtitle,
     this.gridColumnCount = 3,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -460,7 +460,7 @@ class _GalleryPageState extends State<GalleryPage> {
                                     const Icon(
                                       Icons.star,
                                       size: 16,
-                                      color: AppTheme.primary,
+                                      color: AppTheme.warning,
                                     ),
                                   if (filter == 'favorites')
                                     const SizedBox(width: 6),
@@ -473,7 +473,7 @@ class _GalleryPageState extends State<GalleryPage> {
                                   if (filter == 'hidden')
                                     const SizedBox(width: 6),
                                   Text(
-                                    '${context.tr('gallery.$filter')} ($count)',
+                                    '${['all', 'favorites', 'hidden'].contains(filter) ? context.tr('gallery.$filter') : filter} ($count)',
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,

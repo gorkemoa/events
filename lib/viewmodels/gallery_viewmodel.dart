@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../models/event_models.dart';
 import '../services/event_service.dart';
 import '../services/storage_helper.dart';
 import '../services/photo_service.dart';
+import '../services/api_helper.dart';
+import '../services/constants.dart';
 
 /// ViewModel for Gallery Page
 class GalleryViewModel extends ChangeNotifier {
@@ -104,8 +108,11 @@ class GalleryViewModel extends ChangeNotifier {
           }
         }
         
+        // Favorileri API'den yükle
+        await _loadFavorites(userToken);
+        
         developer.log(
-          'User photos loaded: ${_allPhotos.length} photos, ${_hiddenPhotos.length} hidden',
+          'User photos loaded: ${_allPhotos.length} photos, ${_hiddenPhotos.length} hidden, ${_favorites.length} favorites',
           name: 'GalleryViewModel',
         );
       } else {
@@ -130,6 +137,32 @@ class GalleryViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Load favorites from API
+  Future<void> _loadFavorites(String userToken) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConstants.getFavorites(userToken)),
+        headers: ApiHelper.getHeaders(),
+      );
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          _favorites.clear();
+          final favoritesList = data['data']['favorites'] as List?;
+          if (favoritesList != null) {
+            for (final fav in favoritesList) {
+              _favorites.add(fav['photoID'].toString());
+            }
+          }
+          developer.log('Favorites loaded: ${_favorites.length}', name: 'GalleryViewModel');
+        }
+      }
+    } catch (e) {
+      developer.log('Error loading favorites', name: 'GalleryViewModel', error: e);
+    }
+  }
+
   /// Toggle favorite
   void toggleFavorite(GalleryPhoto photo) {
     final photoId = _getPhotoId(photo);
@@ -139,6 +172,11 @@ class GalleryViewModel extends ChangeNotifier {
       _favorites.add(photoId);
     }
     notifyListeners();
+    
+    // Arka planda API çağrısı yap
+    PhotoService.toggleFavorite(photo.photoID).catchError((error) {
+      developer.log('Error toggling favorite', name: 'GalleryViewModel', error: error);
+    });
   }
 
   /// Toggle hidden

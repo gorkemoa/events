@@ -48,6 +48,12 @@ class ApiConstants {
   
   static const String hidePhoto = '${baseUrl}service/user/account/photo/showHide';
   
+  static String getFavorites(String userToken) {
+    return '${baseUrl}service/user/account/favorites/all?userToken=$userToken';
+  }
+  
+  static const String toggleFavorite = '${baseUrl}service/user/account/favorites/addDelete';
+  
   /// General endpoints
   static const String getAllCities = '${baseUrl}service/general/general/cities/all';
 }
