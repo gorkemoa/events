@@ -12,13 +12,14 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _socialAuthService = SocialAuthService();
-  bool _isLoading = false;
+      final _socialAuthService = SocialAuthService();
+  bool _isGoogleLoading = false;
+  bool _isAppleLoading = false;
 
   /// Google ile giriş yap
   Future<void> _handleGoogleSignIn() async {
     setState(() {
-      _isLoading = true;
+      _isGoogleLoading = true;
     });
 
     try {
@@ -75,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
     } finally {
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          _isGoogleLoading = false;
         });
       }
     }
@@ -84,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
   /// Apple ile giriş yap
   Future<void> _handleAppleSignIn() async {
     setState(() {
-      _isLoading = true;
+      _isAppleLoading = true;
     });
 
     try {
@@ -141,7 +142,7 @@ class _LoginPageState extends State<LoginPage> {
     } finally {
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          _isAppleLoading = false;
         });
       }
     }
@@ -201,15 +202,16 @@ class _LoginPageState extends State<LoginPage> {
                     width: double.infinity,
                     height: 60,
                     child: ElevatedButton(
-                      onPressed: _isLoading ? null : _handleGoogleSignIn,
+                      onPressed: (_isGoogleLoading || _isAppleLoading) ? null : _handleGoogleSignIn,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.textPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
                         elevation: 0,
+                        disabledBackgroundColor: AppTheme.textPrimary.withOpacity(0.6),
                       ),
-                      child: _isLoading
+                      child: _isGoogleLoading
                           ? const SizedBox(
                               width: 24,
                               height: 24,
@@ -243,15 +245,16 @@ class _LoginPageState extends State<LoginPage> {
                     width: double.infinity,
                     height: 60,
                     child: ElevatedButton(
-                      onPressed: _isLoading ? null : _handleAppleSignIn,
+                      onPressed: (_isGoogleLoading || _isAppleLoading) ? null : _handleAppleSignIn,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.textPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
                         elevation: 0,
+                        disabledBackgroundColor: AppTheme.textPrimary.withOpacity(0.6),
                       ),
-                      child: _isLoading
+                      child: _isAppleLoading
                           ? const SizedBox(
                               width: 24,
                               height: 24,

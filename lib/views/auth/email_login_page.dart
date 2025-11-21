@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/auth_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
-import 'package:pixlomi/services/face_photo_service.dart';
+import 'package:pixlomi/services/user_service.dart';
 import 'package:pixlomi/services/firebase_messaging_service.dart';
 import 'package:pixlomi/localizations/app_localizations.dart';
 
@@ -18,7 +18,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _authService = AuthService();
-  final _facePhotoService = FacePhotoService();
+  final _userService = UserService();
   bool _obscurePassword = true;
   bool _isLoading = false;
 
@@ -65,7 +65,8 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
           
           // Yüz fotoğraflarını kontrol et
           try {
-            final photosResponse = await _facePhotoService.getFacePhotos(
+            final photosResponse = await _userService.getUserById(
+              userId: response.data!.userId,
               userToken: response.data!.token,
             );
             
@@ -78,8 +79,15 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
               ),
             );
             
+            // Yüz fotoğraflarını kontrol et
+            final hasFacePhotos = photosResponse.success && 
+                                  photosResponse.data != null && 
+                                  photosResponse.data!.user.frontImage.isNotEmpty &&
+                                  photosResponse.data!.user.leftImage.isNotEmpty &&
+                                  photosResponse.data!.user.rightImage.isNotEmpty;
+            
             // Yüz fotoğrafları yoksa face_verification'a yönlendir
-            if (!photosResponse.isSuccess || photosResponse.data == null) {
+            if (!hasFacePhotos) {
               print('⚠️ Yüz fotoğrafları yok, face_verification\'a yönlendiriliyor');
               Navigator.of(context).pushReplacementNamed('/faceVerification');
             } else {

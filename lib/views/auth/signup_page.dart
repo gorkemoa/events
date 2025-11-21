@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/auth_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
+import 'package:pixlomi/services/app_version_service.dart';
 import 'package:pixlomi/views/policies/membership_agreement_page.dart';
 import 'package:pixlomi/views/policies/privacy_policy_page.dart';
 import 'dart:io' show Platform;
@@ -22,6 +23,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final _emailController = TextEditingController(text: 'gorkemoa35@gmail.com');
   final _passwordController = TextEditingController(text: 'password123');
   final _authService = AuthService();
+  final _versionService = AppVersionService();
   bool _obscurePassword = true;
   bool _agreeToTerms = false;
   bool _isLoading = false;
@@ -74,7 +76,7 @@ class _SignUpPageState extends State<SignUpPage> {
           userName: _usernameController.text,
           userEmail: _emailController.text,
           userPassword: _passwordController.text,
-          version: '1.0.0',
+          version: _versionService.fullVersion,
           platform: platform,
         );
 

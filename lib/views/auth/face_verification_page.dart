@@ -538,21 +538,7 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> with Single
         actions: widget.isUpdateMode
             ? null
             : [
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pushReplacementNamed('/home');
-                    },
-                    child: Text(
-                      context.tr('face_verification.skip'),
-                      style: AppTheme.labelMedium.copyWith(
-                        color: AppTheme.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
+               
               ],
       ),
       body: !_hasPermission

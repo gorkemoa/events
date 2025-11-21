@@ -1,9 +1,95 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
-import 'package:pixlomi/widgets/home_header.dart';
 import 'package:pixlomi/services/photo_service.dart';
 import 'package:pixlomi/localizations/app_localizations.dart';
 import 'package:pixlomi/viewmodels/gallery_viewmodel.dart';
+
+class HomeHeaderGallery extends StatelessWidget {
+  final String locationText;
+  final VoidCallback? onMenuPressed;
+  final VoidCallback? onGridPressed;
+  final String? subtitle;
+  final int gridColumnCount;
+
+  const HomeHeaderGallery({
+    Key? key,
+    required this.locationText,
+    this.onMenuPressed,
+    this.onGridPressed,
+    this.subtitle,
+    this.gridColumnCount = 3,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Menu Icon
+          GestureDetector(
+            onTap: onMenuPressed,
+            child: Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.asset(
+                  'assets/logo/logo.png',
+                  width: 35,
+                  height: 35,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+          // Location
+          GestureDetector(
+            child: Column(
+              children: [
+                Text(
+                  subtitle ?? 'Mevcut Konum',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                  ),
+                ),
+                Row(
+                  children: [
+                    Text(
+                      locationText,
+                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // Grid Icon
+          GestureDetector(
+            onTap: onGridPressed,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.grid_view_rounded,
+                size: 24,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class GalleryPage extends StatefulWidget {
   final VoidCallback? onMenuPressed;
@@ -17,7 +103,7 @@ class GalleryPage extends StatefulWidget {
 class _GalleryPageState extends State<GalleryPage> {
   late final GalleryViewModel _viewModel;
   bool _isDragSelecting = false;
-  int _gridColumnCount = 3;
+  int _gridColumnCount = 5;
 
   @override
   void initState() {
@@ -29,6 +115,82 @@ class _GalleryPageState extends State<GalleryPage> {
   void _setGridColumnCount(int count) {
     setState(() {
       _gridColumnCount = count;
+    });
+  }
+
+  void _showGridMenu() {
+    showMenu<int>(
+      context: context,
+      position: const RelativeRect.fromLTRB(100, 100, 0, 0),
+      items: [
+        PopupMenuItem(
+          value: 3,
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _gridColumnCount == 3 ? AppTheme.primary : Colors.grey[200],
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(
+                  Icons.grid_on,
+                  size: 20,
+                  color: _gridColumnCount == 3 ? Colors.white : Colors.black,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(context.tr('gallery.grid_3')),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 4,
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _gridColumnCount == 4 ? AppTheme.primary : Colors.grey[200],
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(
+                  Icons.grid_on,
+                  size: 20,
+                  color: _gridColumnCount == 4 ? Colors.white : Colors.black,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(context.tr('gallery.grid_4')),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 5,
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _gridColumnCount == 5 ? AppTheme.primary : Colors.grey[200],
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(
+                  Icons.grid_on,
+                  size: 20,
+                  color: _gridColumnCount == 5 ? Colors.white : Colors.black,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(context.tr('gallery.grid_5')),
+            ],
+          ),
+        ),
+      ],
+    ).then((value) {
+      if (value != null) {
+        _setGridColumnCount(value);
+      }
     });
   }
 
@@ -244,6 +406,15 @@ class _GalleryPageState extends State<GalleryPage> {
               child: Column(
                 children: [
                   // Header
+                  HomeHeaderGallery(
+                    subtitle: context.tr('gallery.title'),
+                    locationText: context.tr('gallery.photo_count', args: {'count': _viewModel.allPhotos.length.toString()}),
+                    onMenuPressed: widget.onMenuPressed,
+                    onGridPressed: _showGridMenu,
+                    gridColumnCount: _gridColumnCount,
+                  ),
+
+                  // Filters
                   _viewModel.isSelectionMode
                       ? _SelectionHeader(
                           selectedCount: _viewModel.selectedPhotos.length,
@@ -253,101 +424,7 @@ class _GalleryPageState extends State<GalleryPage> {
                               _viewModel.selectedPhotos.length == filteredPhotos.length &&
                               filteredPhotos.isNotEmpty,
                         )
-                      : Column(
-                          children: [
-                            HomeHeader(
-                              subtitle: context.tr('gallery.title'),
-                              locationText: context.tr('gallery.photo_count', args: {'count': _viewModel.allPhotos.length.toString()}),
-                              onMenuPressed: widget.onMenuPressed,
-                              onNotificationPressed: () {
-                                Navigator.pushNamed(context, '/notifications');
-                              },
-                            ),
-                            // Grid seçenekleri
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingL, vertical: 8),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  PopupMenuButton<int>(
-                                    icon: const Icon(Icons.grid_view_rounded, color: Colors.black, size: 24),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    onSelected: _setGridColumnCount,
-                                    itemBuilder: (BuildContext context) => [
-                                      PopupMenuItem(
-                                        value: 3,
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
-                                                color: _gridColumnCount == 3 ? AppTheme.primary : Colors.grey[200],
-                                                borderRadius: BorderRadius.circular(6),
-                                              ),
-                                              child: Icon(
-                                                Icons.grid_on,
-                                                size: 20,
-                                                color: _gridColumnCount == 3 ? Colors.white : Colors.black,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Text(context.tr('gallery.grid_3')),
-                                          ],
-                                        ),
-                                      ),
-                                      PopupMenuItem(
-                                        value: 4,
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
-                                                color: _gridColumnCount == 4 ? AppTheme.primary : Colors.grey[200],
-                                                borderRadius: BorderRadius.circular(6),
-                                              ),
-                                              child: Icon(
-                                                Icons.grid_on,
-                                                size: 20,
-                                                color: _gridColumnCount == 4 ? Colors.white : Colors.black,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Text(context.tr('gallery.grid_4')),
-                                          ],
-                                        ),
-                                      ),
-                                      PopupMenuItem(
-                                        value: 5,
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
-                                                color: _gridColumnCount == 5 ? AppTheme.primary : Colors.grey[200],
-                                                borderRadius: BorderRadius.circular(6),
-                                              ),
-                                              child: Icon(
-                                                Icons.grid_on,
-                                                size: 20,
-                                                color: _gridColumnCount == 5 ? Colors.white : Colors.black,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Text(context.tr('gallery.grid_5')),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-
-                  // Filters
+                      : const SizedBox.shrink(),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(
@@ -590,7 +667,7 @@ class _GalleryPageState extends State<GalleryPage> {
                                                     _viewModel.toggleFavorite(photo);
                                                   },
                                                   child: Container(
-                                                    padding: const EdgeInsets.all(4),
+                                                    padding: EdgeInsets.all(_gridColumnCount == 3 ? 6 : _gridColumnCount == 4 ? 5 : 4),
                                                     decoration: BoxDecoration(
                                                       color: Colors.black.withOpacity(0.3),
                                                       shape: BoxShape.circle,
@@ -600,7 +677,7 @@ class _GalleryPageState extends State<GalleryPage> {
                                                       color: isFavorite
                                                           ? const Color(0xFFFFB800)
                                                           : Colors.white,
-                                                      size: 16,
+                                                      size: _gridColumnCount == 3 ? 18 : _gridColumnCount == 4 ? 16 : 14,
                                                     ),
                                                   ),
                                                 ),

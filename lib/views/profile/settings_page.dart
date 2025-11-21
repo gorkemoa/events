@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/storage_helper.dart';
-import 'package:pixlomi/services/face_photo_service.dart';
+import 'package:pixlomi/services/user_service.dart';
 import 'package:pixlomi/services/firebase_messaging_service.dart';
 import 'package:pixlomi/services/language_service.dart';
 import 'package:pixlomi/views/profile/edit_profile_page.dart';
@@ -23,7 +23,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final FacePhotoService _facePhotoService = FacePhotoService();
+  final UserService _userService = UserService();
   bool _hasFacePhotos = false;
   bool _isCheckingPhotos = true;
   String _currentLanguage = 'tr';
@@ -45,7 +45,9 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _checkFacePhotos() async {
     try {
       final userToken = await StorageHelper.getUserToken();
-      if (userToken == null) {
+      final userId = await StorageHelper.getUserId();
+      
+      if (userToken == null || userId == null) {
         setState(() {
           _isCheckingPhotos = false;
           _hasFacePhotos = false;
@@ -53,10 +55,18 @@ class _SettingsPageState extends State<SettingsPage> {
         return;
       }
 
-      final response = await _facePhotoService.getFacePhotos(userToken: userToken);
+      final response = await _userService.getUserById(
+        userId: userId,
+        userToken: userToken,
+      );
       
       setState(() {
-        _hasFacePhotos = response.isSuccess && response.data != null;
+        // Yüz fotoğrafları varsa ve boş değilse true
+        _hasFacePhotos = response.success && 
+                        response.data != null && 
+                        response.data!.user.frontImage.isNotEmpty &&
+                        response.data!.user.leftImage.isNotEmpty &&
+                        response.data!.user.rightImage.isNotEmpty;
         _isCheckingPhotos = false;
       });
     } catch (e) {
@@ -355,73 +365,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   },
                 ),
 
-                const SizedBox(height: 30),
-
-                // Logout Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      // Show confirmation dialog
-                      final shouldLogout = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text(context.tr('settings.logout_title')),
-                          content: Text(context.tr('settings.logout_confirm')),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: Text(context.tr('common.cancel')),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              child: Text(context.tr('settings.button_logout')),
-                            ),
-                          ],
-                        ),
-                      );
-
-                      if (shouldLogout == true) {
-                        // Get userId before clearing session
-                        final userId = await StorageHelper.getUserId();
-                        
-                        // Clear user session
-                        await StorageHelper.clearUserSession();
-                        
-                        // Unsubscribe from Firebase topic
-                        if (userId != null) {
-                          await FirebaseMessagingService.unsubscribeFromUserTopic(userId.toString());
-                        }
-                        
-                        if (mounted) {
-                          Navigator.of(context).pushNamedAndRemoveUntil(
-                            '/login',
-                            (route) => false,
-                          );
-                        }
-                      }
-                    },
-                    icon: const Icon(
-                      Icons.logout,
-                      color: Colors.red,
-                    ),
-                    label: Text(
-                      context.tr('settings.button_logout'),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.red,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.red),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
                 const SizedBox(height: 40),
               ],
             ),

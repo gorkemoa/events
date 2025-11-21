@@ -4,9 +4,12 @@ import 'dart:io';
 import '../models/user_models.dart';
 import 'api_helper.dart';
 import 'constants.dart';
+import 'app_version_service.dart';
 
 /// User service for handling user operations
 class UserService {
+  final AppVersionService _versionService = AppVersionService();
+
   /// Get user by ID
   /// 
   /// Returns [UserResponse] with user data
@@ -22,7 +25,7 @@ class UserService {
       
       final request = GetUserRequest(
         userToken: userToken,
-        version: '1.0.0',
+        version: _versionService.fullVersion,
         platform: platform,
       );
 

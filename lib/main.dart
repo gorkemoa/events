@@ -24,6 +24,7 @@ import 'package:pixlomi/services/firebase_messaging_service.dart';
 import 'package:pixlomi/services/language_service.dart';
 import 'package:pixlomi/services/deep_link_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
+import 'package:pixlomi/services/app_version_service.dart';
 import 'firebase_options.dart';
 
 
@@ -37,6 +38,9 @@ void main() async {
 
   // Initialize Firebase Messaging
   await FirebaseMessagingService.initialize();
+  
+  // Initialize App Version Service (native version management)
+  await AppVersionService().initialize();
 
   // Sadece dikey kullanım (portrait) açık kalsın
   await SystemChrome.setPreferredOrientations([

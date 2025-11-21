@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/storage_helper.dart';
-import 'package:pixlomi/services/face_photo_service.dart';
+import 'package:pixlomi/services/user_service.dart';
 import 'package:pixlomi/views/auth/face_verification_page.dart';
 
 class FacePhotosPage extends StatefulWidget {
@@ -13,7 +13,7 @@ class FacePhotosPage extends StatefulWidget {
 
 class _FacePhotosPageState extends State<FacePhotosPage>
     with SingleTickerProviderStateMixin {
-  final FacePhotoService _facePhotoService = FacePhotoService();
+  final UserService _userService = UserService();
 
   bool _isLoading = true;
   String? _frontImage;
@@ -65,7 +65,9 @@ class _FacePhotosPageState extends State<FacePhotosPage>
 
     try {
       final userToken = await StorageHelper.getUserToken();
-      if (userToken == null) {
+      final userId = await StorageHelper.getUserId();
+      
+      if (userToken == null || userId == null) {
         setState(() {
           _errorMessage = 'Kullanıcı oturumu bulunamadı';
           _isLoading = false;
@@ -73,15 +75,19 @@ class _FacePhotosPageState extends State<FacePhotosPage>
         return;
       }
 
-      final response = await _facePhotoService.getFacePhotos(userToken: userToken);
+      final response = await _userService.getUserById(
+        userId: userId,
+        userToken: userToken,
+      );
 
-      if (response.isSuccess && response.data != null) {
-        final userPhoto = response.data!.userPhoto;
+      if (response.success && response.data != null) {
+        final user = response.data!.user;
         setState(() {
-          _frontImage = userPhoto.frontImage;
-          _leftImage = userPhoto.leftImage;
-          _rightImage = userPhoto.rightImage;
-          _createDate = _formatDateTR(userPhoto.createDate);
+          _frontImage = user.frontImage;
+          _leftImage = user.leftImage;
+          _rightImage = user.rightImage;
+          // User modelinde createDate yok, o yüzden bunu kaldırıyoruz
+          _createDate = 'Yüklendi';
           _isLoading = false;
         });
         _animationController.forward(from: 0);
@@ -97,30 +103,6 @@ class _FacePhotosPageState extends State<FacePhotosPage>
         _errorMessage = 'Bir hata oluştu: $e';
         _isLoading = false;
       });
-    }
-  }
-
-  String _formatDateTR(String? dateString) {
-    if (dateString == null || dateString.isEmpty) {
-      return 'Tarih bulunamadı';
-    }
-
-    try {
-      final date = DateTime.parse(dateString);
-      
-      final months = [
-        'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-        'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
-      ];
-
-      final day = date.day.toString().padLeft(2, '0');
-      final month = months[date.month - 1];
-      final year = date.year;
-      final time = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-
-      return '$day $month $year, $time';
-    } catch (e) {
-      return dateString;
     }
   }
 

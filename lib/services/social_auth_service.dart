@@ -7,27 +7,54 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 import 'constants.dart';
 import 'api_helper.dart';
+import 'app_version_service.dart';
 import '../models/social_auth_models.dart';
 
+/// Social Auth Constants
+class _SocialAuthConstants {
+  // Platform names
+  static const String platformGoogle = 'google';
+  static const String platformApple = 'apple';
+  static const String platformAndroid = 'android';
+  static const String platformIOS = 'ios';
+  
+  // Google scopes
+  static const List<String> googleScopes = [
+    'email',
+    'profile',
+    'openid',
+  ];
+  
+  // Apple scopes
+  static const List<AppleIDAuthorizationScopes> appleScopes = [
+    AppleIDAuthorizationScopes.email,
+    AppleIDAuthorizationScopes.fullName,
+  ];
+  
+  // Log constants
+  static const String logTagSocialAuth = 'SocialAuth';
+}
+
 class SocialAuthService {
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: [
-      'email',
-      'profile',
-      'openid',
-    ],
-  );
+  late final GoogleSignIn _googleSignIn;
+  final AppVersionService _versionService = AppVersionService();
+
+  SocialAuthService() {
+    _googleSignIn = GoogleSignIn(
+      scopes: _SocialAuthConstants.googleScopes,
+    );
+  }
 
   /// Google ile giriş yap ve backend'e gönder
   Future<SocialLoginResponse> signInWithGoogle() async {
     try {
-      developer.log('🔵 Google Sign In başlatılıyor...', name: 'SocialAuth');
+      developer.log('🔵 Google Sign In başlatılıyor...', name: _SocialAuthConstants.logTagSocialAuth);
       
       // Google hesabı seç
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       
       if (googleUser == null) {
-        developer.log('❌ Google sign in iptal edildi', name: 'SocialAuth');
+        developer.log('❌ Google sign in iptal edildi', name: _SocialAuthConstants.logTagSocialAuth);
         return SocialLoginResponse(
           error: true,
           success: false,
@@ -41,7 +68,7 @@ class SocialAuthService {
       
       // ID Token kontrolü
       if (googleAuth.idToken == null) {
-        developer.log('❌ Google idToken null geldi!', name: 'SocialAuth');
+        developer.log('❌ Google idToken null geldi!', name: _SocialAuthConstants.logTagSocialAuth);
         return SocialLoginResponse(
           error: true,
           success: false,
@@ -50,7 +77,7 @@ class SocialAuthService {
         );
       }
 
-      developer.log('✅ Google idToken başarıyla alındı', name: 'SocialAuth');
+      developer.log('✅ Google idToken başarıyla alındı', name: _SocialAuthConstants.logTagSocialAuth);
       
       // Device bilgilerini topla
       final deviceInfo = await _getDeviceInfo();
@@ -58,25 +85,25 @@ class SocialAuthService {
 
       // Request modeli oluştur
       final request = SocialLoginRequest(
-        platform: 'google',
+        platform: _SocialAuthConstants.platformGoogle,
         deviceID: deviceInfo['deviceID']!,
         devicePlatform: deviceInfo['platform']!,
-        version: '1.0.0',
+        version: _versionService.version,
         accessToken: googleAuth.accessToken ?? '',
         fcmToken: fcmToken,
         idToken: googleAuth.idToken!,
       );
 
-      developer.log('📤 Google login data hazırlandı', name: 'SocialAuth');
-      developer.log('  - platform: google', name: 'SocialAuth');
-      developer.log('  - devicePlatform: ${deviceInfo['platform']}', name: 'SocialAuth');
-      developer.log('  - idToken length: ${googleAuth.idToken!.length}', name: 'SocialAuth');
+      developer.log('📤 Google login data hazırlandı', name: _SocialAuthConstants.logTagSocialAuth);
+      developer.log('  - platform: ${_SocialAuthConstants.platformGoogle}', name: _SocialAuthConstants.logTagSocialAuth);
+      developer.log('  - devicePlatform: ${deviceInfo['platform']}', name: _SocialAuthConstants.logTagSocialAuth);
+      developer.log('  - idToken length: ${googleAuth.idToken!.length}', name: _SocialAuthConstants.logTagSocialAuth);
 
       // Backend'e gönder
       return await _loginSocial(request);
       
     } catch (e, stackTrace) {
-      developer.log('❌ Google sign in hatası', name: 'SocialAuth', error: e, stackTrace: stackTrace);
+      developer.log('❌ Google sign in hatası', name: _SocialAuthConstants.logTagSocialAuth, error: e, stackTrace: stackTrace);
       return SocialLoginResponse(
         error: true,
         success: false,
@@ -89,19 +116,16 @@ class SocialAuthService {
   /// Apple ile giriş yap ve backend'e gönder
   Future<SocialLoginResponse> signInWithApple() async {
     try {
-      developer.log('🍎 Apple Sign In başlatılıyor...', name: 'SocialAuth');
+      developer.log('🍎 Apple Sign In başlatılıyor...', name: _SocialAuthConstants.logTagSocialAuth);
       
       // Apple Sign In credential talep et
       final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
+        scopes: _SocialAuthConstants.appleScopes,
       );
 
       // ID Token kontrolü
       if (credential.identityToken == null) {
-        developer.log('❌ Apple idToken null geldi!', name: 'SocialAuth');
+        developer.log('❌ Apple idToken null geldi!', name: _SocialAuthConstants.logTagSocialAuth);
         return SocialLoginResponse(
           error: true,
           success: false,
@@ -110,7 +134,14 @@ class SocialAuthService {
         );
       }
 
-      developer.log('✅ Apple idToken başarıyla alındı', name: 'SocialAuth');
+      developer.log('✅ Apple idToken başarıyla alındı', name: _SocialAuthConstants.logTagSocialAuth);
+      developer.log('🔍 Apple Credential Details:', name: _SocialAuthConstants.logTagSocialAuth);
+      developer.log('  - userIdentifier: ${credential.userIdentifier}', name: _SocialAuthConstants.logTagSocialAuth);
+      developer.log('  - email: ${credential.email}', name: _SocialAuthConstants.logTagSocialAuth);
+      developer.log('  - givenName: ${credential.givenName}', name: _SocialAuthConstants.logTagSocialAuth);
+      developer.log('  - familyName: ${credential.familyName}', name: _SocialAuthConstants.logTagSocialAuth);
+      developer.log('  - authorizationCode: ${credential.authorizationCode}', name: _SocialAuthConstants.logTagSocialAuth);
+      developer.log('  - identityToken: ${credential.identityToken}', name: _SocialAuthConstants.logTagSocialAuth);
 
       // Device bilgilerini topla
       final deviceInfo = await _getDeviceInfo();
@@ -118,25 +149,25 @@ class SocialAuthService {
 
       // Request modeli oluştur
       final request = SocialLoginRequest(
-        platform: 'apple',
+        platform: _SocialAuthConstants.platformApple,
         deviceID: deviceInfo['deviceID']!,
         devicePlatform: deviceInfo['platform']!,
-        version: '1.0.0',
+        version: _versionService.version,
         accessToken: credential.authorizationCode,
         fcmToken: fcmToken,
         idToken: credential.identityToken!,
       );
 
-      developer.log('📤 Apple login data hazırlandı', name: 'SocialAuth');
-      developer.log('  - platform: apple', name: 'SocialAuth');
-      developer.log('  - devicePlatform: ${deviceInfo['platform']}', name: 'SocialAuth');
-      developer.log('  - idToken length: ${credential.identityToken!.length}', name: 'SocialAuth');
+      developer.log('📤 Apple login data hazırlandı', name: _SocialAuthConstants.logTagSocialAuth);
+      developer.log('  - platform: ${_SocialAuthConstants.platformApple}', name: _SocialAuthConstants.logTagSocialAuth);
+      developer.log('  - devicePlatform: ${deviceInfo['platform']}', name: _SocialAuthConstants.logTagSocialAuth);
+      developer.log('  - idToken length: ${credential.identityToken!.length}', name: _SocialAuthConstants.logTagSocialAuth);
 
       // Backend'e gönder
       return await _loginSocial(request);
       
     } catch (e, stackTrace) {
-      developer.log('❌ Apple sign in hatası', name: 'SocialAuth', error: e, stackTrace: stackTrace);
+      developer.log('❌ Apple sign in hatası', name: _SocialAuthConstants.logTagSocialAuth, error: e, stackTrace: stackTrace);
       return SocialLoginResponse(
         error: true,
         success: false,
@@ -149,31 +180,49 @@ class SocialAuthService {
   /// Social login ile backend'e istek gönder (Private method)
   Future<SocialLoginResponse> _loginSocial(SocialLoginRequest request) async {
     try {
-      developer.log('🔐 Social Login Request', name: 'SocialAuth');
-      developer.log('URL: ${ApiConstants.loginSocial}', name: 'SocialAuth');
-      developer.log('Body: ${jsonEncode(request.toJson())}', name: 'SocialAuth');
+      developer.log('🔐 Social Login Request', name: _SocialAuthConstants.logTagSocialAuth);
+      developer.log('URL: ${ApiConstants.loginSocial}', name: _SocialAuthConstants.logTagSocialAuth);
+      
+      final requestBody = request.toJson();
+      final bodyJson = jsonEncode(requestBody);
+      developer.log('Body: $bodyJson', name: _SocialAuthConstants.logTagSocialAuth);
+      
+      // Generate CURL command for debugging
+      final basicAuth = base64Encode(
+        utf8.encode('${ApiConstants.basicAuthUsername}:${ApiConstants.basicAuthPassword}')
+      );
+      final curlCommand = '''
+curl -X POST '${ApiConstants.loginSocial}' \\
+-H 'Content-Type: application/json; charset=utf-8' \\
+-H 'Authorization: Basic $basicAuth' \\
+-H 'Accept: application/json' \\
+-H 'Accept-Charset: utf-8' \\
+-d '$bodyJson'
+''';
+      developer.log('📋 CURL Command:\n$curlCommand', name: _SocialAuthConstants.logTagSocialAuth);
 
       // ApiHelper ile Basic Auth'lu POST request
       final response = await ApiHelper.post(
         ApiConstants.loginSocial,
-        request.toJson(),
+        requestBody,
       );
 
-      developer.log('📥 Response Status: ${response.statusCode}', name: 'SocialAuth');
-      developer.log('📥 Response Body: ${response.body}', name: 'SocialAuth');
+      developer.log('📥 Response Status: ${response.statusCode}', name: _SocialAuthConstants.logTagSocialAuth);
+      developer.log('📥 Response Headers: ${response.headers}', name: _SocialAuthConstants.logTagSocialAuth);
+      developer.log('📥 Response Body: ${response.body}', name: _SocialAuthConstants.logTagSocialAuth);
 
       final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
       final socialLoginResponse = SocialLoginResponse.fromJson(jsonResponse);
       
-      developer.log('✅ Parsed Response - Success: ${socialLoginResponse.success}', name: 'SocialAuth');
+      developer.log('✅ Parsed Response - Success: ${socialLoginResponse.success}', name: _SocialAuthConstants.logTagSocialAuth);
       if (!socialLoginResponse.success) {
-        developer.log('❌ Error Message: ${socialLoginResponse.errorMessage}', name: 'SocialAuth');
+        developer.log('❌ Error Message: ${socialLoginResponse.errorMessage}', name: _SocialAuthConstants.logTagSocialAuth);
       }
       
       return socialLoginResponse;
     } catch (e, stackTrace) {
       // Return error response if network or parsing fails
-      developer.log('❌ Exception occurred', name: 'SocialAuth', error: e, stackTrace: stackTrace);
+      developer.log('❌ Exception occurred', name: _SocialAuthConstants.logTagSocialAuth, error: e, stackTrace: stackTrace);
       return SocialLoginResponse(
         error: true,
         success: false,
@@ -193,16 +242,18 @@ class SocialAuthService {
       if (Platform.isAndroid) {
         final androidInfo = await deviceInfo.androidInfo;
         deviceID = androidInfo.id;
-        platform = 'android';
+        platform = _SocialAuthConstants.platformAndroid;
       } else if (Platform.isIOS) {
         final iosInfo = await deviceInfo.iosInfo;
         deviceID = iosInfo.identifierForVendor ?? '';
-        platform = 'ios';
+        platform = _SocialAuthConstants.platformIOS;
       }
     } catch (e) {
       print('⚠️ Device info alınamadı: $e');
       deviceID = 'unknown';
-      platform = Platform.isAndroid ? 'android' : 'ios';
+      platform = Platform.isAndroid 
+        ? _SocialAuthConstants.platformAndroid 
+        : _SocialAuthConstants.platformIOS;
     }
 
     return {

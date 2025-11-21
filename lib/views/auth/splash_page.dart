@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:pixlomi/services/storage_helper.dart';
-import 'package:pixlomi/services/face_photo_service.dart';
+import 'package:pixlomi/services/user_service.dart';
 import 'package:pixlomi/services/firebase_messaging_service.dart';
 import 'package:pixlomi/services/deep_link_service.dart';
 import 'package:pixlomi/views/events/event_detail_page.dart';
@@ -17,7 +17,7 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage> {
   late VideoPlayerController _controller;
   bool _isVideoInitialized = false;
-  final FacePhotoService _facePhotoService = FacePhotoService();
+  final UserService _userService = UserService();
 
   @override
   void initState() {
@@ -116,7 +116,8 @@ class _SplashPageState extends State<SplashPage> {
       }
       
       try {
-        final photosResponse = await _facePhotoService.getFacePhotos(
+        final photosResponse = await _userService.getUserById(
+          userId: userId!,
           userToken: userToken,
         );
         
@@ -130,7 +131,14 @@ class _SplashPageState extends State<SplashPage> {
           return;
         }
         
-        if (!photosResponse.isSuccess || photosResponse.data == null) {
+        // Yüz fotoğrafları kontrol et
+        final hasFacePhotos = photosResponse.success && 
+                              photosResponse.data != null && 
+                              photosResponse.data!.user.frontImage.isNotEmpty &&
+                              photosResponse.data!.user.leftImage.isNotEmpty &&
+                              photosResponse.data!.user.rightImage.isNotEmpty;
+        
+        if (!hasFacePhotos) {
           // Yüz fotoğrafları yok - face verification'a yönlendir
           print('⚠️ Face photos not found, navigating to /faceVerification');
           Navigator.of(context).pushReplacementNamed('/faceVerification');

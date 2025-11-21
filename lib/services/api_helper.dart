@@ -28,8 +28,10 @@ class ApiHelper {
     )}';
 
     final headers = {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json; charset=utf-8',
       'Authorization': basicAuth,
+      'Accept': 'application/json',
+      'Accept-Charset': 'utf-8',
     };
 
     if (additionalHeaders != null) {

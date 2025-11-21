@@ -153,6 +153,9 @@ class User {
   final String iOSVersion;
   final String androidVersion;
   final String profilePhoto;
+  final String frontImage;
+  final String leftImage;
+  final String rightImage;
 
   User({
     required this.userId,
@@ -174,6 +177,9 @@ class User {
     required this.iOSVersion,
     required this.androidVersion,
     required this.profilePhoto,
+    required this.frontImage,
+    required this.leftImage,
+    required this.rightImage,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -197,6 +203,9 @@ class User {
       iOSVersion: json['iOSVersion'] ?? '',
       androidVersion: json['androidVersion'] ?? '',
       profilePhoto: json['profilePhoto'] ?? '',
+      frontImage: json['frontImage'] ?? '',
+      leftImage: json['leftImage'] ?? '',
+      rightImage: json['rightImage'] ?? '',
     );
   }
 }

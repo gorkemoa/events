@@ -43,7 +43,7 @@ class ApiConstants {
   
   /// Photo endpoints
   static String getUserPhotos(String userToken) {
-    return '${baseUrl}service/user/account/photo/eventAll?userToken=$userToken';
+    return '${baseUrl}service/user/account/photo/all?userToken=$userToken';
   }
   
   /// General endpoints
