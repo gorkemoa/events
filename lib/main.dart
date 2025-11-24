@@ -89,13 +89,20 @@ class MyAppState extends State<MyApp> {
       final isLoggedIn = await StorageHelper.isLoggedIn();
       final userToken = await StorageHelper.getUserToken();
       
-      if (eventCode != null && isLoggedIn && userToken != null) {
-        print('🚀 Cold start with deep link - navigating directly to EventDetailPage: $eventCode');
-        setState(() {
-          _initialPage = EventDetailPage(eventCode: eventCode);
-          _isInitialized = true;
-        });
-        return;
+      if (eventCode != null) {
+        if (isLoggedIn && userToken != null) {
+          // User is logged in, navigate directly to event detail
+          print('🚀 Cold start with deep link - navigating directly to EventDetailPage: $eventCode');
+          setState(() {
+            _initialPage = EventDetailPage(eventCode: eventCode);
+            _isInitialized = true;
+          });
+          return;
+        } else {
+          // User not logged in, save event code and show splash (will redirect to auth)
+          print('⚠️ Cold start with deep link but user not logged in - saving event code: $eventCode');
+          await StorageHelper.setPendingDeepLinkEventCode(eventCode);
+        }
       }
     }
     

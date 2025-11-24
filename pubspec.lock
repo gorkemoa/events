@@ -1109,11 +1109,10 @@ packages:
   uni_links:
     dependency: "direct main"
     description:
-      name: uni_links
-      sha256: "051098acfc9e26a9fde03b487bef5d3d228ca8f67693480c6f33fd4fbb8e2b6e"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.5.1"
+      path: "plugins/uni_links_fixed"
+      relative: true
+    source: path
+    version: "0.5.1+fixed"
   uni_links_platform_interface:
     dependency: transitive
     description:

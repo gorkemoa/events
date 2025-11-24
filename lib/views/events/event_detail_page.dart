@@ -52,20 +52,29 @@ class _EventDetailPageState extends State<EventDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    return WillPopScope(
+      onWillPop: () async {
+        // Geri tuşuna basıldığında home'a yönlendir
+        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+        return false; // Pop işlemini engelle, kendi navigation'ımızı yaptık
+      },
+      child: Scaffold(
         backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          context.tr('event_detail.title'),
-          style: AppTheme.labelLarge,
-        ),
-        centerTitle: true,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () {
+              // Geri butonuna basıldığında home'a yönlendir
+              Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+            },
+          ),
+          title: Text(
+            context.tr('event_detail.title'),
+            style: AppTheme.labelLarge,
+          ),
+          centerTitle: true,
         actions: [
           PopupMenuButton<int>(
             icon: const Icon(Icons.grid_view_rounded, color: Colors.black),
@@ -712,7 +721,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
           );
         },
       ),
-    );
+      ), // Scaffold kapanışı
+    ); // WillPopScope kapanışı
   }
 
   void _showPhotoDetail(int index) {

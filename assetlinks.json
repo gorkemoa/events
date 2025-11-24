@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.office701.pixlomi",
+      "sha256_cert_fingerprints": [
+        "5A:FD:0B:7B:0B:87:DE:04:89:4A:48:BA:17:92:37:8A:E2:B5:AC:17:A2:06:80:AE:22:9C:7E:76:B2:DD:B2:FF"
+      ]
+    }
+  }
+]

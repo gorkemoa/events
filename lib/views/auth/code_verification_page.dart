@@ -6,6 +6,7 @@ import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/user_service.dart';
 import 'package:pixlomi/services/firebase_messaging_service.dart';
 import 'package:pixlomi/localizations/app_localizations.dart';
+import 'package:pixlomi/views/events/event_detail_page.dart';
 
 class CodeVerificationPage extends StatefulWidget {
   const CodeVerificationPage({Key? key}) : super(key: key);
@@ -224,8 +225,25 @@ class _CodeVerificationPageState extends State<CodeVerificationPage> {
               print('⚠️ Yüz fotoğrafları yok (beklenen durum), face_verification\'a yönlendiriliyor');
               Navigator.of(context).pushReplacementNamed('/faceVerification');
             } else {
-              print('⚠️ Beklenmeyen durum: Yüz fotoğrafları mevcut, yine de face_verification\'a yönlendiriliyor');
-              Navigator.of(context).pushReplacementNamed('/faceVerification');
+              print('⚠️ Beklenmeyen durum: Yüz fotoğrafları mevcut, checking pending deep link...');
+              
+              // Pending deep link event code'u kontrol et
+              final pendingEventCode = await StorageHelper.getPendingDeepLinkEventCode();
+              if (pendingEventCode != null) {
+                // Pending event code var, event detail sayfasına yönlendir
+                print('🔗 Pending deep link found after code verification: $pendingEventCode');
+                await StorageHelper.clearPendingDeepLinkEventCode();
+                
+                if (!mounted) return;
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => EventDetailPage(eventCode: pendingEventCode),
+                  ),
+                );
+              } else {
+                // Pending event code yok, yine de face_verification'a yönlendir (güvenli seçenek)
+                Navigator.of(context).pushReplacementNamed('/faceVerification');
+              }
             }
           } catch (e) {
             print('❌ Error checking face photos: $e');

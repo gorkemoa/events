@@ -84,10 +84,9 @@ class _SplashPageState extends State<SplashPage> {
           );
           return;
         } else {
-          // User not logged in, store the code and navigate to auth
-          print('⚠️ User not logged in, will redirect to auth first');
-          // The code is already cleared, we could store it again if needed
-          // For now, just proceed with normal auth flow
+          // User not logged in, save event code to storage for after login
+          print('⚠️ User not logged in, saving event code and will redirect to auth first');
+          await StorageHelper.setPendingDeepLinkEventCode(eventCode);
         }
       }
     }

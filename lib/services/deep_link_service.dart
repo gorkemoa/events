@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:pixlomi/services/navigation_service.dart';
+import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/views/events/event_detail_page.dart';
 
 class DeepLinkService {
@@ -105,28 +106,50 @@ class DeepLinkService {
     return null;
   }
 
-  static void _navigateToEventDetail(String eventCode) {
+  static void _navigateToEventDetail(String eventCode) async {
     print('🚀 Navigating to EventDetailPage with code: $eventCode');
+    
+    // Check if user is logged in
+    final isLoggedIn = await StorageHelper.isLoggedIn();
+    final userToken = await StorageHelper.getUserToken();
+    
     final context = NavigationService.navigatorKey.currentContext;
     if (context != null) {
-      print('✅ Context available, pushing route');
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => EventDetailPage(eventCode: eventCode),
-        ),
-      );
+      if (isLoggedIn && userToken != null) {
+        // User is logged in, navigate to event detail
+        print('✅ User logged in, pushing EventDetailPage');
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => EventDetailPage(eventCode: eventCode),
+          ),
+        );
+      } else {
+        // User not logged in, save event code and navigate to auth
+        print('⚠️ User not logged in, saving event code and navigating to auth');
+        await StorageHelper.setPendingDeepLinkEventCode(eventCode);
+        Navigator.of(context).pushNamedAndRemoveUntil('/auth', (route) => false);
+      }
     } else {
       print('❌ Context is null, delaying navigation');
       // Retry after a short delay
-      Future.delayed(const Duration(milliseconds: 500), () {
+      Future.delayed(const Duration(milliseconds: 500), () async {
         final retryContext = NavigationService.navigatorKey.currentContext;
         if (retryContext != null) {
-          print('✅ Context available after delay, pushing route');
-          Navigator.of(retryContext).push(
-            MaterialPageRoute(
-              builder: (context) => EventDetailPage(eventCode: eventCode),
-            ),
-          );
+          final stillLoggedIn = await StorageHelper.isLoggedIn();
+          final stillHasToken = await StorageHelper.getUserToken();
+          
+          if (stillLoggedIn && stillHasToken != null) {
+            print('✅ User logged in after delay, pushing EventDetailPage');
+            Navigator.of(retryContext).push(
+              MaterialPageRoute(
+                builder: (context) => EventDetailPage(eventCode: eventCode),
+              ),
+            );
+          } else {
+            print('⚠️ User not logged in after delay, saving event code and navigating to auth');
+            await StorageHelper.setPendingDeepLinkEventCode(eventCode);
+            Navigator.of(retryContext).pushNamedAndRemoveUntil('/auth', (route) => false);
+          }
         } else {
           print('❌ Context still null after delay');
         }

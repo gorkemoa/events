@@ -8,6 +8,7 @@ class StorageHelper {
   static const String _userFullnameKey = 'user_fullname';
   static const String _onboardingShownKey = 'onboarding_shown';
   static const String _codeTokenKey = 'code_token';
+  static const String _pendingDeepLinkEventCodeKey = 'pending_deep_link_event_code';
 
   /// Save user session data
   static Future<bool> saveUserSession({
@@ -133,6 +134,41 @@ class StorageHelper {
       return prefs.getString(_codeTokenKey);
     } catch (e) {
       return null;
+    }
+  }
+
+  /// Save pending deep link event code (to use after login)
+  static Future<bool> setPendingDeepLinkEventCode(String eventCode) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      print('💾 Saving pending deep link event code: $eventCode');
+      return await prefs.setString(_pendingDeepLinkEventCodeKey, eventCode);
+    } catch (e) {
+      print('❌ Error saving pending deep link event code: $e');
+      return false;
+    }
+  }
+
+  /// Get pending deep link event code
+  static Future<String?> getPendingDeepLinkEventCode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_pendingDeepLinkEventCodeKey);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Clear pending deep link event code
+  static Future<bool> clearPendingDeepLinkEventCode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_pendingDeepLinkEventCodeKey);
+      print('🗑️ Cleared pending deep link event code');
+      return true;
+    } catch (e) {
+      print('❌ Error clearing pending deep link event code: $e');
+      return false;
     }
   }
 

@@ -26,3 +26,6 @@ plugins {
 }
 
 include(":app")
+
+include(":uni_links")
+project(":uni_links").projectDir = file("../plugins/uni_links_fixed/android")

@@ -3,6 +3,7 @@ import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/social_auth_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/services/firebase_messaging_service.dart';
+import 'package:pixlomi/views/events/event_detail_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -51,11 +52,26 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
 
-        // Home'a yönlendir
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/home',
-          (route) => false,
-        );
+        // Pending deep link event code'u kontrol et
+        final pendingEventCode = await StorageHelper.getPendingDeepLinkEventCode();
+        if (pendingEventCode != null) {
+          // Pending event code var, event detail sayfasına yönlendir
+          print('🔗 Pending deep link found after Google login: $pendingEventCode');
+          await StorageHelper.clearPendingDeepLinkEventCode();
+          
+          if (!mounted) return;
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => EventDetailPage(eventCode: pendingEventCode),
+            ),
+          );
+        } else {
+          // Pending event code yok, home'a yönlendir
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/home',
+            (route) => false,
+          );
+        }
       } else {
         // Login başarısız
         ScaffoldMessenger.of(context).showSnackBar(
@@ -117,11 +133,26 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
 
-        // Home'a yönlendir
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/home',
-          (route) => false,
-        );
+        // Pending deep link event code'u kontrol et
+        final pendingEventCode = await StorageHelper.getPendingDeepLinkEventCode();
+        if (pendingEventCode != null) {
+          // Pending event code var, event detail sayfasına yönlendir
+          print('🔗 Pending deep link found after Apple login: $pendingEventCode');
+          await StorageHelper.clearPendingDeepLinkEventCode();
+          
+          if (!mounted) return;
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => EventDetailPage(eventCode: pendingEventCode),
+            ),
+          );
+        } else {
+          // Pending event code yok, home'a yönlendir
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/home',
+            (route) => false,
+          );
+        }
       } else {
         // Login başarısız
         ScaffoldMessenger.of(context).showSnackBar(

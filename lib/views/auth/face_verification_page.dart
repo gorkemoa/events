@@ -10,6 +10,7 @@ import 'package:pixlomi/services/face_photo_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
 import 'package:pixlomi/models/user_models.dart';
 import 'package:pixlomi/localizations/app_localizations.dart';
+import 'package:pixlomi/views/events/event_detail_page.dart';
 
 class FaceVerificationPage extends StatefulWidget {
   final bool isUpdateMode;
@@ -361,14 +362,29 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> with Single
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       Navigator.of(context).pop();
                       if (widget.isUpdateMode) {
                         // Güncelleme modunda bir önceki sayfaya result ile dön
                         Navigator.of(context).pop(true);
                       } else {
-                        // İlk kayıt modunda home'a git
-                        Navigator.of(context).pushReplacementNamed('/home');
+                        // İlk kayıt modunda - pending deep link kontrol et
+                        final pendingEventCode = await StorageHelper.getPendingDeepLinkEventCode();
+                        if (pendingEventCode != null) {
+                          // Pending event code var, event detail sayfasına yönlendir
+                          print('🔗 Pending deep link found after face verification: $pendingEventCode');
+                          await StorageHelper.clearPendingDeepLinkEventCode();
+                          
+                          if (!mounted) return;
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) => EventDetailPage(eventCode: pendingEventCode),
+                            ),
+                          );
+                        } else {
+                          // Pending event code yok, home'a git
+                          Navigator.of(context).pushReplacementNamed('/home');
+                        }
                       }
                     },
                     child: Text(
