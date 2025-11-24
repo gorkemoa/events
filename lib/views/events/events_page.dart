@@ -87,28 +87,34 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
       if (response.isSuccess && response.data != null) {
         _cities = response.data!.cities;
         
-        // widget.locationText ile eşleşen şehri bul
-        final matchingCity = _cities.firstWhere(
-          (city) => city.cityName.toLowerCase() == widget.locationText.toLowerCase(),
-          orElse: () => City(cityNo: 0, cityName: widget.locationText),
+        // Varsayılan olarak "Tümü" seçeneğini seç (cityNo: 0)
+        final allCityOption = _cities.firstWhere(
+          (city) => city.cityNo == 0,
+          orElse: () => City(cityNo: 0, cityName: 'Tümü'),
         );
         
-        // Eşleşme varsa şehir numarasını kullan, yoksa sadece ismi göster
-        if (matchingCity.cityNo != 0) {
-          setState(() {
-            _selectedCityNo = matchingCity.cityNo.toString();
-          });
-        }
+        setState(() {
+          _selectedCityNo = '0';
+          _selectedCityName = allCityOption.cityName;
+        });
         
         // Etkinlikleri yükle
         _loadEvents();
       } else {
         // API başarısız olsa bile etkinlikleri yükle
+        setState(() {
+          _selectedCityNo = '0';
+          _selectedCityName = 'Tümü';
+        });
         _loadEvents();
       }
     } catch (e) {
       print('Şehirler yüklenirken hata: $e');
       // Hata durumunda da etkinlikleri yükle
+      setState(() {
+        _selectedCityNo = '0';
+        _selectedCityName = 'Tümü';
+      });
       _loadEvents();
     }
   }
@@ -334,12 +340,7 @@ class _EventsPageState extends State<EventsPage> with SingleTickerProviderStateM
     if (selectedCity != null) {
       setState(() {
         _selectedCityName = selectedCity.cityName;
-        _selectedCityNo = selectedCity.cityNo != 0 ? selectedCity.cityNo.toString() : null;
-        
-        // Eğer seçilen şehir API'de yoksa ve listede de yoksa, listeye ekle
-        if (selectedCity.cityNo == 0 && !_cities.any((c) => c.cityName == selectedCity.cityName)) {
-          _cities.insert(0, selectedCity);
-        }
+        _selectedCityNo = selectedCity.cityNo.toString();
       });
       _loadEvents();
     }
