@@ -237,10 +237,10 @@
     "delete_final_button": "Evet, Sil",
     "about_title": "Hakkında",
     "about_app_name": "Etkinlikler Uygulaması",
-    "about_version": "Versiyon: {{version}}",
     "about_description": "En yakın etkinlikleri keşfedin, etkinliklere katılın ve diğer katılımcılarla bağlantı kurun.",
     "about_copyright": "© 2025 Etkinlikler. Tüm hakları saklıdır.",
-    "menu_language": "Dil"
+    "menu_language": "Dil",
+    "language_title": "Dil Seçimi"
   },
   "notifications": {
     "title": "Bildirimler",

@@ -447,11 +447,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                context.tr('settings.about_version'),
-                style: const TextStyle(fontSize: 14),
-              ),
+             
               const SizedBox(height: 8),
               Text(
                 context.tr('settings.about_description'),
