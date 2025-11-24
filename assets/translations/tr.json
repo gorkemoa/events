@@ -69,6 +69,41 @@
     "error_verification_failed": "Kod doğrulanmadı",
     "success": "Kod doğrulandı!"
   },
+  "forgot_password": {
+    "title": "Şifremi Unuttum",
+    "subtitle": "E-posta adresinizi girin, size şifre sıfırlama kodu göndereceğiz",
+    "label_email": "E-posta",
+    "placeholder_email": "Lütfen e-posta adresinizi girin",
+    "button_send_code": "Kod Gönder",
+    "error_email_invalid": "Lütfen geçerli bir e-posta adresi girin",
+    "success": "Doğrulama kodu e-postanıza gönderildi",
+    "error": "Kod gönderilemedi",
+    "back_to_login": "Giriş sayfasına dön"
+  },
+  "forgot_password_verify": {
+    "title": "Kodu Doğrula",
+    "subtitle": "E-postanıza gönderilen 6 haneli doğrulama kodunu girin",
+    "button_verify": "Doğrula",
+    "code_not_received": "Kodu almadınız mı?",
+    "resend_code": "Yeniden gönder",
+    "error_invalid_code": "Lütfen 6 haneli kodu girin",
+    "error_verification_failed": "Kod doğrulanmadı",
+    "success": "Kod başarıyla doğrulandı!"
+  },
+  "reset_password": {
+    "title": "Yeni Şifre Oluştur",
+    "subtitle": "Hesabınız için yeni bir şifre belirleyin",
+    "label_password": "Yeni Şifre",
+    "label_password_confirm": "Yeni Şifre Tekrar",
+    "placeholder_password": "Lütfen yeni şifrenizi girin",
+    "placeholder_password_confirm": "Lütfen şifrenizi tekrar girin",
+    "error_password_short": "Şifre en az 6 karakter olmalıdır",
+    "error_password_mismatch": "Şifreler eşleşmiyor",
+    "button_reset": "Şifreyi Güncelle",
+    "success": "Şifre başarıyla güncellendi",
+    "error": "Şifre güncellenemedi",
+    "redirecting": "Giriş sayfasına yönlendiriliyorsunuz..."
+  },
   "face_verification": {
     "title_default": "Yüz Doğrulama",
     "title_update": "Yüz Fotoğrafları Güncelle",
@@ -199,8 +234,24 @@
     "select_photo": "Fotoğraf Seç",
     "from_gallery": "Galeriden Seç",
     "from_camera": "Kamera",
+    "label_firstname": "Ad",
+    "label_lastname": "Soyad",
+    "label_username": "Kullanıcı Adı",
+    "label_email": "E-posta",
+    "label_phone": "Telefon",
+    "label_birthday": "Doğum Tarihi",
+    "label_gender": "Cinsiyet",
     "gender_male": "Erkek",
-    "gender_female": "Kadın"
+    "gender_female": "Kadın",
+    "select_date": "Tarih Seçin",
+    "cancel": "İptal",
+    "ok": "Tamam",
+    "photo_selected": "Fotoğraf seçildi",
+    "photo_error": "Fotoğraf seçilirken hata: {{error}}",
+    "session_error": "Oturum bilgisi bulunamadı.",
+    "update_error": "Güncelleme başarısız",
+    "update_failed": "Bir hata oluştu: {{error}}",
+    "edit_photo_title": "Fotoğrafı Düzenle"
   },
   "change_password": {
     "title": "Şifre Değiştir",

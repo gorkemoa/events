@@ -13,6 +13,8 @@ class ApiConstants {
   static const String register = '${baseUrl}service/auth/register';
   static const String checkCode = '${baseUrl}service/auth/code/checkCode';
   static const String resendCode = '${baseUrl}service/auth/code/authSendCode';
+  static const String forgotPassword = '${baseUrl}service/auth/forgotPassword';
+  static const String forgotPasswordUpdate = '${baseUrl}service/auth/forgotPassword/updatePass';
   
   /// User endpoints
   static String getUserById(int userId) => '${baseUrl}service/user/id/$userId';

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/services/user_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
@@ -167,7 +168,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(response.errorMessage ?? 'Güncelleme başarısız'),
+              content: Text(response.errorMessage ?? context.tr('edit_profile.update_error')),
               backgroundColor: Colors.red,
             ),
           );
@@ -177,7 +178,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Bir hata oluştu: $e'),
+            content: Text(context.tr('edit_profile.update_failed').replaceAll('{{error}}', e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -207,11 +208,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
           compressQuality: 85,
           uiSettings: [
             AndroidUiSettings(
-              toolbarTitle: 'Fotoğrafı Düzenle',
+              toolbarTitle: context.tr('edit_profile.edit_photo_title'),
               toolbarColor: AppTheme.primary,
               toolbarWidgetColor: Colors.white,
             ),
-            IOSUiSettings(title: 'Fotoğrafı Düzenle'),
+            IOSUiSettings(title: context.tr('edit_profile.edit_photo_title')),
           ],
         );
 
@@ -229,8 +230,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Fotoğraf seçildi'),
+              SnackBar(
+                content: Text(context.tr('edit_profile.photo_selected')),
                 backgroundColor: Colors.green,
                 duration: Duration(seconds: 2),
               ),
@@ -242,7 +243,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fotoğraf seçilirken hata: $e'),
+            content: Text(context.tr('edit_profile.photo_error').replaceAll('{{error}}', e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -408,28 +409,25 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
                     const SizedBox(height: AppTheme.spacing2XL),
 
-                    _buildTextField('Ad', _firstNameController),
+                    _buildTextField(context.tr('edit_profile.label_firstname'), _firstNameController),
                     const SizedBox(height: AppTheme.spacingL),
-                    _buildTextField('Soyad', _lastNameController),
+                    _buildTextField(context.tr('edit_profile.label_lastname'), _lastNameController),
                     const SizedBox(height: AppTheme.spacingL),
-                    _buildTextField('Kullanıcı Adı', _userNameController),
+                    _buildTextField(context.tr('edit_profile.label_username'), _userNameController),
                     const SizedBox(height: AppTheme.spacingL),
                     _buildTextField(
-                      'E-posta',
+                      context.tr('edit_profile.label_email'),
                       _emailController,
                       keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: AppTheme.spacingL),
                     _buildTextField(
-                      'Telefon',
+                      context.tr('edit_profile.label_phone'),
                       _phoneController,
                       keyboardType: TextInputType.phone,
                     ),
                     const SizedBox(height: AppTheme.spacingL),
-                    _buildTextField(
-                      'Doğum Tarihi (GG.AA.YYYY)',
-                      _birthdayController,
-                    ),
+                    _buildDatePickerField(),
                     const SizedBox(height: AppTheme.spacingL),
 
                     // Gender
@@ -437,7 +435,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Cinsiyet',
+                          context.tr('edit_profile.label_gender'),
                           style: AppTheme.labelMedium.copyWith(
                             color: AppTheme.textSecondary,
                           ),
@@ -476,8 +474,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                         size: 20,
                                       ),
                                       const SizedBox(width: 6),
-                                      const Text(
-                                        'Erkek',
+                                      Text(
+                                        context.tr('edit_profile.gender_male'),
                                         style: AppTheme.bodyMedium,
                                       ),
                                     ],
@@ -504,8 +502,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                         size: 20,
                                       ),
                                       const SizedBox(width: 6),
-                                      const Text(
-                                        'Kadın',
+                                      Text(
+                                        context.tr('edit_profile.gender_female'),
                                         style: AppTheme.bodyMedium,
                                       ),
                                     ],
@@ -574,6 +572,165 @@ class _EditProfilePageState extends State<EditProfilePage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildDatePickerField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.tr('edit_profile.label_birthday'),
+          style: AppTheme.labelSmall.copyWith(color: AppTheme.textSecondary),
+        ),
+        const SizedBox(height: AppTheme.spacingS),
+        GestureDetector(
+          onTap: () => _showIOSDatePicker(),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingL,
+              vertical: AppTheme.spacingM,
+            ),
+            decoration: BoxDecoration(
+              color: AppTheme.backgroundColor,
+              borderRadius: BorderRadius.circular(AppTheme.inputBorderRadius),
+              border: Border.all(
+                color: AppTheme.dividerColor,
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _birthdayController.text.isEmpty
+                      ? context.tr('edit_profile.select_date')
+                      : _birthdayController.text,
+                  style: AppTheme.bodyMedium.copyWith(
+                    color: _birthdayController.text.isEmpty
+                        ? AppTheme.textHint
+                        : AppTheme.textPrimary,
+                  ),
+                ),
+                const Icon(
+                  Icons.calendar_today,
+                  color: AppTheme.primary,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showIOSDatePicker() {
+    DateTime initialDate = DateTime(2000, 1, 1);
+    
+    // Parse existing date if available
+    if (_birthdayController.text.isNotEmpty) {
+      try {
+        final parts = _birthdayController.text.split('.');
+        if (parts.length == 3) {
+          final day = int.parse(parts[0]);
+          final month = int.parse(parts[1]);
+          final year = int.parse(parts[2]);
+          initialDate = DateTime(year, month, day);
+        }
+      } catch (e) {
+        // Use default if parsing fails
+      }
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        DateTime selectedDate = initialDate;
+        
+        return Container(
+          height: 350,
+          decoration: const BoxDecoration(
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(20),
+            ),
+          ),
+          child: Column(
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacingL,
+                  vertical: AppTheme.spacingM,
+                ),
+                decoration: BoxDecoration(
+                  color: AppTheme.backgroundColor,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: AppTheme.dividerColor,
+                      width: 0.5,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        context.tr('edit_profile.cancel'),
+                        style: AppTheme.bodyMedium.copyWith(
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      context.tr('edit_profile.label_birthday'),
+                      style: AppTheme.labelLarge.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _birthdayController.text =
+                              '${selectedDate.day.toString().padLeft(2, '0')}.${selectedDate.month.toString().padLeft(2, '0')}.${selectedDate.year}';
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        context.tr('edit_profile.ok'),
+                        style: AppTheme.bodyMedium.copyWith(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // iOS Style Date Picker
+              Expanded(
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.date,
+                  initialDateTime: initialDate,
+                  minimumDate: DateTime(1900, 1, 1),
+                  maximumDate: DateTime.now(),
+                  onDateTimeChanged: (DateTime newDate) {
+                    selectedDate = newDate;
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

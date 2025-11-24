@@ -210,4 +210,150 @@ class AuthService {
       );
     }
   }
+
+  /// Request forgot password - sends verification code to email
+  /// 
+  /// Returns [ForgotPasswordResponse] with codeToken
+  /// If successful, codeToken should be stored for verification
+  Future<ForgotPasswordResponse> forgotPassword({
+    required String userEmail,
+  }) async {
+    try {
+      final request = ForgotPasswordRequest(
+        userEmail: userEmail,
+      );
+
+      developer.log('🔑 Forgot Password Request', name: 'AuthService');
+      developer.log('URL: ${ApiConstants.forgotPassword}', name: 'AuthService');
+      developer.log('Body: ${jsonEncode(request.toJson())}', name: 'AuthService');
+
+      final response = await ApiHelper.post(
+        ApiConstants.forgotPassword,
+        request.toJson(),
+      );
+
+      developer.log('📥 Response Status: ${response.statusCode}', name: 'AuthService');
+      developer.log('📥 Response Body: ${response.body}', name: 'AuthService');
+
+      final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
+      final forgotPasswordResponse = ForgotPasswordResponse.fromJson(jsonResponse);
+      
+      developer.log('✅ Parsed Response - Success: ${forgotPasswordResponse.success}', name: 'AuthService');
+      if (!forgotPasswordResponse.success) {
+        developer.log('❌ Error Message: ${forgotPasswordResponse.errorMessage}', name: 'AuthService');
+      } else {
+        developer.log('✅ Message: ${forgotPasswordResponse.message}', name: 'AuthService');
+        developer.log('✅ CodeToken: ${forgotPasswordResponse.data?.codeToken}', name: 'AuthService');
+      }
+      
+      return forgotPasswordResponse;
+    } catch (e, stackTrace) {
+      developer.log('❌ Exception occurred', name: 'AuthService', error: e, stackTrace: stackTrace);
+      return ForgotPasswordResponse(
+        error: true,
+        success: false,
+        errorMessage: 'Bir hata oluştu: $e',
+        statusCode: 'ERROR',
+      );
+    }
+  }
+
+  /// Verify code for forgot password
+  /// 
+  /// Returns [ForgotPasswordCodeResponse] with passToken
+  /// If successful, passToken should be stored for password update
+  Future<ForgotPasswordCodeResponse> verifyForgotPasswordCode({
+    required String code,
+    required String codeToken,
+  }) async {
+    try {
+      final request = ForgotPasswordCodeRequest(
+        code: code,
+        codeToken: codeToken,
+      );
+
+      developer.log('✉️ Forgot Password Code Verification Request', name: 'AuthService');
+      developer.log('URL: ${ApiConstants.checkCode}', name: 'AuthService');
+      developer.log('Body: ${jsonEncode(request.toJson())}', name: 'AuthService');
+
+      final response = await ApiHelper.post(
+        ApiConstants.checkCode,
+        request.toJson(),
+      );
+
+      developer.log('📥 Response Status: ${response.statusCode}', name: 'AuthService');
+      developer.log('📥 Response Body: ${response.body}', name: 'AuthService');
+
+      final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
+      final verificationResponse = ForgotPasswordCodeResponse.fromJson(jsonResponse);
+      
+      developer.log('✅ Parsed Response - Success: ${verificationResponse.success}', name: 'AuthService');
+      if (!verificationResponse.success) {
+        developer.log('❌ Error Message: ${verificationResponse.errorMessage}', name: 'AuthService');
+      } else {
+        developer.log('✅ Success Message: ${verificationResponse.successMessage}', name: 'AuthService');
+        developer.log('✅ PassToken: ${verificationResponse.data?.passToken}', name: 'AuthService');
+      }
+      
+      return verificationResponse;
+    } catch (e, stackTrace) {
+      developer.log('❌ Exception occurred', name: 'AuthService', error: e, stackTrace: stackTrace);
+      return ForgotPasswordCodeResponse(
+        error: true,
+        success: false,
+        errorMessage: 'Bir hata oluştu: $e',
+        statusCode: 'ERROR',
+      );
+    }
+  }
+
+  /// Update password with passToken from code verification
+  /// 
+  /// Returns [UpdatePasswordResponse] with success status
+  /// If successful, user can login with new password
+  Future<UpdatePasswordResponse> updateForgotPassword({
+    required String passToken,
+    required String password,
+    required String passwordAgain,
+  }) async {
+    try {
+      final request = UpdatePasswordRequest(
+        passToken: passToken,
+        password: password,
+        passwordAgain: passwordAgain,
+      );
+
+      developer.log('🔒 Update Forgot Password Request', name: 'AuthService');
+      developer.log('URL: ${ApiConstants.forgotPasswordUpdate}', name: 'AuthService');
+      developer.log('Body: ${jsonEncode(request.toJson())}', name: 'AuthService');
+
+      final response = await ApiHelper.post(
+        ApiConstants.forgotPasswordUpdate,
+        request.toJson(),
+      );
+
+      developer.log('📥 Response Status: ${response.statusCode}', name: 'AuthService');
+      developer.log('📥 Response Body: ${response.body}', name: 'AuthService');
+
+      final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
+      final updatePasswordResponse = UpdatePasswordResponse.fromJson(jsonResponse);
+      
+      developer.log('✅ Parsed Response - Success: ${updatePasswordResponse.success}', name: 'AuthService');
+      if (!updatePasswordResponse.success) {
+        developer.log('❌ Error Message: ${updatePasswordResponse.errorMessage}', name: 'AuthService');
+      } else {
+        developer.log('✅ Message: ${updatePasswordResponse.message}', name: 'AuthService');
+      }
+      
+      return updatePasswordResponse;
+    } catch (e, stackTrace) {
+      developer.log('❌ Exception occurred', name: 'AuthService', error: e, stackTrace: stackTrace);
+      return UpdatePasswordResponse(
+        error: true,
+        success: false,
+        errorMessage: 'Bir hata oluştu: $e',
+        statusCode: 'ERROR',
+      );
+    }
+  }
 }

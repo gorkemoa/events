@@ -10,6 +10,9 @@ import 'package:pixlomi/views/auth/signup_page.dart';
 import 'package:pixlomi/views/auth/login_page.dart';
 import 'package:pixlomi/views/auth/email_login_page.dart';
 import 'package:pixlomi/views/auth/code_verification_page.dart';
+import 'package:pixlomi/views/auth/forgot_password_page.dart';
+import 'package:pixlomi/views/auth/forgot_password_verify_page.dart';
+import 'package:pixlomi/views/auth/reset_password_page.dart';
 import 'package:pixlomi/views/auth/face_verification_page.dart';
 import 'package:pixlomi/views/auth/onboarding_page.dart';
 import 'package:pixlomi/views/main_navigation.dart';
@@ -175,6 +178,9 @@ class MyAppState extends State<MyApp> {
         '/login': (context) => const LoginPage(),
         '/emailLogin': (context) => const EmailLoginPage(),
         '/codeVerification': (context) => const CodeVerificationPage(),
+        '/forgotPassword': (context) => const ForgotPasswordPage(),
+        '/forgotPasswordVerify': (context) => const ForgotPasswordVerifyPage(),
+        '/resetPassword': (context) => const ResetPasswordPage(),
         '/faceVerification': (context) => const FaceVerificationPage(),
         '/facePhotos': (context) => const FacePhotosPage(),
         '/home': (context) => const MainNavigation(),

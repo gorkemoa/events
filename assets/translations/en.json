@@ -69,6 +69,41 @@
     "error_verification_failed": "Code verification failed",
     "success": "Code verified!"
   },
+  "forgot_password": {
+    "title": "Forgot Password",
+    "subtitle": "Enter your email address, we'll send you a password reset code",
+    "label_email": "Email",
+    "placeholder_email": "Please enter your email address",
+    "button_send_code": "Send Code",
+    "error_email_invalid": "Please enter a valid email address",
+    "success": "Verification code sent to your email",
+    "error": "Failed to send code",
+    "back_to_login": "Back to login"
+  },
+  "forgot_password_verify": {
+    "title": "Verify Code",
+    "subtitle": "Enter the 6-digit verification code sent to your email",
+    "button_verify": "Verify",
+    "code_not_received": "Didn't receive the code?",
+    "resend_code": "Resend",
+    "error_invalid_code": "Please enter the 6-digit code",
+    "error_verification_failed": "Code verification failed",
+    "success": "Code verified successfully!"
+  },
+  "reset_password": {
+    "title": "Create New Password",
+    "subtitle": "Set a new password for your account",
+    "label_password": "New Password",
+    "label_password_confirm": "Confirm New Password",
+    "placeholder_password": "Please enter your new password",
+    "placeholder_password_confirm": "Please re-enter your password",
+    "error_password_short": "Password must be at least 6 characters",
+    "error_password_mismatch": "Passwords do not match",
+    "button_reset": "Update Password",
+    "success": "Password updated successfully",
+    "error": "Failed to update password",
+    "redirecting": "Redirecting to login page..."
+  },
   "face_verification": {
     "title_default": "Face Verification",
     "title_update": "Update Face Photos",
@@ -199,8 +234,24 @@
     "select_photo": "Select Photo",
     "from_gallery": "Choose from Gallery",
     "from_camera": "Camera",
+    "label_firstname": "First Name",
+    "label_lastname": "Last Name",
+    "label_username": "Username",
+    "label_email": "Email",
+    "label_phone": "Phone",
+    "label_birthday": "Birthday",
+    "label_gender": "Gender",
     "gender_male": "Male",
-    "gender_female": "Female"
+    "gender_female": "Female",
+    "select_date": "Select Date",
+    "cancel": "Cancel",
+    "ok": "OK",
+    "photo_selected": "Photo selected",
+    "photo_error": "Error selecting photo: {{error}}",
+    "session_error": "Session information not found.",
+    "update_error": "Update failed",
+    "update_failed": "An error occurred: {{error}}",
+    "edit_photo_title": "Edit Photo"
   },
   "change_password": {
     "title": "Change Password",

@@ -8,6 +8,7 @@ class StorageHelper {
   static const String _userFullnameKey = 'user_fullname';
   static const String _onboardingShownKey = 'onboarding_shown';
   static const String _codeTokenKey = 'code_token';
+  static const String _passTokenKey = 'pass_token';
   static const String _pendingDeepLinkEventCodeKey = 'pending_deep_link_event_code';
 
   /// Save user session data
@@ -132,6 +133,27 @@ class StorageHelper {
     try {
       final prefs = await SharedPreferences.getInstance();
       return prefs.getString(_codeTokenKey);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Save pass token from forgot password code verification
+  static Future<bool> setPassToken(String passToken) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return await prefs.setString(_passTokenKey, passToken);
+    } catch (e) {
+      print('❌ Error saving pass token: $e');
+      return false;
+    }
+  }
+
+  /// Get pass token
+  static Future<String?> getPassToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_passTokenKey);
     } catch (e) {
       return null;
     }

@@ -261,7 +261,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
                     onTap: () {
-                      // Handle forgot password
+                      Navigator.pushNamed(context, '/forgotPassword');
                     },
                     child: Text(
                       context.tr('login.forgot_password'),

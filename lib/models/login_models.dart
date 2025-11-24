@@ -284,3 +284,186 @@ class ResendCodeData {
     );
   }
 }
+
+/// Request model for forgot password
+class ForgotPasswordRequest {
+  final String userEmail;
+
+  ForgotPasswordRequest({
+    required this.userEmail,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userEmail': userEmail,
+    };
+  }
+}
+
+/// Response model for forgot password
+class ForgotPasswordResponse {
+  final bool error;
+  final bool success;
+  final String? message;
+  final String? errorMessage;
+  final ForgotPasswordData? data;
+  final String statusCode;
+
+  ForgotPasswordResponse({
+    required this.error,
+    required this.success,
+    this.message,
+    this.errorMessage,
+    this.data,
+    required this.statusCode,
+  });
+
+  factory ForgotPasswordResponse.fromJson(Map<String, dynamic> json) {
+    return ForgotPasswordResponse(
+      error: json['error'] ?? false,
+      success: json['success'] ?? false,
+      message: json['message'],
+      errorMessage: json['error_message'],
+      data: json['data'] != null ? ForgotPasswordData.fromJson(json['data']) : null,
+      statusCode: json['200'] ?? json['417'] ?? '',
+    );
+  }
+
+  bool get isSuccess => success && statusCode == 'OK';
+}
+
+/// Forgot password data model
+class ForgotPasswordData {
+  final int userID;
+  final String userEmail;
+  final String codeToken;
+
+  ForgotPasswordData({
+    required this.userID,
+    required this.userEmail,
+    required this.codeToken,
+  });
+
+  factory ForgotPasswordData.fromJson(Map<String, dynamic> json) {
+    return ForgotPasswordData(
+      userID: json['userID'] ?? 0,
+      userEmail: json['userEmail'] ?? '',
+      codeToken: json['codeToken'] ?? '',
+    );
+  }
+}
+
+/// Request model for forgot password code verification (uses same checkCode endpoint)
+class ForgotPasswordCodeRequest {
+  final String code;
+  final String codeToken;
+
+  ForgotPasswordCodeRequest({
+    required this.code,
+    required this.codeToken,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'codeToken': codeToken,
+    };
+  }
+}
+
+/// Response model for forgot password code verification
+class ForgotPasswordCodeResponse {
+  final bool error;
+  final bool success;
+  final String? successMessage;
+  final String? errorMessage;
+  final ForgotPasswordCodeData? data;
+  final String statusCode;
+
+  ForgotPasswordCodeResponse({
+    required this.error,
+    required this.success,
+    this.successMessage,
+    this.errorMessage,
+    this.data,
+    required this.statusCode,
+  });
+
+  factory ForgotPasswordCodeResponse.fromJson(Map<String, dynamic> json) {
+    return ForgotPasswordCodeResponse(
+      error: json['error'] ?? false,
+      success: json['success'] ?? false,
+      successMessage: json['success_message'],
+      errorMessage: json['error_message'],
+      data: json['data'] != null ? ForgotPasswordCodeData.fromJson(json['data']) : null,
+      statusCode: json['200'] ?? json['417'] ?? '',
+    );
+  }
+
+  bool get isSuccess => success && statusCode == 'OK';
+}
+
+/// Forgot password code data model
+class ForgotPasswordCodeData {
+  final String passToken;
+
+  ForgotPasswordCodeData({
+    required this.passToken,
+  });
+
+  factory ForgotPasswordCodeData.fromJson(Map<String, dynamic> json) {
+    return ForgotPasswordCodeData(
+      passToken: json['passToken'] ?? '',
+    );
+  }
+}
+
+/// Request model for updating password
+class UpdatePasswordRequest {
+  final String passToken;
+  final String password;
+  final String passwordAgain;
+
+  UpdatePasswordRequest({
+    required this.passToken,
+    required this.password,
+    required this.passwordAgain,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'passToken': passToken,
+      'password': password,
+      'passwordAgain': passwordAgain,
+    };
+  }
+}
+
+/// Response model for updating password
+class UpdatePasswordResponse {
+  final bool error;
+  final bool success;
+  final String? message;
+  final String? errorMessage;
+  final String statusCode;
+
+  UpdatePasswordResponse({
+    required this.error,
+    required this.success,
+    this.message,
+    this.errorMessage,
+    required this.statusCode,
+  });
+
+  factory UpdatePasswordResponse.fromJson(Map<String, dynamic> json) {
+    return UpdatePasswordResponse(
+      error: json['error'] ?? false,
+      success: json['success'] ?? false,
+      message: json['message'],
+      errorMessage: json['error_message'],
+      statusCode: json['200'] ?? json['417'] ?? '',
+    );
+  }
+
+  bool get isSuccess => success && statusCode == 'OK';
+}
