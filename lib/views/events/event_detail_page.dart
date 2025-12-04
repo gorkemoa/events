@@ -52,12 +52,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        // Geri tuşuna basıldığında home'a yönlendir
-        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
-        return false; // Pop işlemini engelle, kendi navigation'ımızı yaptık
-      },
+    return PopScope(
+      canPop: true,
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -66,8 +62,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
             onPressed: () {
-              // Geri butonuna basıldığında home'a yönlendir
-              Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+              // Geri butonuna basıldığında etkinlikler sayfasına dön
+              Navigator.of(context).pop();
             },
           ),
           title: Text(

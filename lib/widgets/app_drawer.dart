@@ -104,7 +104,6 @@ class _AppDrawerState extends State<AppDrawer> {
             // Footer - Company Info
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-              decoration: BoxDecoration(color: Colors.grey[200]),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start, // ilk satır solda
                 children: [
@@ -116,28 +115,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     style: const TextStyle(fontSize: 9.7, color: Colors.grey),
                   ),
 
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Center(
-                        child: Image.asset(
-                          'assets/logo/office701.png',
-                          height: 16,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                       const SizedBox(width: 10),
-
-                      Center(
-                        child: Image.asset(
-                          'assets/logo/dwork-logo2.png',
-                          height: 16,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ],
-                  ),
+                 
                 ],
               ),
             ),

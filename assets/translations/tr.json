@@ -305,7 +305,7 @@
     "menu_support": "Destek",
     "menu_contact": "İletişim",
     "menu_about": "Hakkında",
-    "footer": "© Office701 Bilgi Teknolojileri | Tüm Hakları Saklıdır. (v{{version}})",
+    "footer": "Tüm Hakları Saklıdır. (v{{version}})",
     "logout_title": "Çıkış Yap",
     "logout_confirm": "Çıkış yapmak istediğinizden emin misiniz?",
     "button_logout": "Çıkış Yap",
