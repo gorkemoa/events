@@ -13,6 +13,8 @@ class Event {
   final int imageCount;
   final bool isPrivate;
   final bool isJoined;
+  final bool hasScanRequest;
+  final int scanedStatus; // 0: tarama yok, 1: tarama tamamlandı, 2: taranıyor
 
   Event({
     required this.eventID,
@@ -28,6 +30,8 @@ class Event {
     required this.imageCount,
     required this.isPrivate,
     required this.isJoined,
+    required this.hasScanRequest,
+    required this.scanedStatus,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
@@ -45,6 +49,8 @@ class Event {
       imageCount: json['imageCount'] as int,
       isPrivate: json['isPrivate'] as bool,
       isJoined: json['isJoined'] as bool? ?? false,
+      hasScanRequest: json['hasScanRequest'] as bool? ?? false,
+      scanedStatus: json['scanedStatus'] as int? ?? 0,
     );
   }
 
@@ -63,6 +69,8 @@ class Event {
       'imageCount': imageCount,
       'isPrivate': isPrivate,
       'isJoined': isJoined,
+      'hasScanRequest': hasScanRequest,
+      'scanedStatus': scanedStatus,
     };
   }
 }
@@ -93,20 +101,14 @@ class EventsData {
   final List<Event> events;
   final String message;
 
-  EventsData({
-    required this.events,
-    required this.message,
-  });
+  EventsData({required this.events, required this.message});
 
   factory EventsData.fromJson(Map<String, dynamic> json) {
     final eventsList = (json['events'] as List)
         .map((e) => Event.fromJson(e as Map<String, dynamic>))
         .toList();
 
-    return EventsData(
-      events: eventsList,
-      message: json['message'] as String,
-    );
+    return EventsData(events: eventsList, message: json['message'] as String);
   }
 }
 
@@ -249,10 +251,7 @@ class EventDetailData {
   final EventDetail event;
   final String message;
 
-  EventDetailData({
-    required this.event,
-    required this.message,
-  });
+  EventDetailData({required this.event, required this.message});
 
   factory EventDetailData.fromJson(Map<String, dynamic> json) {
     return EventDetailData(
@@ -336,10 +335,7 @@ class GalleryPhotosData {
   final List<GalleryPhoto> photos;
   final String message;
 
-  GalleryPhotosData({
-    required this.photos,
-    required this.message,
-  });
+  GalleryPhotosData({required this.photos, required this.message});
 
   factory GalleryPhotosData.fromJson(Map<String, dynamic> json) {
     final photosList = (json['photos'] as List? ?? [])
@@ -349,6 +345,30 @@ class GalleryPhotosData {
     return GalleryPhotosData(
       photos: photosList,
       message: json['message'] as String,
+    );
+  }
+}
+
+/// Scan Request Response model
+class ScanRequestResponse {
+  final bool error;
+  final bool success;
+  final String message;
+  final String statusCode;
+
+  ScanRequestResponse({
+    required this.error,
+    required this.success,
+    required this.message,
+    required this.statusCode,
+  });
+
+  factory ScanRequestResponse.fromJson(Map<String, dynamic> json) {
+    return ScanRequestResponse(
+      error: json['error'] as bool,
+      success: json['success'] as bool,
+      message: json['message'] as String? ?? '',
+      statusCode: json['200'] as String? ?? 'OK',
     );
   }
 }

@@ -5,7 +5,9 @@ import 'package:pixlomi/theme/app_theme.dart';
 import 'package:pixlomi/widgets/home_header.dart';
 import 'package:pixlomi/services/user_service.dart';
 import 'package:pixlomi/services/storage_helper.dart';
+import 'package:pixlomi/services/general_service.dart';
 import 'package:pixlomi/models/user_models.dart';
+import 'package:pixlomi/models/banner_models.dart' as banner_models;
 import 'package:pixlomi/views/qr/qr_scanner_page.dart';
 import 'package:pixlomi/services/event_service.dart';
 import 'package:pixlomi/models/event_models.dart';
@@ -26,6 +28,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _userService = UserService();
+  final _generalService = GeneralService();
   late PageController _pageController;
   Timer? _autoScrollTimer;
   User? _currentUser;
@@ -38,8 +41,10 @@ class _HomePageState extends State<HomePage> {
   bool _isSearchActive = false;
   List<Event> _attendedEvents = [];
   List<Event> _searchResults = [];
+  List<banner_models.Banner> _banners = [];
   bool _isLoadingEvents = false;
   bool _isLoadingSearch = false;
+  bool _isLoadingBanners = false;
 
   @override
   void initState() {
@@ -52,6 +57,7 @@ class _HomePageState extends State<HomePage> {
     _startAutoScroll();
     _loadUserData();
     _loadAttendedEvents();
+    _loadBanners();
 
     // TextField focus listener
     _eventCodeFocusNode.addListener(() {
@@ -74,7 +80,8 @@ class _HomePageState extends State<HomePage> {
     // Search focus listener
     _searchFocusNode.addListener(() {
       setState(() {
-        _isSearchActive = _searchFocusNode.hasFocus || _searchController.text.isNotEmpty;
+        _isSearchActive =
+            _searchFocusNode.hasFocus || _searchController.text.isNotEmpty;
       });
     });
 
@@ -85,9 +92,10 @@ class _HomePageState extends State<HomePage> {
   void _onSearchChanged() {
     // Debouncing: 500ms bekle, kullanıcı yazmayı bitirsin
     if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
-    
+
     setState(() {
-      _isSearchActive = _searchFocusNode.hasFocus || _searchController.text.isNotEmpty;
+      _isSearchActive =
+          _searchFocusNode.hasFocus || _searchController.text.isNotEmpty;
     });
 
     if (_searchController.text.isEmpty) {
@@ -208,6 +216,32 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _loadBanners() async {
+    try {
+      setState(() {
+        _isLoadingBanners = true;
+      });
+
+      final response = await _generalService.getAllBanners();
+
+      if (response.success && response.data != null) {
+        setState(() {
+          _banners = response.data!.banners;
+          _isLoadingBanners = false;
+        });
+      } else {
+        setState(() {
+          _isLoadingBanners = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading banners: $e');
+      setState(() {
+        _isLoadingBanners = false;
+      });
+    }
+  }
+
   void _startAutoScroll() {
     _autoScrollTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (_pageController.hasClients) {
@@ -237,7 +271,9 @@ class _HomePageState extends State<HomePage> {
             content: Text('$eventCode aranıyor...'),
             backgroundColor: AppTheme.primary,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
             duration: const Duration(seconds: 1),
           ),
         );
@@ -270,9 +306,8 @@ class _HomePageState extends State<HomePage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => EventDetailPage(
-                eventID: response.data.event.eventID,
-              ),
+              builder: (context) =>
+                  EventDetailPage(eventID: response.data.event.eventID),
             ),
           );
         }
@@ -281,10 +316,14 @@ class _HomePageState extends State<HomePage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Bu etkinliğe dahil değilsiniz veya etkinlik bulunamadı'),
+              content: const Text(
+                'Bu etkinliğe dahil değilsiniz veya etkinlik bulunamadı',
+              ),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
           );
         }
@@ -297,7 +336,9 @@ class _HomePageState extends State<HomePage> {
             content: Text('Etkinlik aranırken hata oluştu: $e'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         );
       }
@@ -376,10 +417,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _refreshData() async {
-    await Future.wait([
-      _loadUserData(),
-      _loadAttendedEvents(),
-    ]);
+    await Future.wait([_loadUserData(), _loadAttendedEvents(), _loadBanners()]);
   }
 
   @override
@@ -399,7 +437,10 @@ class _HomePageState extends State<HomePage> {
                 HomeHeader(
                   locationText: widget.locationText,
                   subtitle: _currentUser != null
-                      ? context.tr('home.welcome', args: {'name': _currentUser!.userFirstname})
+                      ? context.tr(
+                          'home.welcome',
+                          args: {'name': _currentUser!.userFirstname},
+                        )
                       : null,
                   onMenuPressed: widget.onMenuPressed,
                   onNotificationPressed: () {
@@ -419,26 +460,26 @@ class _HomePageState extends State<HomePage> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: _isSearchActive 
-                          ? AppTheme.primary.withOpacity(0.5)
-                          : Colors.grey.shade200,
+                        color: _isSearchActive
+                            ? AppTheme.primary.withOpacity(0.5)
+                            : Colors.grey.shade200,
                         width: _isSearchActive ? 2 : 1,
                       ),
                       boxShadow: _isSearchActive
-                        ? [
-                            BoxShadow(
-                              color: AppTheme.primary.withOpacity(0.1),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ]
-                        : [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                          ? [
+                              BoxShadow(
+                                color: AppTheme.primary.withOpacity(0.1),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ]
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                     ),
                     child: TextField(
                       controller: _searchController,
@@ -459,25 +500,25 @@ class _HomePageState extends State<HomePage> {
                           duration: const Duration(milliseconds: 300),
                           child: Icon(
                             Icons.search_rounded,
-                            color: _isSearchActive 
-                              ? AppTheme.primary 
-                              : Colors.grey[400],
+                            color: _isSearchActive
+                                ? AppTheme.primary
+                                : Colors.grey[400],
                             size: 24,
                           ),
                         ),
                         suffixIcon: _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: Icon(
-                                Icons.close_rounded,
-                                color: Colors.grey[400],
-                                size: 20,
-                              ),
-                              onPressed: () {
-                                _searchController.clear();
-                                _searchFocusNode.unfocus();
-                              },
-                            )
-                          : _isLoadingSearch
+                            ? IconButton(
+                                icon: Icon(
+                                  Icons.close_rounded,
+                                  color: Colors.grey[400],
+                                  size: 20,
+                                ),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  _searchFocusNode.unfocus();
+                                },
+                              )
+                            : _isLoadingSearch
                             ? Padding(
                                 padding: const EdgeInsets.all(12),
                                 child: SizedBox(
@@ -519,13 +560,13 @@ class _HomePageState extends State<HomePage> {
                     ),
                     constraints: const BoxConstraints(maxHeight: 300),
                     child: _isLoadingSearch
-                      ? const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(32),
-                            child: CircularProgressIndicator(),
-                          ),
-                        )
-                      : _searchResults.isEmpty
+                        ? const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(32),
+                              child: CircularProgressIndicator(),
+                            ),
+                          )
+                        : _searchResults.isEmpty
                         ? Padding(
                             padding: const EdgeInsets.all(32),
                             child: Column(
@@ -551,10 +592,8 @@ class _HomePageState extends State<HomePage> {
                             shrinkWrap: true,
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             itemCount: _searchResults.length,
-                            separatorBuilder: (context, index) => Divider(
-                              height: 1,
-                              color: Colors.grey.shade100,
-                            ),
+                            separatorBuilder: (context, index) =>
+                                Divider(height: 1, color: Colors.grey.shade100),
                             itemBuilder: (context, index) {
                               final event = _searchResults[index];
                               return ListTile(
@@ -570,23 +609,26 @@ class _HomePageState extends State<HomePage> {
                                     color: AppTheme.primary.withOpacity(0.1),
                                   ),
                                   child: event.eventImage.isNotEmpty
-                                    ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Image.network(
-                                          event.eventImage,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return Icon(
-                                              Icons.event_rounded,
-                                              color: AppTheme.primary,
-                                            );
-                                          },
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          child: Image.network(
+                                            event.eventImage,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                                  return Icon(
+                                                    Icons.event_rounded,
+                                                    color: AppTheme.primary,
+                                                  );
+                                                },
+                                          ),
+                                        )
+                                      : Icon(
+                                          Icons.event_rounded,
+                                          color: AppTheme.primary,
                                         ),
-                                      )
-                                    : Icon(
-                                        Icons.event_rounded,
-                                        color: AppTheme.primary,
-                                      ),
                                 ),
                                 title: Text(
                                   event.eventTitle,
@@ -627,7 +669,7 @@ class _HomePageState extends State<HomePage> {
                   ),
 
                 const SizedBox(height: 20),
-              
+
                 // View pictures with QR Code section
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -801,49 +843,76 @@ class _HomePageState extends State<HomePage> {
 
                 const SizedBox(height: 20),
 
-                // Services Carousel
-                SizedBox(
-                  height: 150,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemBuilder: (context, index) {
-                      // Sonsuz döngü için modulo kullan
-                      final serviceIndex = index % 4;
-                      final services = [
-                        _ServiceCard(
-                          title: 'Yıldönümü\nFotoğrafçılığı',
-                          icon: Icons.cake,
-                          backgroundColor: const Color.fromARGB(
-                            255,
-                            241,
-                            245,
-                            201,
-                          ),
-                          imagePath: 'assets/slider/foto3.jpg',
+                // Services Carousel - Dynamic Banners
+                _isLoadingBanners
+                    ? const SizedBox(
+                        height: 150,
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    : _banners.isEmpty
+                    ? const SizedBox.shrink()
+                    : SizedBox(
+                        height: 150,
+                        child: PageView.builder(
+                          controller: _pageController,
+                          itemCount: _banners.length * 1000,
+                          itemBuilder: (context, index) {
+                            final bannerIndex = index % _banners.length;
+                            final banner = _banners[bannerIndex];
+                            return Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.network(
+                                  banner.postThumbImage,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                        if (loadingProgress == null)
+                                          return child;
+                                        return Container(
+                                          color: Colors.grey[200],
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              value:
+                                                  loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                  : null,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: Colors.grey[200],
+                                      child: Icon(
+                                        Icons.image_not_supported,
+                                        size: 48,
+                                        color: Colors.grey[400],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                        _ServiceCard(
-                          title: 'Doğum Günü\nFotoğrafçılığı',
-                          icon: Icons.celebration,
-                          backgroundColor: const Color(0xFFE3F2FD),
-                          imagePath: 'assets/slider/foto4.png',
-                        ),
-                        _ServiceCard(
-                          title: 'Düğün\nFotoğrafçılığı',
-                          icon: Icons.favorite,
-                          backgroundColor: const Color(0xFFFCE4EC),
-                          imagePath: 'assets/slider/foto5.png',
-                        ),
-                        _ServiceCard(
-                          title: 'Nişan\nFotoğrafçılığı',
-                          icon: Icons.diamond,
-                          backgroundColor: const Color(0xFFF3E5F5),
-                          imagePath: 'assets/slider/foto13.jpeg',
-                        ),
-                      ];
-                      return services[serviceIndex];
-                    },
-                  ),
-                ),
+                      ),
 
                 const SizedBox(height: 20),
 
@@ -957,59 +1026,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// Service Card Widget - Modern design with icon
-class _ServiceCard extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Color backgroundColor;
-  final String? imagePath;
-
-  const _ServiceCard({
-    required this.title,
-    required this.icon,
-    required this.backgroundColor,
-    this.imagePath,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: imagePath != null ? Colors.transparent : backgroundColor,
-        borderRadius: BorderRadius.circular(16),
-        image: imagePath != null
-            ? DecorationImage(image: AssetImage(imagePath!), fit: BoxFit.cover)
-            : null,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: imagePath == null
-          ? Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 48, color: AppTheme.primary),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: AppTheme.labelSmall,
-                  ),
-                ),
-              ],
-            )
-          : const SizedBox(),
-    );
-  }
-}
-
 // Event Card Widget
 class _EventCard extends StatelessWidget {
   final Event event;
@@ -1101,10 +1117,7 @@ class _EventCard extends StatelessWidget {
                     duration: const Duration(milliseconds: 1200),
                     curve: Curves.easeOut,
                     builder: (context, opacity, child) {
-                      return Opacity(
-                        opacity: opacity,
-                        child: child,
-                      );
+                      return Opacity(opacity: opacity, child: child);
                     },
                     child: TweenAnimationBuilder<double>(
                       tween: Tween(begin: 1.15, end: 1.0),
@@ -1128,7 +1141,7 @@ class _EventCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              
+
               // Content
               Padding(
                 padding: const EdgeInsets.all(16),
@@ -1199,13 +1212,16 @@ class _EventCard extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               // Photo count badge - top right corner
               Positioned(
                 top: 12,
                 right: 12,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),

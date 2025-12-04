@@ -168,7 +168,18 @@
     "calendar_failed": "Etkinlik eklenemedi",
     "calendar_permission_denied": "Takvim izni reddedildi",
     "calendar_not_found": "Takvim bulunamadı",
-    "calendar_duplicate": "Bu etkinlik zaten takviminizde mevcut"
+    "calendar_duplicate": "Bu etkinlik zaten takviminizde mevcut",
+    "scan_request_title": "Tarama Talebi",
+    "scan_request_message": "Bu etkinlikteki fotoğraflarınızı bulmak için yüz tarama talebi göndermek istiyor musunuz?",
+    "scan_request_info": "Tarama talebi gönderildikten sonra fotoğraflarınız bulunduğunda bilgilendirileceksiniz.",
+    "scan_request_button": "Tarama Gönder",
+    "scan_in_progress_title": "Tarama Devam Ediyor",
+    "scan_in_progress_message": "Fotoğraflarınız taranıyor, lütfen bekleyin.",
+    "scan_in_progress_info": "Tarama tamamlandığında bilgilendirileceksiniz.",
+    "scan_no_photos_title": "Fotoğraf Bulunamadı",
+    "scan_no_photos_message": "Bu etkinlikte size ait fotoğraf bulunamadı.",
+    "scan_sending": "Tarama talebi gönderiliyor...",
+    "scan_send_error": "Tarama talebi gönderilemedi"
   },
   "event_detail": {
     "title": "Etkinlik Detayı",

@@ -14,19 +14,26 @@ class ApiConstants {
   static const String checkCode = '${baseUrl}service/auth/code/checkCode';
   static const String resendCode = '${baseUrl}service/auth/code/authSendCode';
   static const String forgotPassword = '${baseUrl}service/auth/forgotPassword';
-  static const String forgotPasswordUpdate = '${baseUrl}service/auth/forgotPassword/updatePass';
-  
+  static const String forgotPasswordUpdate =
+      '${baseUrl}service/auth/forgotPassword/updatePass';
+
   /// User endpoints
   static String getUserById(int userId) => '${baseUrl}service/user/id/$userId';
-  static String updateUser(int userId) => '${baseUrl}service/user/update/$userId/account';
+  static String updateUser(int userId) =>
+      '${baseUrl}service/user/update/$userId/account';
   static String updatePassword() => '${baseUrl}service/user/update/password';
   static String deleteAccount() => '${baseUrl}service/user/account/delete';
-  
+
   /// Notification endpoints
-  static String getNotifications(int userId) => '${baseUrl}service/user/account/$userId/notifications';
-  
+  static String getNotifications(int userId) =>
+      '${baseUrl}service/user/account/$userId/notifications';
+
   /// Event endpoints
-  static String getAllEvents(String userToken, {String? city, String? searchText}) {
+  static String getAllEvents(
+    String userToken, {
+    String? city,
+    String? searchText,
+  }) {
     final params = <String>[
       'userToken=$userToken',
       if (city != null && city.isNotEmpty) 'city=$city',
@@ -34,28 +41,37 @@ class ApiConstants {
     ];
     return '${baseUrl}service/events/event/all?${params.join('&')}';
   }
-  
+
   static String getEventDetailById(int eventID, String userToken) {
     return '${baseUrl}service/events/event/detail/$eventID?userToken=$userToken';
   }
-  
+
   static String getEventDetailByCode(String eventCode, String userToken) {
     return '${baseUrl}service/events/event/detail/$eventCode?userToken=$userToken';
   }
-  
+
   /// Photo endpoints
   static String getUserPhotos(String userToken) {
     return '${baseUrl}service/user/account/photo/all?userToken=$userToken';
   }
-  
-  static const String hidePhoto = '${baseUrl}service/user/account/photo/showHide';
-  
+
+  static const String hidePhoto =
+      '${baseUrl}service/user/account/photo/showHide';
+
   static String getFavorites(String userToken) {
     return '${baseUrl}service/user/account/favorites/all?userToken=$userToken';
   }
-  
-  static const String toggleFavorite = '${baseUrl}service/user/account/favorites/addDelete';
-  
+
+  static const String toggleFavorite =
+      '${baseUrl}service/user/account/favorites/addDelete';
+
+  /// Scan endpoint
+  static const String sendScanRequest =
+      '${baseUrl}service/user/account/photo/scan';
+
   /// General endpoints
-  static const String getAllCities = '${baseUrl}service/general/general/cities/all';
+  static const String getAllCities =
+      '${baseUrl}service/general/general/cities/all';
+  static const String getAllBanners =
+      '${baseUrl}service/general/general/banners/all';
 }

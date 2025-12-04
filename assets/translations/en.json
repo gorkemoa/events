@@ -168,7 +168,18 @@
     "calendar_failed": "Failed to add event",
     "calendar_permission_denied": "Calendar permission denied",
     "calendar_not_found": "Calendar not found",
-    "calendar_duplicate": "This event is already in your calendar"
+    "calendar_duplicate": "This event is already in your calendar",
+    "scan_request_title": "Scan Request",
+    "scan_request_message": "Do you want to send a face scan request to find your photos from this event?",
+    "scan_request_info": "You will be notified when your photos are found after the scan request is sent.",
+    "scan_request_button": "Send Scan",
+    "scan_in_progress_title": "Scanning in Progress",
+    "scan_in_progress_message": "Your photos are being scanned, please wait.",
+    "scan_in_progress_info": "You will be notified when scanning is complete.",
+    "scan_no_photos_title": "No Photos Found",
+    "scan_no_photos_message": "No photos of you were found in this event.",
+    "scan_sending": "Sending scan request...",
+    "scan_send_error": "Failed to send scan request"
   },
   "event_detail": {
     "title": "Event Details",
