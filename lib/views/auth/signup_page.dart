@@ -237,10 +237,10 @@ class _SignUpPageState extends State<SignUpPage> {
                   },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Lütfen kullanıcı adınızı girin';
+                      return 'Lütfen E-Mailnızı girin';
                     }
                     if (value.length < 3) {
-                      return 'Kullanıcı adı en az 3 karakter olmalıdır';
+                      return 'E-Mail en az 3 karakter olmalıdır';
                     }
                     return null;
                   },
